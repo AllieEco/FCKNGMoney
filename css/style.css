@@ -14,6 +14,11 @@
     --edit-btn-color: #3b82f6; /* Blue 500 */
 }
 
+@keyframes scan {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(100%); }
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -21,7 +26,12 @@
 }
 
 body {
-    background-color: var(--primary-color);
+    background: var(--primary-color) repeating-linear-gradient(
+        rgba(0,0,0,0.25) 0,
+        rgba(0,0,0,0.25) 1px,
+        transparent 1px,
+        transparent 2px
+    );
     color: var(--secondary-color);
     font-family: var(--font-body);
     line-height: 1.6;
@@ -46,7 +56,7 @@ header {
 }
 
 .designed-by img {
-    height: 40px;
+    height: 50px;
 }
 
 header h1 {
@@ -92,6 +102,8 @@ h2 .plus-icon {
 }
 
 .stat-card {
+    position: relative; /* For the overlay */
+    overflow: hidden; /* To contain the overlay */
     background-color: var(--accent-color);
     color: white;
     padding: 1.5rem;
@@ -101,9 +113,35 @@ h2 .plus-icon {
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Interaction Effect */
 }
 
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 48%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 52%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 0 15px var(--glow-color);
+    box-shadow: 0 0 20px var(--glow-color);
+}
+
+.stat-card:hover::after {
+    opacity: 0.6;
+    animation: scan 1.2s cubic-bezier(0.2, 0.7, 0.8, 0.3) infinite;
 }
 
 .stat-card h3 {
