@@ -448,6 +448,67 @@ footer {
     color: var(--accent-color);
 }
 
+/* Quotes Section */
+#quotes-section {
+    margin-bottom: 3rem;
+    padding: 2rem 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.quote-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.quote-text {
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--secondary-color);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    min-height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#quote-content {
+    transition: opacity 0.5s ease;
+}
+
+.quote-author {
+    font-size: 1rem;
+    color: #9ca3af;
+    font-weight: bold;
+    transition: opacity 0.5s ease;
+}
+
+.quote-mark {
+    color: var(--accent-color);
+    font-size: 2rem;
+    text-shadow: 0 0 10px var(--glow-color);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px var(--glow-color);
+    }
+    to {
+        text-shadow: 0 0 20px var(--glow-color), 0 0 30px var(--glow-color);
+    }
+}
+
+.quote-author {
+    font-size: 1rem;
+    color: #9ca3af;
+    font-weight: bold;
+}
+
 /* Dashboard Styles */
 #dashboard-section {
     margin-bottom: 3rem;

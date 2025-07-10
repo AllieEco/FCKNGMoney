@@ -1,7 +1,73 @@
 // Dashboard JavaScript pour FCKNGMoney
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardData();
+    initQuotesCarousel();
 });
+
+// Citations politiques
+const politicalQuotes = [
+    {
+        text: "Un pain au chocolat à 10 ou 15 centimes",
+        author: "Jean-François Copé (2012)"
+    },
+    {
+        text: "Il suffit de traverser la rue pour trouver du travail",
+        author: "Emmanuel Macron"
+    },
+    {
+        text: "Mon ennemi, c'est la finance",
+        author: "François Hollande"
+    },
+    {
+        text: "Les riches, il faut les aimer",
+        author: "Gérald Darmanin"
+    },
+    {
+        text: "L'argent magique",
+        author: "Jean-Luc Mélenchon"
+    },
+    {
+        text: "Avec 1200€, on vit très bien",
+        author: "Xavier Bertrand"
+    },
+    {
+        text: "Il faut arrêter d'aider les pauvres, ça les maintient dans la pauvreté",
+        author: "Valérie Pécresse"
+    },
+    {
+        text: "Il faut que les Français consomment plus",
+        author: "Christine Lagarde"
+    }
+];
+
+function initQuotesCarousel() {
+    const quoteContent = document.getElementById('quote-content');
+    const quoteAuthor = document.getElementById('quote-author');
+    
+    function showRandomQuote() {
+        const randomIndex = Math.floor(Math.random() * politicalQuotes.length);
+        const quote = politicalQuotes[randomIndex];
+        
+        // Effet de fade out
+        quoteContent.style.opacity = '0';
+        quoteAuthor.style.opacity = '0';
+        
+        setTimeout(() => {
+            quoteContent.textContent = quote.text;
+            quoteAuthor.textContent = quote.author;
+            
+            // Effet de fade in
+            quoteContent.style.opacity = '1';
+            quoteAuthor.style.opacity = '1';
+        }, 500);
+    }
+    
+    // Afficher une citation au chargement
+    showRandomQuote();
+    
+    // Changer de citation toutes les 8 secondes
+    setInterval(showRandomQuote, 8000);
+}
 
 function loadDashboardData() {
     // Récupérer les données depuis le localStorage
