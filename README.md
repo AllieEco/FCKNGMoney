@@ -21,7 +21,7 @@ FCKNGMoney est une application web qui te permet de :
 ### 🎭 Carrousel de Citations Politiques
 - **Citations au hasard** : Défilement automatique de perles politiques
 - **Guillemets néon** : ❞ en vert avec effet de lueur
-- **8 citations cultes** : De Copé à Macron en passant par Hollande
+- **16 citations cultes** : De Copé à Zidane en passant par Hanouna
 
 ### 📊 Tableau de Bord
 - **État du compte** : Avec des messages qui te remettent en place
@@ -99,6 +99,14 @@ Le site affiche des perles politiques qui défilent au hasard :
 - "Avec 1200€, on vit très bien" - Xavier Bertrand
 - "Il faut arrêter d'aider les pauvres, ça les maintient dans la pauvreté" - Valérie Pécresse
 - "Il faut que les Français consomment plus" - Christine Lagarde
+- "Les Français ne savent plus compter" - Claire Chazal
+- "L'économie, c'est comme la météo" - Laurence Ferrari
+- "Moi j'ai jamais eu de problèmes d'argent" - Cyril Hanouna
+- "Les inégalités, c'est pas grave" - Alain Minc
+- "L'argent ne fait pas le bonheur" - Un mec riche
+- "L'argent n'a pas d'odeur" - Vincent Bolloré
+- "Je ne regarde jamais les prix" - Bernard-Henri Lévy
+- "J'ai toujours préféré les passes aux euros" - Zinedine Zidane
 
 ### Messages Motivants
 

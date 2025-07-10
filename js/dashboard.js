@@ -37,6 +37,38 @@ const politicalQuotes = [
     {
         text: "Il faut que les Français consomment plus",
         author: "Christine Lagarde"
+    },
+    {
+        text: "Les Français ne savent plus compter",
+        author: "Claire Chazal"
+    },
+    {
+        text: "L'économie, c'est comme la météo",
+        author: "Laurence Ferrari"
+    },
+    {
+        text: "Moi j'ai jamais eu de problèmes d'argent",
+        author: "Cyril Hanouna"
+    },
+    {
+        text: "Les inégalités, c'est pas grave",
+        author: "Alain Minc"
+    },
+    {
+        text: "L'argent ne fait pas le bonheur",
+        author: "Un mec riche"
+    },
+    {
+        text: "L'argent n'a pas d'odeur",
+        author: "Vincent Bolloré"
+    },
+    {
+        text: "Je ne regarde jamais les prix",
+        author: "Bernard-Henri Lévy"
+    },
+    {
+        text: "J'ai toujours préféré les passes aux euros",
+        author: "Zinedine Zidane"
     }
 ];
 
