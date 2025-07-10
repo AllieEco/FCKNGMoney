@@ -12,6 +12,9 @@ function loadDashboardData() {
     
     // Mettre à jour l'affichage
     updateDashboardDisplay(dashboardData);
+    
+    // Calculer et afficher les stats de criminels financiers
+    updateCriminalStats(expenses);
 }
 
 function calculateDashboardData(expenses) {
@@ -142,6 +145,106 @@ function updateUnnecessarySpending(total) {
 // Fonction pour rafraîchir les données (peut être appelée depuis d'autres pages)
 function refreshDashboard() {
     loadDashboardData();
+}
+
+function updateCriminalStats(expenses) {
+    // Calculer les jours sans craquage
+    const daysWithoutCrack = calculateDaysWithoutCrack(expenses);
+    
+    // Calculer la plus grosse dépense du mois
+    const biggestExpense = calculateBiggestExpenseThisMonth(expenses);
+    
+    // Calculer l'amélioration vs mois dernier
+    const improvement = calculateImprovementVsLastMonth(expenses);
+    
+    // Mettre à jour l'affichage
+    document.getElementById('days-without-crack').textContent = daysWithoutCrack;
+    document.getElementById('biggest-expense').textContent = `${biggestExpense.toFixed(2)}€`;
+    document.getElementById('improvement').textContent = `${improvement.toFixed(1)}%`;
+}
+
+function calculateDaysWithoutCrack(expenses) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Filtrer les dépenses (pas les revenus)
+    const expenseOnly = expenses.filter(exp => exp.amount < 0);
+    
+    if (expenseOnly.length === 0) {
+        return 0; // Pas de dépenses du tout
+    }
+    
+    // Trier par date décroissante
+    expenseOnly.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Prendre la dernière dépense
+    const lastExpenseDate = new Date(expenseOnly[0].date);
+    const lastExpenseDay = new Date(lastExpenseDate.getFullYear(), lastExpenseDate.getMonth(), lastExpenseDate.getDate());
+    
+    // Calculer la différence en jours
+    const diffTime = today.getTime() - lastExpenseDay.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, diffDays);
+}
+
+function calculateBiggestExpenseThisMonth(expenses) {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Filtrer les dépenses du mois en cours
+    const thisMonthExpenses = expenses.filter(exp => {
+        const expDate = new Date(exp.date);
+        return expDate.getMonth() === currentMonth && 
+               expDate.getFullYear() === currentYear && 
+               exp.amount < 0; // Seulement les dépenses
+    });
+    
+    if (thisMonthExpenses.length === 0) {
+        return 0;
+    }
+    
+    // Trouver la plus grosse dépense (valeur absolue la plus élevée)
+    const biggest = thisMonthExpenses.reduce((max, exp) => {
+        return Math.abs(exp.amount) > Math.abs(max.amount) ? exp : max;
+    });
+    
+    return Math.abs(biggest.amount);
+}
+
+function calculateImprovementVsLastMonth(expenses) {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Calculer le total du mois en cours
+    const thisMonthTotal = expenses
+        .filter(exp => {
+            const expDate = new Date(exp.date);
+            return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+        })
+        .reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // Calculer le total du mois dernier
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    const lastMonthTotal = expenses
+        .filter(exp => {
+            const expDate = new Date(exp.date);
+            return expDate.getMonth() === lastMonth && expDate.getFullYear() === lastMonthYear;
+        })
+        .reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // Calculer le pourcentage d'amélioration
+    if (lastMonthTotal === 0) {
+        // Si pas de données le mois dernier, on ne peut pas calculer de pourcentage
+        return thisMonthTotal > 0 ? 100 : 0;
+    }
+    
+    const percentageChange = ((thisMonthTotal - lastMonthTotal) / Math.abs(lastMonthTotal)) * 100;
+    return percentageChange;
 }
 
 // Exposer la fonction pour qu'elle soit accessible depuis d'autres scripts
