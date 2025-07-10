@@ -147,6 +147,12 @@ h2 .plus-icon {
     color: var(--secondary-color);
 }
 
+.form-control input::placeholder,
+.form-control textarea::placeholder {
+    color: #9ca3af; /* Cool Gray 400 */
+    opacity: 1; /* Firefox a une opacité plus faible par défaut */
+}
+
 .form-control textarea {
     resize: vertical;
     min-height: 80px;

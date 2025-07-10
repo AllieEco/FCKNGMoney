@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Basic Validation
         if (!expenseData.culprit || !expenseData.date || !expenseData.category || isNaN(expenseData.amount) || expenseData.amount <= 0) {
-            alert('Les champs "Coupable", "Date", "Catégorie" et "Butin" sont obligatoires, et le butin doit être positif, espèce de malade.');
+            alert('Les champs "Coupable", "Date", "Catégorie" et "La Douille" sont obligatoires, et la douille doit être positive, espèce de malade.');
             return;
         }
 
