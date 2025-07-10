@@ -14,6 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const amountInput = document.getElementById('amount');
     const descriptionInput = document.getElementById('description');
 
+    // Filter Elements
+    const filterYearEl = document.getElementById('filter-year');
+    const filterMonthEl = document.getElementById('filter-month');
+    const filterCategoryEl = document.getElementById('filter-category');
+    const filterCulpritEl = document.getElementById('filter-culprit');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+
     // Stats Elements
     const totalDamageEl = document.getElementById('total-damage');
     const monthDamageEl = document.getElementById('month-damage');
@@ -96,6 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Filter Logic ---
+    [filterYearEl, filterMonthEl, filterCategoryEl, filterCulpritEl].forEach(el => {
+        el.addEventListener('change', () => render());
+    });
+    filterCulpritEl.addEventListener('keyup', () => render());
+
+    resetFiltersBtn.addEventListener('click', () => {
+        filterYearEl.value = 'all';
+        filterMonthEl.value = 'all';
+        filterCategoryEl.value = 'all';
+        filterCulpritEl.value = '';
+        render();
+    });
+
     // --- Core Functions ---
     function saveExpensesToLocalStorage() {
         localStorage.setItem('fckng_expenses_v2', JSON.stringify(expenses));
@@ -109,18 +130,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function render() {
-        renderTable();
-        calculateStats();
+        const filteredExpenses = getFilteredExpenses();
+        renderTable(filteredExpenses);
+        calculateStats(filteredExpenses); // Use filtered expenses for stats too
     }
 
-    function renderTable() {
+    function getFilteredExpenses() {
+        const year = filterYearEl.value;
+        const month = filterMonthEl.value;
+        const category = filterCategoryEl.value;
+        const culprit = filterCulpritEl.value.toLowerCase();
+
+        return expenses.filter(exp => {
+            const expDate = new Date(exp.date);
+            if (year !== 'all' && expDate.getFullYear() != year) return false;
+            if (month !== 'all' && expDate.getMonth() != month) return false;
+            if (category !== 'all' && exp.category !== category) return false;
+            if (culprit && !exp.culprit.toLowerCase().includes(culprit)) return false;
+            return true;
+        });
+    }
+
+    function renderTable(expensesToRender) {
         historyBody.innerHTML = '';
-        if (expenses.length === 0) {
-            historyBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun crime financier à déclarer. Pour l'instant...</td></tr>`;
+        if (expensesToRender.length === 0) {
+            historyBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun crime ne correspond à tes filtres. T'as de la chance.</td></tr>`;
             return;
         }
 
-        expenses.forEach(expense => {
+        expensesToRender.forEach(expense => {
             const row = document.createElement('tr');
             row.dataset.id = expense.id;
             row.innerHTML = `
@@ -138,31 +176,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function calculateStats() {
-        const totalDamage = expenses.reduce((acc, exp) => acc + exp.amount, 0);
-        const totalCracks = expenses.length;
+    function calculateStats(statsExpenses) {
+        const totalDamage = statsExpenses.reduce((acc, exp) => acc + exp.amount, 0);
+        const totalCracks = statsExpenses.length;
         
         const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const currentMonthName = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
         
+        // This stat always shows current month's damage regardless of filters
         const monthDamage = expenses
             .filter(exp => {
                 const expDate = new Date(exp.date);
-                return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+                return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
             })
             .reduce((acc, exp) => acc + exp.amount, 0);
 
         totalDamageEl.textContent = `${totalDamage.toFixed(2)}€`;
+        totalDamageEl.nextElementSibling.textContent = filterYearEl.value !== 'all' || filterMonthEl.value !== 'all' || filterCategoryEl.value !== 'all' || filterCulpritEl.value ? 'Total des filtres' : 'Toutes périodes';
         monthDamageEl.textContent = `${monthDamage.toFixed(2)}€`;
         totalCracksEl.textContent = totalCracks;
         avgPainEl.textContent = totalCracks > 0 ? `${(totalDamage / totalCracks).toFixed(2)}€` : '0.00€';
-        currentMonthEl.textContent = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+        currentMonthEl.textContent = currentMonthName;
+    }
+
+    function populateFilterOptions() {
+        // Populate years
+        const years = [...new Set(expenses.map(exp => new Date(exp.date).getFullYear()))];
+        filterYearEl.innerHTML = '<option value="all">Toutes les années</option>';
+        years.sort((a,b) => b-a).forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            filterYearEl.appendChild(option);
+        });
+
+        // Populate categories
+        const categories = [...new Set(expenses.map(exp => exp.category))];
+        filterCategoryEl.innerHTML = '<option value="all">Toutes les catégories</option>';
+        categories.sort().forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            filterCategoryEl.appendChild(option);
+        });
     }
 
     // --- Initial Load ---
     function init() {
         resetForm();
+        populateFilterOptions();
         render();
     }
 

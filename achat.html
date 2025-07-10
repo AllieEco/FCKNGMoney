@@ -95,6 +95,46 @@
         <!-- CASIER JUDICIAIRE -->
         <section id="history-section">
             <h2>Le Casier Judiciaire</h2>
+
+            <!-- FILTERS -->
+            <div id="filter-section">
+                <div class="form-control">
+                    <label for="filter-year">Année</label>
+                    <select id="filter-year">
+                        <!-- Options ajoutées par JS -->
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-month">Mois</label>
+                    <select id="filter-month">
+                        <option value="all">Tous les mois</option>
+                        <option value="0">Janvier</option>
+                        <option value="1">Février</option>
+                        <option value="2">Mars</option>
+                        <option value="3">Avril</option>
+                        <option value="4">Mai</option>
+                        <option value="5">Juin</option>
+                        <option value="6">Juillet</option>
+                        <option value="7">Août</option>
+                        <option value="8">Septembre</option>
+                        <option value="9">Octobre</option>
+                        <option value="10">Novembre</option>
+                        <option value="11">Décembre</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-category">Catégorie</label>
+                    <select id="filter-category">
+                        <!-- Options ajoutées par JS -->
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-culprit">Coupable</label>
+                    <input type="text" id="filter-culprit" placeholder="Rechercher un coupable...">
+                </div>
+                <button id="reset-filters">Réinitialiser</button>
+            </div>
+
             <div id="history-table-container">
                 <table id="history-table">
                     <thead>

@@ -1,14 +1,15 @@
 :root {
     --primary-color: #1f2937; /* Cool Gray 800 */
     --secondary-color: #f9fafb; /* Cool Gray 50 */
-    --accent-color: #ff00ff; /* Fuchsia pur - Le plus flash possible */
+    --accent-color: #76b900; /* Nvidia Green */
+    --glow-color: rgba(118, 185, 0, 0.7); /* Nvidia Green Glow */
     --font-title: 'Staatliches', cursive;
-    --font-body: 'Arial', sans-serif;
+    --font-body: 'Arial', sans-serif; /* Reverted to Arial */
     --card-bg: #374151; /* Cool Gray 700 */
     --border-color: #4b5563; /* Cool Gray 600 */
     --shadow-color: rgba(0,0,0,0.2);
-    --submit-btn-bg: #10b981; /* Emerald 500 */
-    --submit-btn-hover: #059669; /* Emerald 600 */
+    --submit-btn-bg: #68a300; /* Darker Nvidia Green */
+    --submit-btn-hover: #548500; /* Even Darker Nvidia Green */
     --delete-btn-color: #ef4444; /* Red 500 */
     --edit-btn-color: #3b82f6; /* Blue 500 */
 }
@@ -77,11 +78,17 @@ h2 .plus-icon {
 
 .stat-card {
     background-color: var(--accent-color);
-    color: var(--secondary-color);
+    color: white;
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 4px 8px var(--shadow-color);
     text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Interaction Effect */
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px var(--glow-color);
 }
 
 .stat-card h3 {
@@ -103,7 +110,6 @@ h2 .plus-icon {
 .stat-card span {
     font-size: 0.9rem;
     opacity: 0.8;
-    color: rgba(255, 255, 255, 0.7);
 }
 
 /* Form Section */
@@ -131,7 +137,6 @@ h2 .plus-icon {
     margin-bottom: 0.5rem;
     font-weight: bold;
     font-size: 0.9rem;
-    color: #d1d5db; /* Cool Gray 300 */
 }
 
 .form-control input,
@@ -145,6 +150,15 @@ h2 .plus-icon {
     font-size: 1rem;
     background-color: #4b5563; /* Cool Gray 600 */
     color: var(--secondary-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Interaction Effect */
+}
+
+.form-control input:focus,
+.form-control select:focus,
+.form-control textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--glow-color);
 }
 
 .form-control input::placeholder,
@@ -158,23 +172,57 @@ h2 .plus-icon {
     min-height: 80px;
 }
 
-#expense-form button {
-    display: inline-block;
-    padding: 0.8rem 2rem;
-    background-color: var(--submit-btn-bg);
+#expense-form button, #reset-filters {
+    padding: 0.8rem 1.5rem;
     color: white;
     border: none;
     border-radius: 4px;
     font-family: var(--font-body);
     font-weight: bold;
-    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease; /* Interaction Effect */
+}
+
+#expense-form button {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background-color: var(--submit-btn-bg);
+    font-size: 1.1rem;
 }
 
 #expense-form button:hover {
     background-color: var(--submit-btn-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px var(--glow-color);
 }
+
+/* Filter Section */
+#filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-end;
+    background-color: var(--card-bg);
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+#filter-section .form-control {
+    margin-bottom: 0; /* Override default margin */
+}
+
+#reset-filters {
+    background-color: #6b7280; /* Cool Gray 500 */
+}
+
+#reset-filters:hover {
+    background-color: #4b5563; /* Cool Gray 600 */
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px rgba(107, 114, 128, 0.7);
+}
+
 
 /* History Table */
 #history-section h2 {
@@ -209,8 +257,12 @@ h2 .plus-icon {
     border-bottom: none;
 }
 
+#history-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
 #history-table tbody tr:hover {
-    background-color: #4b5563; /* Cool Gray 600, a bit darker on hover */
+    background-color: #4b5563;
 }
 
 .actions-cell button {
@@ -219,11 +271,12 @@ h2 .plus-icon {
     cursor: pointer;
     font-size: 1.2rem;
     margin-right: 0.5rem;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, text-shadow 0.3s ease; /* Interaction Effect */
 }
 
 .actions-cell button:hover {
     transform: scale(1.2);
+    text-shadow: 0 0 8px currentColor;
 }
 
 .edit-btn { color: var(--edit-btn-color); }
@@ -234,5 +287,5 @@ footer {
     padding: 2rem;
     margin-top: auto;
     font-size: 0.9rem;
-    color: #6b7280; /* Cool Gray 500 */
+    color: #888;
 } 
