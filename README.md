@@ -4,6 +4,9 @@
 
 Un tracker de dépenses qui ne prend pas de gants pour te dire la vérité sur tes finances. Parce que parfois, il faut un coup de pied au cul pour arrêter de cramer ton fric.
 
+<img width="2532" height="1215" alt="image" src="https://github.com/user-attachments/assets/62e3d3f9-a497-48f4-80db-476cac51d159" />
+
+
 ## 🚨 Qu'est-ce que c'est que cette merde ?
 
 FCKNGMoney est une application web qui te permet de :
