@@ -28,10 +28,25 @@ body {
 }
 
 header {
+    position: relative; /* For positioning the logo */
     text-align: center;
     padding: 2rem;
     width: 100%;
     border-bottom: 1px solid var(--border-color);
+}
+
+.designed-by {
+    position: absolute;
+    left: 96px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.designed-by img {
+    height: 40px;
 }
 
 header h1 {
