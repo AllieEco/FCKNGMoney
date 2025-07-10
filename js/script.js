@@ -1,5 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Système de couleurs pour les catégories
+    const categoryColors = {
+        'Alimentation (Graisse & Sucre)': '#ff6b6b',      // Rouge corail
+        'Transports (Gas-oil & Galères)': '#4ecdc4',      // Turquoise
+        'Loisirs (Procrastination Payante)': '#45b7d1',   // Bleu ciel
+        'Shopping': '#96ceb4',                            // Vert menthe
+        'Santé': '#feca57',                               // Jaune
+        'Maison (Le Foyer du Gouffre)': '#ff9ff3',        // Rose
+        'Banque (Ton banquier te remercie)': '#54a0ff',   // Bleu
+        'Restaurant (Se faire plumer au resto)': '#ff6348', // Rouge-orange
+        'Voyages': '#5f27cd',                             // Violet
+        'Éducation': '#00d2d3',                           // Cyan
+        'Sport': '#10ac84',                               // Vert émeraude
+        'Technologie': '#ff9f43',                         // Orange
+        'Beauté': '#f368e0',                              // Rose vif
+        'Cadeaux': '#ff3838',                             // Rouge vif
+        'Cigarettes (Clopes & Toux Grasse)': '#8b4513',   // Marron
+        'Alcool (Alcool & Mauvaises Décisions)': '#ff4500', // Rouge-orange foncé
+        'Epargne (Retarder l\'inévitable)': '#32cd32',    // Vert lime
+        'Revenu (Salaire (Bientôt Disparu))': '#00ff00',  // Vert vif
+        'Autres (WTF (Autres purges))': '#8395a7'         // Gris
+    };
+
     // DOM Elements
     const expenseForm = document.getElementById('expense-form');
     const historyBody = document.getElementById('history-body');
@@ -182,14 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             row.dataset.id = expense.id;
 
-            if (expense.category) {
-                const categoryClass = expense.category
-                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                    .toLowerCase()
-                    .replace(/[()&']/g, "")
-                    .replace(/\s+/g, "-")
-                    .replace(/--+/g, "-");
-                row.classList.add(categoryClass);
+            // Appliquer la couleur de la catégorie
+            if (expense.category && categoryColors[expense.category]) {
+                const categoryColor = categoryColors[expense.category];
+                row.style.borderLeft = `4px solid ${categoryColor}`;
+                row.style.backgroundColor = `${categoryColor}15`; // Version très transparente de la couleur
             }
 
             const amountClass = expense.amount >= 0 ? 'amount-positive' : 'amount-negative';

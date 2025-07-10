@@ -381,25 +381,23 @@ h2 .plus-icon {
 }
 
 #history-table tbody tr {
-    transition: background-color 0.2s ease;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 #history-table tbody tr:hover {
-    background-color: #4b5563;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.1);
 }
 
-/* Category Row Colors */
-#history-table tbody tr.alimentation-graisse-sucre { background-color: rgba(255, 165, 0, 0.15); }
-#history-table tbody tr.loisirs-procrastination-payante { background-color: rgba(30, 144, 255, 0.15); }
-#history-table tbody tr.banque-ton-banquier-te-remercie { background-color: rgba(220, 20, 60, 0.15); }
-#history-table tbody tr.revenu-salaire-bientot-disparu { background-color: rgba(46, 139, 87, 0.2); }
-#history-table tbody tr.maison-le-foyer-du-gouffre { background-color: rgba(160, 82, 45, 0.15); }
-#history-table tbody tr.epargne-retarder-linevitable { background-color: rgba(0, 206, 209, 0.2); }
-#history-table tbody tr.cigarettes-clopes-toux-grasse { background-color: rgba(128, 128, 128, 0.15); }
-#history-table tbody tr.transports-gas-oil-galeres { background-color: rgba(255, 215, 0, 0.15); }
-#history-table tbody tr.restaurant-se-faire-plumer-au-resto { background-color: rgba(255, 105, 180, 0.15); }
-#history-table tbody tr.alcool-alcool-mauvaises-decisions { background-color: rgba(147, 112, 219, 0.15); }
-#history-table tbody tr.autres-wtf-autres-purges { background-color: rgba(112, 128, 144, 0.15); }
+/* Styles pour les lignes colorées par catégorie */
+#history-table tbody tr[style*="border-left"] {
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+
 
 
 .actions-cell button {
