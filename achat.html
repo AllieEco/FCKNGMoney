@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCKNGMoney - Achat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Staatliches&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>FCKNGMoney</h1>
+        <p class="slogan">Fuck debt collectors for good.</p>
+    </header>
+
+    <main>
+        <!-- STATS QUI FONT MAL -->
+        <section id="stats-section">
+            <div class="stat-card">
+                <h3>Total des Dégâts</h3>
+                <p id="total-damage">0.00€</p>
+                <span>Toutes périodes</span>
+            </div>
+            <div class="stat-card">
+                <h3>Massacre du Mois</h3>
+                <p id="month-damage">0.00€</p>
+                <span id="current-month"></span>
+            </div>
+            <div class="stat-card">
+                <h3>Nombre de Craquages</h3>
+                <p id="total-cracks">0</p>
+                <span>Depuis le début</span>
+            </div>
+            <div class="stat-card">
+                <h3>Douleur Moyenne</h3>
+                <p id="avg-pain">0.00€</p>
+                <span>Par craquage</span>
+            </div>
+        </section>
+
+        <!-- FORMULAIRE DE LA HONTE -->
+        <section id="expense-form-section">
+            <h2><span class="plus-icon">+</span> Balancer une nouvelle dépense</h2>
+            <form id="expense-form">
+                <input type="hidden" id="expense-id">
+                <div class="form-row">
+                    <div class="form-control">
+                        <label for="culprit">Le Coupable (Qui a pris ton fric?)</label>
+                        <input type="text" id="culprit" placeholder="Ex: Amazon, ce démon..." required>
+                    </div>
+                    <div class="form-control">
+                        <label for="crime-date">Date du Crime</label>
+                        <input type="date" id="crime-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-control">
+                        <label for="category">Catégorie de la Honte</label>
+                        <select id="category" required>
+                            <option value="" disabled selected>Choisir une catégorie...</option>
+                            <option value="Plaisirs Coupables">Plaisirs Coupables</option>
+                            <option value="Besoins Vitaux (ou pas)">Besoins Vitaux (ou pas)</option>
+                            <option value="Dépenses de Merde">Dépenses de Merde</option>
+                            <option value="Pour Impressionner">Pour Impressionner</option>
+                            <option value="Factures Incompressibles">Factures Incompressibles</option>
+                            <option value="Autre connerie">Autre connerie</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label for="payment-method">L'Arme du Crime</label>
+                        <select id="payment-method" required>
+                            <option value="Carte Bleue">Carte Bleue</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Espèces">Espèces</option>
+                            <option value="Virement">Virement</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                     <div class="form-control">
+                        <label for="amount">Le Butin (€)</label>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="description">La Preuve (Optionnel)</label>
+                    <textarea id="description" placeholder="Une excuse? Une justification? On t'écoute..."></textarea>
+                </div>
+                <button type="submit">J'assume (c'est la faute à Macron)</button>
+            </form>
+        </section>
+
+        <!-- CASIER JUDICIAIRE -->
+        <section id="history-section">
+            <h2>Le Casier Judiciaire</h2>
+            <div id="history-table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Coupable</th>
+                            <th>Catégorie</th>
+                            <th>Butin</th>
+                            <th>Arme du Crime</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <!-- Les "crimes" seront listés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 FCKNGMoney. Pas de pitié pour les dépensiers.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html> 
