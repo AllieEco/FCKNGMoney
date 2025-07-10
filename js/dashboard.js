@@ -448,13 +448,7 @@ function createExpensesPieChart(expenses) {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#9ca3af',
-                        font: {
-                            size: 10
-                        }
-                    }
+                    display: false
                 }
             }
         }
