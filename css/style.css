@@ -208,6 +208,19 @@ h2 .plus-icon {
     opacity: 0.8;
 }
 
+/* Couleurs dynamiques pour les cartes de statistiques */
+.stat-card.positive {
+    background-color: #10b981; /* Green */
+}
+
+.stat-card.warning {
+    background-color: #f59e0b; /* Amber */
+}
+
+.stat-card.danger {
+    background-color: #ef4444; /* Red */
+}
+
 /* Form Section */
 #expense-form-section {
     background-color: var(--card-bg);
@@ -455,9 +468,9 @@ footer {
     background: linear-gradient(
         to bottom,
         transparent 0%,
-        rgba(118, 185, 0, 0.05) 48%,
-        rgba(118, 185, 0, 0.1) 50%,
-        rgba(118, 185, 0, 0.05) 52%,
+        rgba(255, 255, 255, 0.1) 48%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 52%,
         transparent 100%
     );
     opacity: 0;
@@ -468,12 +481,12 @@ footer {
 
 .dashboard-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px var(--shadow-color);
+    box-shadow: 0 0 20px var(--glow-color);
 }
 
 .dashboard-card:hover::after {
-    opacity: 1;
-    animation: scan 1.5s cubic-bezier(0.2, 0.7, 0.8, 0.3) infinite;
+    opacity: 0.6;
+    animation: scan 1.2s cubic-bezier(0.2, 0.7, 0.8, 0.3) infinite;
 }
 
 .card-header {

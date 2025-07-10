@@ -235,6 +235,9 @@ document.addEventListener('DOMContentLoaded', () => {
         totalCracksEl.textContent = totalCracks;
         avgPainEl.textContent = totalCracks > 0 ? `${(totalPain / totalCracks).toFixed(2)}€` : '0.00€';
         currentMonthEl.textContent = currentMonthName;
+
+        // Appliquer les classes CSS dynamiques pour les couleurs
+        updateStatCardColors(totalDamage, monthDamage, totalCracks, totalPain / totalCracks);
     }
 
     function populateFilterOptions() {
@@ -267,6 +270,49 @@ document.addEventListener('DOMContentLoaded', () => {
         resetForm();
         populateFilterOptions();
         render();
+    }
+
+    function updateStatCardColors(totalDamage, monthDamage, totalCracks, avgPain) {
+        // Carte 1: Total des Dégâts (Solde)
+        const totalDamageCard = totalDamageEl.closest('.stat-card');
+        totalDamageCard.className = 'stat-card';
+        
+        if (totalDamage > 200) {
+            totalDamageCard.classList.add('positive');
+        } else if (totalDamage >= 0) {
+            totalDamageCard.classList.add('warning');
+        } else {
+            totalDamageCard.classList.add('danger');
+        }
+
+        // Carte 2: Massacre du Mois - Toujours verte comme les dépenses inutiles
+        const monthDamageCard = monthDamageEl.closest('.stat-card');
+        monthDamageCard.className = 'stat-card';
+        // Pas de classe de couleur ajoutée, reste verte par défaut
+
+        // Carte 3: Nombre de Craquages
+        const totalCracksCard = totalCracksEl.closest('.stat-card');
+        totalCracksCard.className = 'stat-card';
+        
+        if (totalCracks === 0) {
+            totalCracksCard.classList.add('positive');
+        } else if (totalCracks <= 10) {
+            totalCracksCard.classList.add('warning');
+        } else {
+            totalCracksCard.classList.add('danger');
+        }
+
+        // Carte 4: Douleur Moyenne
+        const avgPainCard = avgPainEl.closest('.stat-card');
+        avgPainCard.className = 'stat-card';
+        
+        if (avgPain > -50) {
+            avgPainCard.classList.add('positive');
+        } else if (avgPain > -150) {
+            avgPainCard.classList.add('warning');
+        } else {
+            avgPainCard.classList.add('danger');
+        }
     }
 
     init();
