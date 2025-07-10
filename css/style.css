@@ -88,10 +88,12 @@ header .slogan {
 
 /* Navigation */
 .main-nav {
-    margin-top: 1rem;
+    position: absolute;
+    right: 96px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    justify-content: center;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 .nav-link {
@@ -100,8 +102,9 @@ header .slogan {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
-    font-family: var(--font-title);
-    font-size: 1rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .nav-link:hover {
