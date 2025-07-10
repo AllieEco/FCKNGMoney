@@ -18,6 +18,11 @@ FCKNGMoney est une application web qui te permet de :
 
 ## 🎯 Fonctionnalités
 
+### 🎭 Carrousel de Citations Politiques
+- **Citations au hasard** : Défilement automatique de perles politiques
+- **Guillemets néon** : ❞ en vert avec effet de lueur
+- **8 citations cultes** : De Copé à Macron en passant par Hollande
+
 ### 📊 Tableau de Bord
 - **État du compte** : Avec des messages qui te remettent en place
 - **Craquages du mois** : Le nombre de fois où tu as craqué
@@ -26,6 +31,7 @@ FCKNGMoney est une application web qui te permet de :
 ### 📈 Graphiques
 - **Évolution financière** : Courbe de ton compte en banque (spoiler : ça descend)
 - **Répartition des dépenses** : Camembert de tes crimes par catégorie
+- **Design responsive** : 2/3 courbe, 1/3 camembert
 
 ### 🕵️ Stats de Criminel Financier
 - **Jours sans craquage** : Depuis ta dernière dépense
@@ -58,7 +64,8 @@ cd FCKNGMoney
 
 - **Thème sombre** : Parce que tes finances sont sombres
 - **Couleurs dynamiques** : Vert = bien, Orange = attention, Rouge = OSKOUR !
-- **Animations** : Effets de hover pour te distraire de tes problèmes
+- **Animations** : Effets de hover et transitions fluides
+- **Guillemets néon** : ❞ avec effet de lueur verte
 - **Responsive** : Ça marche même sur ton téléphone (mais c'est pas une excuse)
 
 ## 📱 Utilisation
@@ -74,7 +81,20 @@ cd FCKNGMoney
 - **Graphiques** : Évolution et répartition de tes dépenses
 - **Historique** : Liste complète de tes crimes financiers
 
-## 🎭 Messages Motivants
+## 🎭 Messages et Citations
+
+### Citations Politiques
+Le site affiche des perles politiques qui défilent au hasard :
+- "Un pain au chocolat à 10 ou 15 centimes" - Jean-François Copé
+- "Il suffit de traverser la rue pour trouver du travail" - Emmanuel Macron
+- "Mon ennemi, c'est la finance" - François Hollande
+- "Les riches, il faut les aimer" - Gérald Darmanin
+- "L'argent magique" - Jean-Luc Mélenchon
+- "Avec 1200€, on vit très bien" - Xavier Bertrand
+- "Il faut arrêter d'aider les pauvres, ça les maintient dans la pauvreté" - Valérie Pécresse
+- "Il faut que les Français consomment plus" - Christine Lagarde
+
+### Messages Motivants
 
 Le site t'envoie des messages selon tes performances :
 
