@@ -164,6 +164,17 @@ document.addEventListener('DOMContentLoaded', () => {
         expensesToRender.forEach(expense => {
             const row = document.createElement('tr');
             row.dataset.id = expense.id;
+
+            if (expense.category) {
+                const categoryClass = expense.category
+                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase()
+                    .replace(/[()&']/g, "")
+                    .replace(/\s+/g, "-")
+                    .replace(/--+/g, "-");
+                row.classList.add(categoryClass);
+            }
+
             row.innerHTML = `
                 <td>${new Date(expense.date).toLocaleDateString()}</td>
                 <td>${expense.culprit}</td>
@@ -214,14 +225,17 @@ document.addEventListener('DOMContentLoaded', () => {
             filterYearEl.appendChild(option);
         });
 
-        // Populate categories
-        const categories = [...new Set(expenses.map(exp => exp.category))];
+        // Populate categories from the main form's dropdown
+        const mainCategoryOptions = categoryInput.querySelectorAll('option');
         filterCategoryEl.innerHTML = '<option value="all">Toutes les catégories</option>';
-        categories.sort().forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            filterCategoryEl.appendChild(option);
+        
+        mainCategoryOptions.forEach(option => {
+            if (option.value === "") return; // Skip placeholder
+            
+            const filterOption = document.createElement('option');
+            filterOption.value = option.value;
+            filterOption.textContent = option.textContent;
+            filterCategoryEl.appendChild(filterOption);
         });
     }
 
