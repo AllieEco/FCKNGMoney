@@ -57,8 +57,14 @@ git clone https://github.com/AllieEco/FCKNGMoney.git
 cd FCKNGMoney
 ```
 
-2. Ouvre `index.html` dans ton navigateur
-3. Commence à tracker tes crimes financiers
+2. Configure ton profil :
+```bash
+cp config.example.js config.js
+```
+Puis édite `config.js` avec tes informations (voir [CONFIG.md](CONFIG.md))
+
+3. Ouvre `index.html` dans ton navigateur
+4. Commence à tracker tes crimes financiers
 
 ## 🎨 Design
 
@@ -117,6 +123,16 @@ Le site t'envoie des messages selon tes performances :
 - **JavaScript** : Logique et calculs
 - **Chart.js** : Graphiques pour visualiser tes crimes
 - **LocalStorage** : Sauvegarde locale de tes données
+
+## ⚙️ Configuration
+
+Le site est entièrement personnalisable via le fichier `config.js` :
+- **Solde initial** : Configure ton état bancaire de départ
+- **Seuils d'alerte** : Personnalise tes alertes financières
+- **Messages** : Tes propres phrases d'encouragement
+- **Informations** : Nom et prénom pour futures fonctionnalités
+
+Voir [CONFIG.md](CONFIG.md) pour la documentation complète.
 
 ## 🤝 Contribution
 

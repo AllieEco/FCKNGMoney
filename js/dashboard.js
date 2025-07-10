@@ -91,7 +91,8 @@ function calculateDashboardData(expenses) {
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
-    let totalBalance = 0;
+    // Utiliser le solde initial de la config + les transactions
+    let totalBalance = (USER_CONFIG && USER_CONFIG.initialBalance) ? USER_CONFIG.initialBalance : 0;
     let monthlyCracks = 0;
     let unnecessarySpending = 0;
     
@@ -146,18 +147,28 @@ function updateAccountStatus(balance) {
     // Formater le solde
     balanceElement.textContent = `${balance.toFixed(2)}€`;
     
+    // Utiliser les seuils de la config ou les valeurs par défaut
+    const warningThreshold = (USER_CONFIG && USER_CONFIG.warningThreshold) ? USER_CONFIG.warningThreshold : 200;
+    const dangerThreshold = (USER_CONFIG && USER_CONFIG.dangerThreshold) ? USER_CONFIG.dangerThreshold : 0;
+    
     // Déterminer le message et la classe CSS selon le solde
     let message = '';
     let statusClass = '';
     
-    if (balance > 200) {
-        message = "C'est bon on est laaaaarge";
+    if (balance > warningThreshold) {
+        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.positive) 
+            ? USER_CONFIG.customMessages.positive 
+            : "C'est bon on est laaaaarge";
         statusClass = 'positive';
-    } else if (balance >= 0) {
-        message = "Fais gaffe à pas pousser le bouchon trop loin";
+    } else if (balance >= dangerThreshold) {
+        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.warning) 
+            ? USER_CONFIG.customMessages.warning 
+            : "Fais gaffe à pas pousser le bouchon trop loin";
         statusClass = 'warning';
     } else {
-        message = "OSKOUR !";
+        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.danger) 
+            ? USER_CONFIG.customMessages.danger 
+            : "OSKOUR !";
         statusClass = 'danger';
     }
     
