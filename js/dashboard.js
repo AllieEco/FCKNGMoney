@@ -466,20 +466,25 @@ function prepareBalanceData(expenses) {
     const balances = [];
     const now = new Date();
     
+    // Solde initial depuis la config
+    let initialBalance = (USER_CONFIG && USER_CONFIG.initialBalance) ? USER_CONFIG.initialBalance : 0;
+    
     // Générer les 6 derniers mois
     for (let i = 5; i >= 0; i--) {
         const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthName = month.toLocaleString('fr-FR', { month: 'short' });
         months.push(monthName);
         
-        // Calculer le solde pour ce mois
-        const monthExpenses = expenses.filter(exp => {
+        // Calculer le solde à la fin de ce mois
+        // Filtrer toutes les transactions jusqu'à la fin de ce mois
+        const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
+        const transactionsUntilMonth = expenses.filter(exp => {
             const expDate = new Date(exp.date);
-            return expDate.getMonth() === month.getMonth() && 
-                   expDate.getFullYear() === month.getFullYear();
+            return expDate <= monthEnd;
         });
         
-        const monthBalance = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        // Calculer le solde : solde initial + toutes les transactions jusqu'à ce mois
+        const monthBalance = initialBalance + transactionsUntilMonth.reduce((sum, exp) => sum + exp.amount, 0);
         balances.push(monthBalance);
     }
     
