@@ -60,12 +60,17 @@
                         <label for="category">Catégorie de la Honte</label>
                         <select id="category" required>
                             <option value="" disabled selected>Choisir une catégorie...</option>
-                            <option value="Plaisirs Coupables">Plaisirs Coupables</option>
-                            <option value="Besoins Vitaux (ou pas)">Besoins Vitaux (ou pas)</option>
-                            <option value="Dépenses de Merde">Dépenses de Merde</option>
-                            <option value="Pour Impressionner">Pour Impressionner</option>
-                            <option value="Factures Incompressibles">Factures Incompressibles</option>
-                            <option value="Autre connerie">Autre connerie</option>
+                            <option value="Alimentation (Graisse & Sucre)">Alimentation (Graisse & Sucre)</option>
+                            <option value="Loisirs (Procrastination Payante)">Loisirs (Procrastination Payante)</option>
+                            <option value="Banque (Ton banquier te remercie)">Banque (Ton banquier te remercie)</option>
+                            <option value="Revenu (Salaire (Bientôt Disparu))">Revenu (Salaire (Bientôt Disparu))</option>
+                            <option value="Maison (Le Foyer du Gouffre)">Maison (Le Foyer du Gouffre)</option>
+                            <option value="Epargne (Retarder l'inévitable)">Epargne (Retarder l'inévitable)</option>
+                            <option value="Cigarettes (Clopes & Toux Grasse)">Cigarettes (Clopes & Toux Grasse)</option>
+                            <option value="Transports (Gas-oil & Galères)">Transports (Gas-oil & Galères)</option>
+                            <option value="Restaurant (Se faire plumer au resto)">Restaurant (Se faire plumer au resto)</option>
+                            <option value="Alcool (Alcool & Mauvaises Décisions)">Alcool (Alcool & Mauvaises Décisions)</option>
+                            <option value="Autres (WTF (Autres purges))">Autres (WTF (Autres purges))</option>
                         </select>
                     </div>
                     <div class="form-control">
@@ -79,6 +84,13 @@
                     </div>
                 </div>
                 <div class="form-row">
+                    <div class="form-control">
+                        <label for="necessity">C'était vraiment nécessaire ?</label>
+                        <select id="necessity" required>
+                            <option value="Oui oui, t'inquiète">Oui oui, t'inquiète</option>
+                            <option value="Pose pas de questions qui fâchent">Pose pas de questions qui fâchent</option>
+                        </select>
+                    </div>
                      <div class="form-control">
                         <label for="amount">La Douille (€)</label>
                         <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
@@ -142,6 +154,7 @@
                             <th>Date</th>
                             <th>Coupable</th>
                             <th>Catégorie</th>
+                            <th>Nécessaire ?</th>
                             <th>La Douille</th>
                             <th>Arme du Crime</th>
                             <th>Actions</th>

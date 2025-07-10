@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const crimeDateInput = document.getElementById('crime-date');
     const categoryInput = document.getElementById('category');
     const paymentMethodInput = document.getElementById('payment-method');
+    const necessityInput = document.getElementById('necessity');
     const amountInput = document.getElementById('amount');
     const descriptionInput = document.getElementById('description');
 
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             date: crimeDateInput.value,
             category: categoryInput.value,
             paymentMethod: paymentMethodInput.value,
+            necessity: necessityInput.value,
             amount: parseFloat(amountInput.value),
             description: descriptionInput.value
         };
@@ -86,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             crimeDateInput.value = expense.date;
             categoryInput.value = expense.category;
             paymentMethodInput.value = expense.paymentMethod;
+            necessityInput.value = expense.necessity;
             amountInput.value = expense.amount;
             descriptionInput.value = expense.description;
             
@@ -154,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTable(expensesToRender) {
         historyBody.innerHTML = '';
         if (expensesToRender.length === 0) {
-            historyBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun crime ne correspond à tes filtres. T'as de la chance.</td></tr>`;
+            historyBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucun crime ne correspond à tes filtres. T'as de la chance.</td></tr>`;
             return;
         }
 
@@ -165,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${new Date(expense.date).toLocaleDateString()}</td>
                 <td>${expense.culprit}</td>
                 <td>${expense.category}</td>
+                <td>${expense.necessity}</td>
                 <td><strong>${expense.amount.toFixed(2)}€</strong></td>
                 <td>${expense.paymentMethod}</td>
                 <td class="actions-cell">
