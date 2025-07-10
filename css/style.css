@@ -293,6 +293,16 @@ h2 .plus-icon {
     text-shadow: 0 0 8px currentColor;
 }
 
+.amount-positive {
+    color: var(--accent-color); /* Green for income */
+    font-weight: bold;
+}
+
+.amount-negative {
+    color: var(--delete-btn-color); /* Red for expense */
+    font-weight: bold;
+}
+
 .edit-btn { color: var(--edit-btn-color); }
 .delete-btn { color: var(--delete-btn-color); }
 

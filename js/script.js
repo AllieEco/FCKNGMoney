@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const crimeDateInput = document.getElementById('crime-date');
     const categoryInput = document.getElementById('category');
     const paymentMethodInput = document.getElementById('payment-method');
+    const transactionTypeInput = document.getElementById('transaction-type');
     const necessityInput = document.getElementById('necessity');
     const amountInput = document.getElementById('amount');
     const descriptionInput = document.getElementById('description');
@@ -36,19 +37,30 @@ document.addEventListener('DOMContentLoaded', () => {
     expenseForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        const transactionType = transactionTypeInput.value;
+        let amount = parseFloat(amountInput.value);
+
+        // Make amount negative for expenses
+        if (transactionType === 'expense') {
+            amount = -Math.abs(amount);
+        } else {
+            amount = Math.abs(amount);
+        }
+
         const expenseData = {
             culprit: culpritInput.value,
             date: crimeDateInput.value,
             category: categoryInput.value,
             paymentMethod: paymentMethodInput.value,
             necessity: necessityInput.value,
-            amount: parseFloat(amountInput.value),
-            description: descriptionInput.value
+            amount: amount, // Signed amount
+            description: descriptionInput.value,
+            type: transactionType
         };
         
         // Basic Validation
-        if (!expenseData.culprit || !expenseData.date || !expenseData.category || isNaN(expenseData.amount) || expenseData.amount <= 0) {
-            alert('Les champs "Coupable", "Date", "Catégorie" et "La Douille" sont obligatoires, et la douille doit être positive, espèce de malade.');
+        if (!expenseData.culprit || !expenseData.date || !expenseData.category || isNaN(expenseData.amount)) {
+            alert('Les champs "Coupable", "Date", "Catégorie" et "La Douille" sont obligatoires.');
             return;
         }
 
@@ -89,7 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryInput.value = expense.category;
             paymentMethodInput.value = expense.paymentMethod;
             necessityInput.value = expense.necessity;
-            amountInput.value = expense.amount;
+            transactionTypeInput.value = expense.type || 'expense'; // Default to expense for old data
+            amountInput.value = Math.abs(expense.amount); // Form always shows positive
             descriptionInput.value = expense.description;
             
             submitBtn.textContent = 'Modifier ce Crime';
@@ -175,12 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.classList.add(categoryClass);
             }
 
+            const amountClass = expense.amount >= 0 ? 'amount-positive' : 'amount-negative';
+            const formattedAmount = `${expense.amount.toFixed(2)}€`;
+
             row.innerHTML = `
                 <td>${new Date(expense.date).toLocaleDateString()}</td>
                 <td>${expense.culprit}</td>
                 <td>${expense.category}</td>
                 <td>${expense.necessity}</td>
-                <td><strong>${expense.amount.toFixed(2)}€</strong></td>
+                <td><span class="${amountClass}">${formattedAmount}</span></td>
                 <td>${expense.paymentMethod}</td>
                 <td class="actions-cell">
                     <button class="edit-btn" title="Modifier">✏️</button>
@@ -193,7 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function calculateStats(statsExpenses) {
         const totalDamage = statsExpenses.reduce((acc, exp) => acc + exp.amount, 0);
-        const totalCracks = statsExpenses.length;
+        
+        const expenseOnly = statsExpenses.filter(exp => exp.amount < 0);
+        const totalCracks = expenseOnly.length;
+        const totalPain = expenseOnly.reduce((acc, exp) => acc + exp.amount, 0);
         
         const now = new Date();
         const currentMonthName = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
@@ -207,10 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
             .reduce((acc, exp) => acc + exp.amount, 0);
 
         totalDamageEl.textContent = `${totalDamage.toFixed(2)}€`;
-        totalDamageEl.nextElementSibling.textContent = filterYearEl.value !== 'all' || filterMonthEl.value !== 'all' || filterCategoryEl.value !== 'all' || filterCulpritEl.value ? 'Total des filtres' : 'Toutes périodes';
+        totalDamageEl.nextElementSibling.textContent = filterYearEl.value !== 'all' || filterMonthEl.value !== 'all' || filterCategoryEl.value !== 'all' || filterCulpritEl.value ? 'Solde des filtres' : 'Solde Actuel';
         monthDamageEl.textContent = `${monthDamage.toFixed(2)}€`;
         totalCracksEl.textContent = totalCracks;
-        avgPainEl.textContent = totalCracks > 0 ? `${(totalDamage / totalCracks).toFixed(2)}€` : '0.00€';
+        avgPainEl.textContent = totalCracks > 0 ? `${(totalPain / totalCracks).toFixed(2)}€` : '0.00€';
         currentMonthEl.textContent = currentMonthName;
     }
 
