@@ -66,6 +66,7 @@ header h1 {
     letter-spacing: 2px;
     cursor: pointer;
     transition: transform 0.3s ease, text-shadow 0.3s ease;
+    display: inline-block; /* Ajout pour limiter la zone de hover */
 }
 
 header h1:hover {
