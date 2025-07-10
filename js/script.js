@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateStats(statsExpenses) {
         const totalDamage = statsExpenses.reduce((acc, exp) => acc + exp.amount, 0);
         
-        const expenseOnly = statsExpenses.filter(exp => exp.amount < 0);
+        const expenseOnly = statsExpenses.filter(exp => exp.type === 'expense');
         const totalCracks = expenseOnly.length;
         const totalPain = expenseOnly.reduce((acc, exp) => acc + exp.amount, 0);
         

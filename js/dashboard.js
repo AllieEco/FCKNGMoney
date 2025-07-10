@@ -133,23 +133,23 @@ function calculateDashboardData(expenses) {
         const amount = parseFloat(expense.amount);
         
         // Calculer le solde total
-        if (expense.transactionType === 'income') {
+        if (expense.type === 'income') {
             totalBalance += amount;
         } else {
-            totalBalance -= amount;
+            totalBalance += amount; // Les dépenses sont déjà négatives dans le stockage
         }
         
         // Compter les craquages du mois en cours
         if (expenseDate.getMonth() === currentMonth && 
             expenseDate.getFullYear() === currentYear &&
-            expense.transactionType === 'expense') {
+            expense.type === 'expense') {
             monthlyCracks++;
         }
         
         // Calculer les dépenses inutiles
         if (expense.necessity === 'Pose pas de questions qui fâchent' && 
-            expense.transactionType === 'expense') {
-            unnecessarySpending += amount;
+            expense.type === 'expense') {
+            unnecessarySpending += Math.abs(amount); // Utiliser la valeur absolue pour l'affichage
         }
     });
     
@@ -280,7 +280,7 @@ function calculateDaysWithoutCrack(expenses) {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     // Filtrer les dépenses (pas les revenus)
-    const expenseOnly = expenses.filter(exp => exp.amount < 0);
+    const expenseOnly = expenses.filter(exp => exp.type === 'expense');
     
     if (expenseOnly.length === 0) {
         return 0; // Pas de dépenses du tout
@@ -310,7 +310,7 @@ function calculateBiggestExpenseThisMonth(expenses) {
         const expDate = new Date(exp.date);
         return expDate.getMonth() === currentMonth && 
                expDate.getFullYear() === currentYear && 
-               exp.amount < 0; // Seulement les dépenses
+               exp.type === 'expense'; // Seulement les dépenses
     });
     
     if (thisMonthExpenses.length === 0) {
@@ -488,7 +488,7 @@ function prepareBalanceData(expenses) {
 
 function prepareExpensesPieData(expenses) {
     // Filtrer seulement les dépenses (pas les revenus)
-    const expenseOnly = expenses.filter(exp => exp.amount < 0);
+    const expenseOnly = expenses.filter(exp => exp.type === 'expense');
     
     // Grouper par catégorie
     const categoryTotals = {};
