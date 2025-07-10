@@ -86,6 +86,35 @@ header .slogan {
     color: #9ca3af; /* Cool Gray 400 */
 }
 
+/* Navigation */
+.main-nav {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-family: var(--font-title);
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.nav-link.active {
+    background-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 0 10px var(--glow-color);
+}
+
 main {
     width: 100%;
     max-width: 1000px;
@@ -379,4 +408,198 @@ footer {
     margin-top: auto;
     font-size: 0.9rem;
     color: #888;
+}
+
+/* Site Title Link */
+.site-title-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.site-title-link:hover {
+    color: var(--accent-color);
+}
+
+/* Dashboard Styles */
+#dashboard-section {
+    margin-bottom: 3rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.dashboard-card {
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(118, 185, 0, 0.05) 48%,
+        rgba(118, 185, 0, 0.1) 50%,
+        rgba(118, 185, 0, 0.05) 52%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.dashboard-card:hover::after {
+    opacity: 1;
+    animation: scan 1.5s cubic-bezier(0.2, 0.7, 0.8, 0.3) infinite;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.card-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.card-content {
+    text-align: center;
+}
+
+.balance-display,
+.cracks-display,
+.unnecessary-display {
+    margin-bottom: 1rem;
+}
+
+.balance-amount,
+.unnecessary-amount {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.cracks-count {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.cracks-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.status-message {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Status colors for balance - using background colors instead */
+#account-status-card.positive {
+    background-color: #10b981; /* Green */
+}
+
+#account-status-card.warning {
+    background-color: #f59e0b; /* Amber */
+}
+
+#account-status-card.danger {
+    background-color: #ef4444; /* Red */
+}
+
+/* Status colors for cracks - using background colors instead */
+#monthly-cracks-card.low {
+    background-color: #10b981; /* Green */
+}
+
+#monthly-cracks-card.medium {
+    background-color: #f59e0b; /* Amber */
+}
+
+#monthly-cracks-card.high {
+    background-color: #ef4444; /* Red */
+}
+
+.dashboard-actions {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btn-primary {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 1rem 2rem;
+    text-decoration: none;
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--submit-btn-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+    
+    .balance-amount,
+    .cracks-count,
+    .unnecessary-amount {
+        font-size: 2.5rem;
+    }
+    
+    .card-header h3 {
+        font-size: 1.3rem;
+    }
 } 

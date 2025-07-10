@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentMonthEl = document.getElementById('current-month');
 
     // Data Store
-    let expenses = JSON.parse(localStorage.getItem('fckng_expenses_v2')) || [];
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
 
     // --- Main Submit Handler (Add & Edit) ---
     expenseForm.addEventListener('submit', (e) => {
@@ -135,7 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Core Functions ---
     function saveExpensesToLocalStorage() {
-        localStorage.setItem('fckng_expenses_v2', JSON.stringify(expenses));
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+        // Rafraîchir le tableau de bord si il existe
+        if (typeof window.refreshDashboard === 'function') {
+            window.refreshDashboard();
+        }
     }
 
     function resetForm() {

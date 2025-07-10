@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCKNGMoney - Tableau de Bord</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Staatliches&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="designed-by">
+            <img src="assets/images/logo_capslock.png" alt="cAPSLOCK Logo">
+        </div>
+        <h1>FCKNGMoney</h1>
+        <p class="slogan">Fuck debt collectors for good.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link active">Tableau de Bord</a>
+            <a href="achat.html" class="nav-link">Ajouter une Dépense</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- TABLEAU DE BORD -->
+        <section id="dashboard-section">
+            <h2>Tableau de Bord</h2>
+            
+            <div class="dashboard-grid">
+                <!-- Carte 1: État du compte -->
+                <div class="dashboard-card" id="account-status-card">
+                    <div class="card-header">
+                        <h3>État du Compte</h3>
+                        <div class="card-icon">💰</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="balance-display">
+                            <span class="balance-amount" id="current-balance">0.00€</span>
+                        </div>
+                        <p class="status-message" id="balance-message">Calcul en cours...</p>
+                    </div>
+                </div>
+
+                <!-- Carte 2: Nombre de craquages du mois -->
+                <div class="dashboard-card" id="monthly-cracks-card">
+                    <div class="card-header">
+                        <h3>Craquages du Mois</h3>
+                        <div class="card-icon">💸</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="cracks-display">
+                            <span class="cracks-count" id="monthly-cracks">0</span>
+                            <span class="cracks-label">craquages</span>
+                        </div>
+                        <p class="status-message" id="cracks-message">Calcul en cours...</p>
+                    </div>
+                </div>
+
+                <!-- Carte 3: Somme des achats "Pas de questions qui fâche" -->
+                <div class="dashboard-card" id="unnecessary-spending-card">
+                    <div class="card-header">
+                        <h3>Dépenses Inutiles</h3>
+                        <div class="card-icon">🤦</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="unnecessary-display">
+                            <span class="unnecessary-amount" id="unnecessary-total">0.00€</span>
+                        </div>
+                        <p class="status-message" id="unnecessary-message">Tu vois si t'arrêtais tes conneries...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bouton pour aller à la page d'achat -->
+            <div class="dashboard-actions">
+                <a href="achat.html" class="btn-primary">Ajouter une Dépense</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 FCKNGMoney. Pas de pitié pour les dépensiers.</p>
+    </footer>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html> 
