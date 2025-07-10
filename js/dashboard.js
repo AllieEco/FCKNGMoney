@@ -15,6 +15,9 @@ function loadDashboardData() {
     
     // Calculer et afficher les stats de criminels financiers
     updateCriminalStats(expenses);
+    
+    // Créer les graphiques
+    createCharts(expenses);
 }
 
 function calculateDashboardData(expenses) {
@@ -245,6 +248,155 @@ function calculateImprovementVsLastMonth(expenses) {
     
     const percentageChange = ((thisMonthTotal - lastMonthTotal) / Math.abs(lastMonthTotal)) * 100;
     return percentageChange;
+}
+
+function createCharts(expenses) {
+    createBalanceChart(expenses);
+    createExpensesPieChart(expenses);
+}
+
+function createBalanceChart(expenses) {
+    const ctx = document.getElementById('balance-chart').getContext('2d');
+    
+    // Préparer les données pour les 6 derniers mois
+    const data = prepareBalanceData(expenses);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Solde du Compte',
+                data: data.balances,
+                borderColor: '#76b900',
+                backgroundColor: 'rgba(118, 185, 0, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#9ca3af'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createExpensesPieChart(expenses) {
+    const ctx = document.getElementById('expenses-pie-chart').getContext('2d');
+    
+    // Préparer les données pour le camembert
+    const data = prepareExpensesPieData(expenses);
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values,
+                backgroundColor: [
+                    '#76b900', // Vert
+                    '#f59e0b', // Orange
+                    '#ef4444', // Rouge
+                    '#3b82f6', // Bleu
+                    '#8b5cf6', // Violet
+                    '#ec4899', // Rose
+                    '#06b6d4', // Cyan
+                    '#84cc16', // Lime
+                    '#f97316', // Orange foncé
+                    '#6366f1'  // Indigo
+                ],
+                borderWidth: 2,
+                borderColor: '#374151'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#9ca3af',
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function prepareBalanceData(expenses) {
+    const months = [];
+    const balances = [];
+    const now = new Date();
+    
+    // Générer les 6 derniers mois
+    for (let i = 5; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = month.toLocaleString('fr-FR', { month: 'short' });
+        months.push(monthName);
+        
+        // Calculer le solde pour ce mois
+        const monthExpenses = expenses.filter(exp => {
+            const expDate = new Date(exp.date);
+            return expDate.getMonth() === month.getMonth() && 
+                   expDate.getFullYear() === month.getFullYear();
+        });
+        
+        const monthBalance = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        balances.push(monthBalance);
+    }
+    
+    return { labels: months, balances: balances };
+}
+
+function prepareExpensesPieData(expenses) {
+    // Filtrer seulement les dépenses (pas les revenus)
+    const expenseOnly = expenses.filter(exp => exp.amount < 0);
+    
+    // Grouper par catégorie
+    const categoryTotals = {};
+    expenseOnly.forEach(exp => {
+        const category = exp.category || 'Autres';
+        categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(exp.amount);
+    });
+    
+    // Trier par montant décroissant et prendre les 8 plus importantes
+    const sortedCategories = Object.entries(categoryTotals)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 8);
+    
+    const labels = sortedCategories.map(([category]) => category);
+    const values = sortedCategories.map(([, amount]) => amount);
+    
+    return { labels: labels, values: values };
 }
 
 // Exposer la fonction pour qu'elle soit accessible depuis d'autres scripts

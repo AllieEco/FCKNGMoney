@@ -76,6 +76,21 @@
 
         </section>
 
+        <!-- GRAPHIQUES -->
+        <section id="charts-section">
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>État de Santé du Compte</h3>
+                    <canvas id="balance-chart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <h3>Répartition des Dépenses</h3>
+                    <canvas id="expenses-pie-chart" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </section>
+
         <!-- STATS DE CRIMINELS FINANCIERS -->
         <section id="criminal-stats-section">
             <h2>TES STATS DE CRIMINELS FINANCIERS</h2>
@@ -103,7 +118,7 @@
             
             <!-- Bouton pour aller à la page d'achat -->
             <div class="dashboard-actions">
-                <a href="achat.html" class="btn-primary">Ajouter une Dépense</a>
+                <a href="achat.html" class="btn-primary">Balancer un Nouveau Crime</a>
             </div>
         </section>
     </main>
@@ -112,6 +127,7 @@
         <p>&copy; 2024 FCKNGMoney. Pas de pitié pour les dépensiers.</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
 </html> 

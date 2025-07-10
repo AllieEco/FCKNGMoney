@@ -631,6 +631,40 @@ footer {
     }
 }
 
+/* Charts Section */
+#charts-section {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}
+
+.charts-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-wrapper {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 300px;
+}
+
+.chart-wrapper h3 {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.chart-wrapper canvas {
+    max-width: 100%;
+    height: auto;
+}
+
 /* Criminal Stats Section */
 #criminal-stats-section {
     margin-top: 4rem;
