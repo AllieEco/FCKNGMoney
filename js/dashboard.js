@@ -493,12 +493,20 @@ function prepareBalanceData(expenses) {
 
 function prepareExpensesPieData(expenses) {
     // Filtrer seulement les dépenses (pas les revenus)
-    const expenseOnly = expenses.filter(exp => exp.type === 'expense');
+    // Prendre toutes les transactions avec un montant négatif OU type 'expense'
+    const expenseOnly = expenses.filter(exp => {
+        return exp.type === 'expense' || exp.amount < 0;
+    });
     
     // Grouper par catégorie
     const categoryTotals = {};
     expenseOnly.forEach(exp => {
-        const category = exp.category || 'Autres';
+        // Extraire le nom principal de la catégorie (avant les parenthèses)
+        let category = exp.category || 'Autres';
+        if (category.includes('(')) {
+            category = category.split('(')[0].trim();
+        }
+        
         categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(exp.amount);
     });
     
