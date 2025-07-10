@@ -4,7 +4,7 @@
 
 Un tracker de dépenses qui ne prend pas de gants pour te dire la vérité sur tes finances. Parce que parfois, il faut un coup de pied au cul pour arrêter de cramer ton fric.
 
-<img width="2532" height="1215" alt="image" src="https://github.com/user-attachments/assets/62e3d3f9-a497-48f4-80db-476cac51d159" />
+<img width="2536" height="1191" alt="image" src="https://github.com/user-attachments/assets/84e5a8d7-f8e4-4aa4-9f1a-812dd4d03fb3" />
 
 
 ## 🚨 Qu'est-ce que c'est que cette merde ?
