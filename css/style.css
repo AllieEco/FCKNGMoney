@@ -939,4 +939,123 @@ footer {
     .badge-stat-card .stat-value {
         font-size: 2rem;
     }
+}
+
+/* Monthly Challenges Section */
+#monthly-challenges-section {
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+}
+
+#monthly-challenges-section h2 {
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.challenges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.challenge-card {
+    background: linear-gradient(135deg, var(--card-bg) 0%, #4a5568 100%);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(118, 185, 0, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.challenge-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-color);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.challenge-card:hover::before {
+    left: 100%;
+}
+
+.challenge-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.challenge-title {
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.challenge-description {
+    color: #9ca3af;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.challenge-progress {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--accent-color), #68a300);
+    height: 8px;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.challenge-status {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.challenge-status.completed {
+    color: #10b981;
+}
+
+.challenge-status.failed {
+    color: #ef4444;
+}
+
+/* Responsive adjustments for challenges */
+@media (max-width: 768px) {
+    .challenges-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .challenge-card {
+        padding: 1.5rem;
+    }
+    
+    .challenge-icon {
+        font-size: 3rem;
+    }
+    
+    .challenge-title {
+        font-size: 1.2rem;
+    }
 } 
