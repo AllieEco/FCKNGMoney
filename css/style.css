@@ -798,4 +798,145 @@ footer {
     .criminal-stat-card .stat-value {
         font-size: 2rem;
     }
+}
+
+/* RPGhetto Page Styles */
+.section-subtitle {
+    text-align: left;
+    font-style: italic;
+    color: #9ca3af;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Badges Grid */
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.badge-placeholder {
+    background-color: var(--card-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.badge-placeholder:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+.badge-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.badge-placeholder h3 {
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.badge-placeholder p {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+/* Badge Stats Section */
+#badge-stats-section {
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+}
+
+#badge-stats-section h2 {
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.badge-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.badge-stat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.badge-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+.badge-stat-card h3 {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.badge-stat-card .stat-value {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.badge-stat-card .stat-description {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Responsive adjustments for RPGhetto page */
+@media (max-width: 768px) {
+    .badges-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .badge-placeholder {
+        padding: 1.5rem;
+        min-height: 150px;
+    }
+    
+    .badge-icon {
+        font-size: 2.5rem;
+    }
+    
+    .badge-placeholder h3 {
+        font-size: 1.1rem;
+    }
+    
+    .badge-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .badge-stat-card {
+        padding: 1rem;
+    }
+    
+    .badge-stat-card .stat-value {
+        font-size: 2rem;
+    }
 } 
