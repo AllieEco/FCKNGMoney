@@ -83,13 +83,11 @@ function createChallengeElement(challenge) {
     challengeDiv.className = 'challenge-card';
     challengeDiv.dataset.challengeId = challenge.id;
     
-    // Calculer le progrès (pour l'instant, valeurs aléatoires pour la démo)
-    const currentProgress = Math.floor(Math.random() * challenge.target);
-    const progressPercentage = Math.min((currentProgress / challenge.target) * 100, 100);
-    const isCompleted = currentProgress >= challenge.target;
-    const isFailed = false; // À implémenter plus tard
+    // Vérifier si le défi a été complété
+    const isCompleted = localStorage.getItem(`challenge_${challenge.id}_completed`) === 'true';
+    const isFailed = localStorage.getItem(`challenge_${challenge.id}_failed`) === 'true';
     
-    let statusText = `${currentProgress}/${challenge.target} ${challenge.unit}`;
+    let statusText = 'Clique pour valider le défi';
     let statusClass = '';
     
     if (isCompleted) {
@@ -104,13 +102,93 @@ function createChallengeElement(challenge) {
         <div class="challenge-icon">${challenge.icon}</div>
         <h3 class="challenge-title">${challenge.title}</h3>
         <p class="challenge-description">${challenge.description}</p>
-        <div class="challenge-progress">
-            <div class="progress-bar" style="width: ${progressPercentage}%"></div>
-        </div>
         <div class="challenge-status ${statusClass}">${statusText}</div>
     `;
     
+    // Ajouter l'événement de clic pour ouvrir la popup
+    challengeDiv.addEventListener('click', () => {
+        if (!isCompleted && !isFailed) {
+            openChallengePopup(challenge);
+        }
+    });
+    
     return challengeDiv;
+}
+
+// Fonction pour ouvrir la popup de confirmation
+function openChallengePopup(challenge) {
+    const popup = document.getElementById('challenge-popup');
+    const successBtn = document.getElementById('challenge-success');
+    const failBtn = document.getElementById('challenge-fail');
+    
+    // Stocker l'ID du défi actuel
+    popup.dataset.currentChallenge = challenge.id;
+    
+    // Afficher la popup
+    popup.classList.add('active');
+    
+    // Gérer le clic sur "Je jure sur le chat"
+    successBtn.onclick = () => {
+        completeChallenge(challenge.id);
+        closePopup();
+    };
+    
+    // Gérer le clic sur "Tu m'as cramé..."
+    failBtn.onclick = () => {
+        failChallenge(challenge.id);
+        closePopup();
+    };
+    
+    // Fermer la popup en cliquant à l'extérieur
+    popup.onclick = (e) => {
+        if (e.target === popup) {
+            closePopup();
+        }
+    };
+}
+
+// Fonction pour fermer la popup
+function closePopup() {
+    const popup = document.getElementById('challenge-popup');
+    popup.classList.remove('active');
+}
+
+// Fonction pour marquer un défi comme réussi
+function completeChallenge(challengeId) {
+    localStorage.setItem(`challenge_${challengeId}_completed`, 'true');
+    localStorage.removeItem(`challenge_${challengeId}_failed`); // Enlever le statut échoué si il existait
+    
+    // Mettre à jour l'affichage
+    updateChallengeDisplay(challengeId, 'completed');
+    
+    console.log(`🎉 Challenge ${challengeId} completed!`);
+}
+
+// Fonction pour marquer un défi comme échoué
+function failChallenge(challengeId) {
+    localStorage.setItem(`challenge_${challengeId}_failed`, 'true');
+    localStorage.removeItem(`challenge_${challengeId}_completed`); // Enlever le statut réussi si il existait
+    
+    // Mettre à jour l'affichage
+    updateChallengeDisplay(challengeId, 'failed');
+    
+    console.log(`😔 Challenge ${challengeId} failed!`);
+}
+
+// Fonction pour mettre à jour l'affichage d'un défi
+function updateChallengeDisplay(challengeId, status) {
+    const challengeElement = document.querySelector(`[data-challenge-id="${challengeId}"]`);
+    if (challengeElement) {
+        const statusElement = challengeElement.querySelector('.challenge-status');
+        
+        if (status === 'completed') {
+            statusElement.textContent = '✅ Défi réussi !';
+            statusElement.className = 'challenge-status completed';
+        } else if (status === 'failed') {
+            statusElement.textContent = '❌ Défi échoué';
+            statusElement.className = 'challenge-status failed';
+        }
+    }
 }
 
 // Fonction pour mettre à jour les statistiques des badges
@@ -177,6 +255,13 @@ function checkAndRegenerateChallenges() {
         // Si c'est un nouveau mois, régénérer les défis
         if (currentMonth !== lastMonth || currentYear !== lastYear) {
             localStorage.setItem('lastChallengeDate', currentDate.toISOString());
+            
+            // Réinitialiser tous les statuts des défis
+            MONTHLY_CHALLENGES.forEach(challenge => {
+                localStorage.removeItem(`challenge_${challenge.id}_completed`);
+                localStorage.removeItem(`challenge_${challenge.id}_failed`);
+            });
+            
             loadMonthlyChallenges();
             console.log('🔄 Challenges regenerated for new month');
         }

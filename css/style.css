@@ -1012,20 +1012,6 @@ footer {
     margin-bottom: 1.5rem;
 }
 
-.challenge-progress {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.progress-bar {
-    background: linear-gradient(90deg, var(--accent-color), #68a300);
-    height: 8px;
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
-
 .challenge-status {
     font-size: 0.9rem;
     font-weight: bold;
@@ -1038,6 +1024,101 @@ footer {
 
 .challenge-status.failed {
     color: #ef4444;
+}
+
+/* Popup Styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-content {
+    background: linear-gradient(135deg, var(--card-bg) 0%, #4a5568 100%);
+    border: 2px solid var(--accent-color);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.popup-overlay.active .popup-content {
+    transform: scale(1);
+}
+
+.popup-cat {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.popup-question {
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin-bottom: 2rem;
+    line-height: 1.4;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.popup-btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.popup-btn-success {
+    background-color: #10b981;
+    color: white;
+}
+
+.popup-btn-success:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.popup-btn-fail {
+    background-color: #ef4444;
+    color: white;
+}
+
+.popup-btn-fail:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Responsive adjustments for challenges */
@@ -1057,5 +1138,28 @@ footer {
     
     .challenge-title {
         font-size: 1.2rem;
+    }
+    
+    .popup-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .popup-cat {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .popup-question {
+        font-size: 1.1rem;
+    }
+    
+    .popup-buttons {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .popup-btn {
+        width: 100%;
     }
 } 
