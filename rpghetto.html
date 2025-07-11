@@ -75,9 +75,11 @@
     <!-- POPUP DE CONFIRMATION -->
     <div class="popup-overlay" id="challenge-popup">
         <div class="popup-content">
-            <img src="assets/images/cutecat.gif" alt="Chat adorable" class="popup-cat">
-            <p class="popup-question">Jure sur la tête de ce petit chat adorable que tu as réussi ce challenge !</p>
-            <div class="popup-buttons">
+            <div id="popup-dynamic">
+                <img src="assets/images/cutecat.gif" alt="Chat adorable" class="popup-cat" id="popup-gif">
+                <p class="popup-question" id="popup-question">Jure sur la tête de ce petit chat adorable que tu as réussi ce challenge !</p>
+            </div>
+            <div class="popup-buttons" id="popup-buttons">
                 <button class="popup-btn popup-btn-success" id="challenge-success">Je jure sur le chat</button>
                 <button class="popup-btn popup-btn-fail" id="challenge-fail">Tu m'as cramé...</button>
             </div>

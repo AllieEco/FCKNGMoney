@@ -120,25 +120,44 @@ function openChallengePopup(challenge) {
     const popup = document.getElementById('challenge-popup');
     const successBtn = document.getElementById('challenge-success');
     const failBtn = document.getElementById('challenge-fail');
-    
+    const popupGif = document.getElementById('popup-gif');
+    const popupQuestion = document.getElementById('popup-question');
+    const popupButtons = document.getElementById('popup-buttons');
+
+    // Réinitialiser le contenu de la popup
+    popupGif.src = 'assets/images/cutecat.gif';
+    popupGif.alt = 'Chat adorable';
+    popupQuestion.textContent = 'Jure sur la tête de ce petit chat adorable que tu as réussi ce challenge !';
+    popupButtons.style.display = 'flex';
+
     // Stocker l'ID du défi actuel
     popup.dataset.currentChallenge = challenge.id;
-    
+
     // Afficher la popup
     popup.classList.add('active');
-    
+
     // Gérer le clic sur "Je jure sur le chat"
     successBtn.onclick = () => {
         completeChallenge(challenge.id);
-        closePopup();
+        // Afficher le racoon et le message
+        popupGif.src = 'assets/images/racoon.gif';
+        popupGif.alt = 'Racoon bravo';
+        popupQuestion.textContent = 'Bravo, on en doutait tous !';
+        popupButtons.style.display = 'none';
+        setTimeout(closePopup, 2200);
     };
-    
+
     // Gérer le clic sur "Tu m'as cramé..."
     failBtn.onclick = () => {
         failChallenge(challenge.id);
-        closePopup();
+        // Afficher le dog et le message
+        popupGif.src = 'assets/images/dog.gif';
+        popupGif.alt = 'Dog fail';
+        popupQuestion.textContent = 'Pas étonnant donc pas étonnées...';
+        popupButtons.style.display = 'none';
+        setTimeout(closePopup, 2200);
     };
-    
+
     // Fermer la popup en cliquant à l'extérieur
     popup.onclick = (e) => {
         if (e.target === popup) {
