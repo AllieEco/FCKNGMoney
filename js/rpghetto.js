@@ -4,9 +4,6 @@
 const BADGES_CONFIG = {
     bonus: [
         // Badges bonus à venir
-    ],
-    malus: [
-        // Badges malus à venir
     ]
 };
 
@@ -24,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Fonction pour charger les badges
 function loadBadges() {
     const bonusGrid = document.getElementById('bonus-badges-grid');
-    const malusGrid = document.getElementById('malus-badges-grid');
     
     // Pour l'instant, on garde les placeholders
     // Plus tard, on pourra ajouter des badges réels ici
@@ -35,22 +31,20 @@ function loadBadges() {
 // Fonction pour mettre à jour les statistiques des badges
 function updateBadgeStats() {
     const bonusCount = document.getElementById('bonus-badges-count');
-    const malusCount = document.getElementById('malus-badges-count');
     const totalScore = document.getElementById('total-badge-score');
     
     // Pour l'instant, on met des valeurs par défaut
     // Plus tard, on calculera ces valeurs basées sur les badges obtenus
     
     bonusCount.textContent = '0';
-    malusCount.textContent = '0';
     totalScore.textContent = '0';
     
     console.log('📊 Badge stats updated');
 }
 
 // Fonction pour ajouter un badge (à utiliser plus tard)
-function addBadge(type, badgeData) {
-    const grid = document.getElementById(`${type}-badges-grid`);
+function addBadge(badgeData) {
+    const grid = document.getElementById('bonus-badges-grid');
     
     if (grid) {
         const badgeElement = createBadgeElement(badgeData);
@@ -59,7 +53,7 @@ function addBadge(type, badgeData) {
         // Mettre à jour les statistiques
         updateBadgeStats();
         
-        console.log(`🏆 Badge ${type} added:`, badgeData);
+        console.log('🏆 Badge bonus added:', badgeData);
     }
 }
 
