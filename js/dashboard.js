@@ -139,10 +139,11 @@ function calculateDashboardData(expenses) {
             totalBalance += amount; // Les dépenses sont déjà négatives dans le stockage
         }
         
-        // Compter les craquages du mois en cours
+        // Compter les craquages du mois en cours (dépenses "pose pas de question")
         if (expenseDate.getMonth() === currentMonth && 
             expenseDate.getFullYear() === currentYear &&
-            expense.type === 'expense') {
+            expense.type === 'expense' &&
+            expense.necessity === 'Pose pas de questions qui fâchent') {
             monthlyCracks++;
         }
         
