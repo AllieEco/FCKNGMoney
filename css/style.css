@@ -671,6 +671,28 @@ footer {
     box-shadow: 0 6px 12px var(--shadow-color);
 }
 
+.btn-secondary {
+    display: inline-block;
+    background-color: var(--card-bg);
+    color: var(--secondary-color);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    margin-left: 1rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .dashboard-grid {

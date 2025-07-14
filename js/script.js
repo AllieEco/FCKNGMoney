@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterCategoryEl = document.getElementById('filter-category');
     const filterCulpritEl = document.getElementById('filter-culprit');
     const resetFiltersBtn = document.getElementById('reset-filters');
+    const exportPdfBtn = document.getElementById('export-pdf-btn');
 
     // Stats Elements
     const totalDamageEl = document.getElementById('total-damage');
@@ -155,6 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
         filterCulpritEl.value = '';
         render();
     });
+
+    // Export PDF avec filtres
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', () => exportExpensesToPDF());
+    }
 
     // --- Core Functions ---
     function saveExpensesToLocalStorage() {
@@ -336,4 +342,137 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     init();
+
+    // Fonction d'export PDF avec prise en compte des filtres
+    function exportExpensesToPDF() {
+        // Récupérer les dépenses filtrées
+        const filteredExpenses = getFilteredExpenses();
+        
+        if (filteredExpenses.length === 0) {
+            alert('Aucune dépense à exporter avec les filtres actuels !');
+            return;
+        }
+        
+        // Créer le PDF en mode paysage
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
+        
+        // Configuration de la page
+        const pageWidth = doc.internal.pageSize.width;
+        const margin = 20;
+        
+        // Titre principal
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('FCKNGMoney - Rapport de Dépenses', pageWidth / 2, 30, { align: 'center' });
+        
+        // Sous-titre avec informations sur les filtres
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, pageWidth / 2, 40, { align: 'center' });
+        
+        // Informations sur les filtres appliqués
+        const filterInfo = getFilterInfo();
+        if (filterInfo) {
+            doc.setFontSize(10);
+            doc.text(`Filtres appliqués : ${filterInfo}`, pageWidth / 2, 50, { align: 'center' });
+        }
+        
+        // Statistiques des données filtrées
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Statistiques des Données Filtrées', margin, 70);
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        const totalExpenses = filteredExpenses.filter(exp => exp.type === 'expense').length;
+        const totalIncome = filteredExpenses.filter(exp => exp.type === 'income').length;
+        const totalAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        
+        doc.text(`Nombre de dépenses : ${totalExpenses}`, margin, 85);
+        doc.text(`Nombre de revenus : ${totalIncome}`, margin, 95);
+        doc.text(`Solde total : ${totalAmount.toFixed(2)}€`, margin, 105);
+        
+        // Tableau des dépenses
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Détail des Dépenses', margin, 130);
+        
+        // Préparer les données pour le tableau
+        const tableData = filteredExpenses.map(exp => {
+            const date = new Date(exp.date).toLocaleDateString('fr-FR');
+            const amount = exp.amount.toFixed(2) + '€';
+            const type = exp.type === 'income' ? 'Revenu' : 'Dépense';
+            const category = exp.category || 'Non catégorisé';
+            const necessity = exp.necessity || 'Non spécifié';
+            const comment = exp.description || '';
+            
+            return [date, exp.culprit, amount, type, category, necessity, comment];
+        });
+        
+        // En-têtes du tableau
+        const headers = ['Date', 'Coupable', 'Montant', 'Type', 'Catégorie', 'Nécessité', 'Commentaire'];
+        
+        // Créer le tableau avec autoTable
+        doc.autoTable({
+            head: [headers],
+            body: tableData,
+            startY: 140,
+            margin: { left: margin, right: margin },
+            styles: {
+                fontSize: 8,
+                cellPadding: 3
+            },
+            headStyles: {
+                fillColor: [118, 185, 0], // Couleur verte FCKNGMoney
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
+            columnStyles: {
+                0: { cellWidth: 25 }, // Date
+                1: { cellWidth: 30 }, // Coupable
+                2: { cellWidth: 25 }, // Montant
+                3: { cellWidth: 20 }, // Type
+                4: { cellWidth: 35 }, // Catégorie
+                5: { cellWidth: 35 }, // Nécessité
+                6: { cellWidth: 80 } // Commentaire (plus large)
+            },
+            didDrawPage: function(data) {
+                // Ajouter le numéro de page
+                doc.setFontSize(8);
+                doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - margin, doc.internal.pageSize.height - 10);
+            }
+        });
+        
+        // Sauvegarder le PDF
+        const filterSuffix = filterInfo ? `_${filterInfo.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+        const fileName = `FCKNGMoney_Rapport_${new Date().toISOString().split('T')[0]}${filterSuffix}.pdf`;
+        doc.save(fileName);
+    }
+    
+    // Fonction pour obtenir les informations sur les filtres appliqués
+    function getFilterInfo() {
+        const filters = [];
+        
+        if (filterYearEl.value !== 'all') {
+            filters.push(`Année ${filterYearEl.value}`);
+        }
+        if (filterMonthEl.value !== 'all') {
+            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                               'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            filters.push(monthNames[parseInt(filterMonthEl.value)]);
+        }
+        if (filterCategoryEl.value !== 'all') {
+            filters.push(filterCategoryEl.value);
+        }
+        if (filterCulpritEl.value.trim() !== '') {
+            filters.push(`Coupable: ${filterCulpritEl.value}`);
+        }
+        
+        return filters.length > 0 ? filters.join(', ') : null;
+    }
 }); 
