@@ -20,7 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'Alcool (Alcool & Mauvaises Décisions)': '#ff4500', // Rouge-orange foncé
         'Epargne (Retarder l\'inévitable)': '#32cd32',    // Vert lime
         'Revenu (Salaire (Bientôt Disparu))': '#00ff00',  // Vert vif
-        'Autres (WTF (Autres purges))': '#8395a7'         // Gris
+        'Autres (WTF (Autres purges))': '#8395a7',        // Gris
+        'Vêtement (Pour mieux pleurer devant le miroir)': '#b983ff', // Violet pastel
+        'Cadeau (Pour acheter l\'amour des autres)': '#ffb347', // Orange cadeau
+        'Ecole (L\'école de la dette)': '#00b894', // Vert école
+        'Medecin (La santé a un prix...)': '#e17055', // Rouge santé
+        'Animaux (Pour ton futur héritier à poils)': '#ffe066' // Jaune animal
     };
 
     // DOM Elements
