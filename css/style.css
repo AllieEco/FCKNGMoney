@@ -132,6 +132,99 @@ header .slogan {
     box-shadow: 0 0 10px var(--glow-color);
 }
 
+/* Media queries pour le responsive */
+@media (max-width: 1024px) {
+    .designed-by {
+        left: 20px;
+    }
+    
+    .main-nav {
+        right: 20px;
+        gap: 0.5rem;
+    }
+    
+    .nav-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 1rem;
+        position: relative;
+    }
+    
+    .designed-by {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .designed-by img {
+        height: 40px;
+    }
+    
+    header h1,
+    header h1 .site-title-link {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    header .slogan {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .main-nav {
+        position: static;
+        transform: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .nav-link {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    
+    .auth-btn {
+        margin-left: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 0.8rem;
+    }
+    
+    header h1,
+    header h1 .site-title-link {
+        font-size: 1.5rem;
+    }
+    
+    .main-nav {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 0.6rem;
+    }
+    
+    .auth-btn {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
 main {
     width: 100%;
     max-width: 1000px;
@@ -695,6 +788,15 @@ footer {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    main {
+        padding: 1rem 0.5rem;
+    }
+    
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
     .dashboard-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -712,6 +814,55 @@ footer {
     
     .card-header h3 {
         font-size: 1.3rem;
+    }
+    
+    /* Améliorations pour les formulaires */
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-control {
+        width: 100%;
+    }
+    
+    /* Améliorations pour les tableaux */
+    #history-table-container {
+        overflow-x: auto;
+    }
+    
+    #history-table {
+        min-width: 600px;
+        font-size: 0.8rem;
+    }
+    
+    #history-table th,
+    #history-table td {
+        padding: 0.5rem 0.3rem;
+    }
+    
+    /* Améliorations pour les filtres */
+    #filter-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #filter-section .form-control {
+        width: 100%;
+    }
+    
+    /* Améliorations pour les boutons */
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        margin: 0.5rem 0;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    #reset-filters {
+        width: 100%;
+        margin: 0.5rem 0;
     }
 }
 
@@ -822,6 +973,31 @@ footer {
     
     .criminal-stat-card .stat-value {
         font-size: 2rem;
+    }
+    
+    /* Améliorations pour les graphiques */
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .chart-wrapper {
+        height: 300px;
+        padding: 1rem;
+    }
+    
+    .chart-wrapper h3 {
+        font-size: 1rem;
+    }
+    
+    /* Améliorations pour les citations */
+    .quote-text {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+    
+    .quote-author {
+        font-size: 0.9rem;
     }
 }
 
@@ -1447,6 +1623,33 @@ footer {
             max-width: 95vw;
             margin: 1rem;
         }
+        
+        /* Améliorations pour les popups d'authentification */
+        .auth-popup-content {
+            width: 95%;
+            max-width: 350px;
+            padding: 1.5rem;
+        }
+        
+        .auth-tabs {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .auth-tab {
+            width: 100%;
+            padding: 0.8rem;
+        }
+        
+        .form-group input {
+            padding: 0.8rem;
+            font-size: 1rem;
+        }
+        
+        .auth-submit-btn {
+            width: 100%;
+            padding: 1rem;
+        }
     }
 
     .user-info {
@@ -1630,4 +1833,122 @@ footer {
 
 .confetti:nth-child(5n) {
     animation-duration: 2.6s;
+}
+
+/* Améliorations pour les très petits écrans */
+@media (max-width: 480px) {
+    main {
+        padding: 0.5rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-card {
+        padding: 1rem;
+    }
+    
+    .balance-amount,
+    .cracks-count,
+    .unnecessary-amount {
+        font-size: 2rem;
+    }
+    
+    .card-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .criminal-stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-wrapper {
+        height: 250px;
+        padding: 0.8rem;
+    }
+    
+    .quote-text {
+        font-size: 0.9rem;
+        padding: 0.8rem;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .popup-content {
+        width: 95%;
+        padding: 1rem;
+    }
+    
+    .auth-popup-content {
+        width: 98%;
+        padding: 1rem;
+    }
+    
+    /* Améliorations pour les tableaux sur très petits écrans */
+    #history-table {
+        min-width: 500px;
+        font-size: 0.7rem;
+    }
+    
+    #history-table th,
+    #history-table td {
+        padding: 0.3rem 0.2rem;
+    }
+    
+    /* Améliorations pour les formulaires sur très petits écrans */
+    .form-control input,
+    .form-control select,
+    .form-control textarea {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-control label {
+        font-size: 0.9rem;
+    }
+    
+    /* Améliorations pour les popups sur très petits écrans */
+    .popup-cat {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .popup-question {
+        font-size: 0.9rem;
+    }
+    
+    .popup-btn {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Améliorations pour les badges et challenges sur très petits écrans */
+    .badge-placeholder {
+        padding: 1rem;
+    }
+    
+    .badge-icon {
+        font-size: 2rem;
+    }
+    
+    .badge-placeholder h3 {
+        font-size: 0.9rem;
+    }
+    
+    .challenge-card {
+        padding: 1rem;
+    }
+    
+    .challenge-icon {
+        font-size: 2rem;
+    }
+    
+    .challenge-title {
+        font-size: 0.9rem;
+    }
 } 
