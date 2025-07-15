@@ -4,7 +4,7 @@
 
 Un tracker de dépenses qui ne prend pas de gants pour te dire la vérité sur tes finances. Parce que parfois, il faut un coup de pied au cul pour arrêter de cramer ton fric.
 
-<img width="1901" height="960" alt="image" src="https://github.com/user-attachments/assets/707adffb-a2a6-41b4-bc50-0cedc4c68f3c" />
+[<img width="1901" height="960" alt="FCKNGMoney - Tracker de dépenses" src="https://github.com/user-attachments/assets/707adffb-a2a6-41b4-bc50-0cedc4c68f3c" />](https://fckng-money.vercel.app)
 
 
 ## 🚨 Qu'est-ce que c'est que cette merde ?
@@ -44,27 +44,59 @@ FCKNGMoney est une application web qui te permet de :
 - **Étiqueter** : "Oui oui t'inquiète" ou "Pose pas de questions qui fâchent"
 - **Historique** : Ton casier judiciaire financier
 
-## 🛠️ Installation
+### 🎮 Système de Défis (RPGhetto)
+- **Défis mensuels** : Challenges pour se motiver
+- **Validation interactive** : Popup avec chat mignon
+- **Explosion de confettis** : 🎉 Animation lors de la réussite
+- **Badges à venir** : Système de récompenses
+
+## 🚀 Déploiement en Ligne
+
+### 🌐 Application Live
+**FCKNGMoney est maintenant déployé sur Vercel !**
+- **URL** : [https://fckng-money.vercel.app](https://fckng-money.vercel.app)
+- **Accès 24h/24** depuis n'importe où
+- **Synchronisation multi-appareils** automatique
+- **HTTPS sécurisé** inclus
+
+### 🔐 Authentification
+- **Création de compte** avec email + mot de passe
+- **Synchronisation** de toutes tes données
+- **Accès depuis** ton PC, téléphone, tablette, etc.
+- **Sauvegarde automatique** sur le serveur
+
+## 🛠️ Installation Locale
 
 ### Prérequis
 - Un navigateur web (même Internet Explorer, on juge pas)
 - Du courage pour regarder tes finances en face
+- Node.js (pour le serveur local)
 
-### Setup
+### Setup Local
 1. Clone ce repo :
 ```bash
 git clone https://github.com/AllieEco/FCKNGMoney.git
 cd FCKNGMoney
 ```
 
-2. Configure ton profil :
+2. Installe les dépendances :
+```bash
+npm install
+```
+
+3. Configure ton profil :
 ```bash
 cp config.example.js config.js
 ```
 Puis édite `config.js` avec tes informations (voir [CONFIG.md](CONFIG.md))
 
-3. Ouvre `index.html` dans ton navigateur
-4. Commence à tracker tes crimes financiers
+4. Lance le serveur local :
+```bash
+node server.js
+```
+
+5. Ouvre [http://localhost:3000](http://localhost:3000) dans ton navigateur
+6. Commence à tracker tes crimes financiers
 
 ## 🎨 Design
 
@@ -76,6 +108,17 @@ Puis édite `config.js` avec tes informations (voir [CONFIG.md](CONFIG.md))
 
 ## 📱 Utilisation
 
+### 🌐 Utilisation en Ligne
+1. Va sur [https://fckng-money.vercel.app](https://fckng-money.vercel.app)
+2. Crée un compte avec ton email
+3. Commence à tracker tes dépenses
+4. Tes données se synchronisent automatiquement
+
+### 💻 Utilisation Locale
+1. Lance le serveur local : `node server.js`
+2. Ouvre [http://localhost:3000](http://localhost:3000)
+3. Utilise l'application en mode local
+
 ### Ajouter une Dépense
 1. Clique sur "Balancer un Nouveau Crime"
 2. Remplis le formulaire avec les détails de ton crime
@@ -86,6 +129,12 @@ Puis édite `config.js` avec tes informations (voir [CONFIG.md](CONFIG.md))
 - **Tableau de bord** : Vue d'ensemble de tes crimes
 - **Graphiques** : Évolution et répartition de tes dépenses
 - **Historique** : Liste complète de tes crimes financiers
+
+### 🎮 Défis Mensuels
+1. Va dans l'onglet "RPGhetto"
+2. Choisis un défi à relever
+3. Valide ta réussite (explosion de confettis !)
+4. Suis tes progrès
 
 ## 🎭 Messages et Citations
 
@@ -126,11 +175,13 @@ Le site t'envoie des messages selon tes performances :
 
 ## 🔧 Technologies
 
-- **HTML5** : Structure de base
-- **CSS3** : Style et animations
-- **JavaScript** : Logique et calculs
-- **Chart.js** : Graphiques pour visualiser tes crimes
-- **LocalStorage** : Sauvegarde locale de tes données
+- **Frontend** : HTML5, CSS3, JavaScript vanilla
+- **Backend** : Node.js avec Express
+- **Base de données** : JSON (fichier local)
+- **Authentification** : bcrypt pour le hashage des mots de passe
+- **Graphiques** : Chart.js pour visualiser tes crimes
+- **Déploiement** : Vercel (hébergement gratuit)
+- **Synchronisation** : API REST personnalisée
 
 ## ⚙️ Configuration
 
@@ -156,10 +207,6 @@ Tu veux améliorer ce projet ? Parfait !
 
 Ce projet est sous licence MIT. Tu peux faire ce que tu veux avec, mais assume tes choix.
 
-## 🙏 Remerciements
-
-- **cAPSLOCK** : Pour le logo et l'inspiration
-- **Chart.js** : Pour les beaux graphiques
 - **Tous les criminels financiers** : Pour les données de test
 
 ## 🚨 Disclaimer
