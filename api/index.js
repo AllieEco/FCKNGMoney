@@ -1,10 +1,12 @@
+// Charger les variables d'environnement
+require('dotenv').config();
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 
@@ -12,29 +14,27 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Base de données simple (fichier JSON)
-const DB_FILE = path.join(__dirname, 'users.json');
+// Connexion MongoDB
+let db;
+let client;
 
-// Fonction pour charger les utilisateurs
-function loadUsers() {
+async function connectToMongoDB() {
     try {
-        if (fs.existsSync(DB_FILE)) {
-            const data = fs.readFileSync(DB_FILE, 'utf8');
-            return JSON.parse(data);
+        if (!client) {
+            client = new MongoClient(process.env.MONGODB_URI);
+            await client.connect();
+            db = client.db(process.env.MONGODB_DB_NAME);
+            console.log('✅ Connecté à MongoDB Atlas');
         }
     } catch (error) {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
+        console.error('❌ Erreur de connexion MongoDB:', error);
+        throw error;
     }
-    return {};
 }
 
-// Fonction pour sauvegarder les utilisateurs
-function saveUsers(users) {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2));
-    } catch (error) {
-        console.error('Erreur lors de la sauvegarde des utilisateurs:', error);
-    }
+// Fonction pour obtenir la collection users
+function getUsersCollection() {
+    return db.collection(process.env.MONGODB_COLLECTION_NAME || 'users');
 }
 
 // Route de santé
@@ -42,13 +42,16 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         success: true, 
         message: 'FCKNGMoney API is running!',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        database: 'MongoDB Atlas'
     });
 });
 
 // Route d'inscription
 app.post('/api/register', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, password, uniqueId } = req.body;
         
         if (!email || !password || !uniqueId) {
@@ -58,10 +61,11 @@ app.post('/api/register', async (req, res) => {
             });
         }
 
-        const users = loadUsers();
+        const usersCollection = getUsersCollection();
         
         // Vérifier si l'email existe déjà
-        if (users[email]) {
+        const existingUserByEmail = await usersCollection.findOne({ email });
+        if (existingUserByEmail) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Un compte avec cet email existe déjà' 
@@ -69,8 +73,8 @@ app.post('/api/register', async (req, res) => {
         }
 
         // Vérifier si l'identifiant unique existe déjà
-        const existingUser = Object.values(users).find(user => user.uniqueId === uniqueId);
-        if (existingUser) {
+        const existingUserById = await usersCollection.findOne({ uniqueId });
+        if (existingUserById) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Cet identifiant unique est déjà utilisé' 
@@ -103,8 +107,7 @@ app.post('/api/register', async (req, res) => {
             }
         };
 
-        users[email] = newUser;
-        saveUsers(users);
+        await usersCollection.insertOne(newUser);
 
         res.json({ 
             success: true, 
@@ -128,6 +131,8 @@ app.post('/api/register', async (req, res) => {
 // Route de connexion
 app.post('/api/login', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, password } = req.body;
         
         if (!email || !password) {
@@ -137,8 +142,8 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ 
@@ -177,8 +182,10 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Route pour sauvegarder les données utilisateur
-app.post('/api/save-data', (req, res) => {
+app.post('/api/save-data', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, dataType, data } = req.body;
         
         if (!email || !dataType || data === undefined) {
@@ -188,8 +195,8 @@ app.post('/api/save-data', (req, res) => {
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -199,15 +206,16 @@ app.post('/api/save-data', (req, res) => {
         }
 
         // Sauvegarder les données selon le type
+        const updateData = {};
         switch (dataType) {
             case 'expenses':
-                user.expenses = data;
+                updateData.expenses = data;
                 break;
             case 'challenges':
-                user.challenges = data;
+                updateData.challenges = data;
                 break;
             case 'config':
-                user.config = data;
+                updateData.config = data;
                 break;
             default:
                 return res.status(400).json({ 
@@ -216,7 +224,10 @@ app.post('/api/save-data', (req, res) => {
                 });
         }
 
-        saveUsers(users);
+        await usersCollection.updateOne(
+            { email },
+            { $set: updateData }
+        );
 
         res.json({ 
             success: true, 
@@ -233,12 +244,14 @@ app.post('/api/save-data', (req, res) => {
 });
 
 // Route pour récupérer les données utilisateur
-app.get('/api/get-data/:email/:dataType', (req, res) => {
+app.get('/api/get-data/:email/:dataType', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, dataType } = req.params;
         
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -280,12 +293,14 @@ app.get('/api/get-data/:email/:dataType', (req, res) => {
 });
 
 // Route pour vérifier si un identifiant unique est disponible
-app.get('/api/check-unique-id/:uniqueId', (req, res) => {
+app.get('/api/check-unique-id/:uniqueId', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { uniqueId } = req.params;
         
-        const users = loadUsers();
-        const existingUser = Object.values(users).find(user => user.uniqueId === uniqueId);
+        const usersCollection = getUsersCollection();
+        const existingUser = await usersCollection.findOne({ uniqueId });
 
         res.json({ 
             success: true, 
@@ -302,12 +317,14 @@ app.get('/api/check-unique-id/:uniqueId', (req, res) => {
 });
 
 // Route pour récupérer la configuration utilisateur
-app.get('/api/user-config/:email', (req, res) => {
+app.get('/api/user-config/:email', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email } = req.params;
         
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -331,19 +348,21 @@ app.get('/api/user-config/:email', (req, res) => {
 });
 
 // Route pour sauvegarder la configuration utilisateur
-app.post('/api/save-config', (req, res) => {
+app.post('/api/save-config', async (req, res) => {
     try {
-        const { email, config } = req.body;
+        await connectToMongoDB();
         
-        if (!email || !config) {
+        const { email, config: userConfig } = req.body;
+        
+        if (!email || !userConfig) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Email et configuration requis' 
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -352,8 +371,10 @@ app.post('/api/save-config', (req, res) => {
             });
         }
 
-        user.config = config;
-        saveUsers(users);
+        await usersCollection.updateOne(
+            { email },
+            { $set: { config: userConfig } }
+        );
 
         res.json({ 
             success: true, 
