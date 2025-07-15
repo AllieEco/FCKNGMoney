@@ -7,15 +7,12 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { MongoClient } = require('mongodb');
-const config = require('./config');
 
 const app = express();
-const PORT = config.app.port;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('.')); // Servir les fichiers statiques
 
 // Connexion MongoDB
 let db;
@@ -23,19 +20,21 @@ let client;
 
 async function connectToMongoDB() {
     try {
-        client = new MongoClient(config.mongodb.uri);
-        await client.connect();
-        db = client.db(config.mongodb.dbName);
-        console.log('✅ Connecté à MongoDB Atlas');
+        if (!client) {
+            client = new MongoClient(process.env.MONGODB_URI);
+            await client.connect();
+            db = client.db(process.env.MONGODB_DB_NAME);
+            console.log('✅ Connecté à MongoDB Atlas');
+        }
     } catch (error) {
         console.error('❌ Erreur de connexion MongoDB:', error);
-        process.exit(1);
+        throw error;
     }
 }
 
 // Fonction pour obtenir la collection users
 function getUsersCollection() {
-    return db.collection(config.mongodb.collectionName);
+    return db.collection(process.env.MONGODB_COLLECTION_NAME || 'users');
 }
 
 // Route de santé
@@ -51,6 +50,8 @@ app.get('/api/health', (req, res) => {
 // Route d'inscription
 app.post('/api/register', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, password, uniqueId } = req.body;
         
         if (!email || !password || !uniqueId) {
@@ -130,6 +131,8 @@ app.post('/api/register', async (req, res) => {
 // Route de connexion
 app.post('/api/login', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, password } = req.body;
         
         if (!email || !password) {
@@ -181,6 +184,8 @@ app.post('/api/login', async (req, res) => {
 // Route pour sauvegarder les données utilisateur
 app.post('/api/save-data', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, dataType, data } = req.body;
         
         if (!email || !dataType || data === undefined) {
@@ -241,6 +246,8 @@ app.post('/api/save-data', async (req, res) => {
 // Route pour récupérer les données utilisateur
 app.get('/api/get-data/:email/:dataType', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, dataType } = req.params;
         
         const usersCollection = getUsersCollection();
@@ -288,6 +295,8 @@ app.get('/api/get-data/:email/:dataType', async (req, res) => {
 // Route pour vérifier si un identifiant unique est disponible
 app.get('/api/check-unique-id/:uniqueId', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { uniqueId } = req.params;
         
         const usersCollection = getUsersCollection();
@@ -310,6 +319,8 @@ app.get('/api/check-unique-id/:uniqueId', async (req, res) => {
 // Route pour récupérer la configuration utilisateur
 app.get('/api/user-config/:email', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email } = req.params;
         
         const usersCollection = getUsersCollection();
@@ -339,6 +350,8 @@ app.get('/api/user-config/:email', async (req, res) => {
 // Route pour sauvegarder la configuration utilisateur
 app.post('/api/save-config', async (req, res) => {
     try {
+        await connectToMongoDB();
+        
         const { email, config: userConfig } = req.body;
         
         if (!email || !userConfig) {
@@ -377,28 +390,5 @@ app.post('/api/save-config', async (req, res) => {
     }
 });
 
-// Démarrer le serveur
-async function startServer() {
-    await connectToMongoDB();
-    
-    app.listen(PORT, () => {
-        console.log(`🚀 Serveur FCKNGMoney démarré sur le port ${PORT}`);
-        console.log(`📊 Base de données: MongoDB Atlas`);
-        console.log(`🌐 URL: http://localhost:${PORT}`);
-    });
-}
-
-// Gestion de l'arrêt propre
-process.on('SIGINT', async () => {
-    console.log('\n🛑 Arrêt du serveur...');
-    if (client) {
-        await client.close();
-        console.log('✅ Connexion MongoDB fermée');
-    }
-    process.exit(0);
-});
-
-startServer().catch(console.error);
-
 // Export pour Vercel
-module.exports = app;
+module.exports = app; 
