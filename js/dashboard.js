@@ -1,9 +1,14 @@
 // Dashboard JavaScript pour FCKNGMoney
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Charger la configuration utilisateur
+    if (window.authService) {
+        config = await window.authService.getUserConfig();
+    }
+    
     // Initialiser l'authentification
     initAuth();
     
-    loadDashboardData();
+    await loadDashboardData();
     initQuotesCarousel();
 });
 
@@ -104,21 +109,21 @@ function initQuotesCarousel() {
     setInterval(showRandomQuote, 8000);
 }
 
-function loadDashboardData() {
+async function loadDashboardData() {
     // Récupérer les données depuis le localStorage
     const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
     
     // Calculer les données du tableau de bord
-    const dashboardData = calculateDashboardData(expenses);
+    const dashboardData = await calculateDashboardData(expenses);
     
     // Mettre à jour l'affichage
-    updateDashboardDisplay(dashboardData);
+    await updateDashboardDisplay(dashboardData);
     
     // Calculer et afficher les stats de criminels financiers
     updateCriminalStats(expenses);
     
     // Créer les graphiques
-    createCharts(expenses);
+    await createCharts(expenses);
 }
 
 // Fonction d'initialisation de l'authentification (copiée depuis rpghetto.js)
@@ -369,13 +374,19 @@ function setupPasswordValidation() {
     }
 }
 
-function calculateDashboardData(expenses) {
+async function calculateDashboardData(expenses) {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
+    // Récupérer la configuration utilisateur
+    let userConfig = config;
+    if (window.authService) {
+        userConfig = await window.authService.getUserConfig();
+    }
+    
     // Utiliser le solde initial de la config + les transactions
-    let totalBalance = (USER_CONFIG && USER_CONFIG.initialBalance) ? USER_CONFIG.initialBalance : 0;
+    let totalBalance = userConfig.initialBalance || 0;
     let monthlyCracks = 0;
     let unnecessarySpending = 0;
     
@@ -412,9 +423,9 @@ function calculateDashboardData(expenses) {
     };
 }
 
-function updateDashboardDisplay(data) {
+async function updateDashboardDisplay(data) {
     // Mettre à jour l'état du compte
-    updateAccountStatus(data.balance);
+    await updateAccountStatus(data.balance);
     
     // Mettre à jour le nombre de craquages
     updateMonthlyCracks(data.monthlyCracks);
@@ -423,7 +434,7 @@ function updateDashboardDisplay(data) {
     updateUnnecessarySpending(data.unnecessarySpending);
 }
 
-function updateAccountStatus(balance) {
+async function updateAccountStatus(balance) {
     const balanceElement = document.getElementById('current-balance');
     const messageElement = document.getElementById('balance-message');
     const cardElement = document.getElementById('account-status-card');
@@ -431,28 +442,28 @@ function updateAccountStatus(balance) {
     // Formater le solde
     balanceElement.textContent = `${balance.toFixed(2)}€`;
     
+    // Récupérer la configuration utilisateur
+    let userConfig = config;
+    if (window.authService) {
+        userConfig = await window.authService.getUserConfig();
+    }
+    
     // Utiliser les seuils de la config ou les valeurs par défaut
-    const warningThreshold = (USER_CONFIG && USER_CONFIG.warningThreshold) ? USER_CONFIG.warningThreshold : 200;
-    const dangerThreshold = (USER_CONFIG && USER_CONFIG.dangerThreshold) ? USER_CONFIG.dangerThreshold : 0;
+    const warningThreshold = userConfig.warningThreshold || 200;
+    const dangerThreshold = userConfig.dangerThreshold || 0;
     
     // Déterminer le message et la classe CSS selon le solde
     let message = '';
     let statusClass = '';
     
     if (balance > warningThreshold) {
-        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.positive) 
-            ? USER_CONFIG.customMessages.positive 
-            : "C'est bon on est laaaaarge";
+        message = userConfig.customMessages?.positive || "C'est bon on est laaaaarge";
         statusClass = 'positive';
     } else if (balance >= dangerThreshold) {
-        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.warning) 
-            ? USER_CONFIG.customMessages.warning 
-            : "Fais gaffe à pas pousser le bouchon trop loin";
+        message = userConfig.customMessages?.warning || "Fais gaffe à pas pousser le bouchon trop loin";
         statusClass = 'warning';
     } else {
-        message = (USER_CONFIG && USER_CONFIG.customMessages && USER_CONFIG.customMessages.danger) 
-            ? USER_CONFIG.customMessages.danger 
-            : "OSKOUR !";
+        message = userConfig.customMessages?.danger || "OSKOUR !";
         statusClass = 'danger';
     }
     
@@ -611,16 +622,16 @@ function calculateImprovementVsLastMonth(expenses) {
     return percentageChange;
 }
 
-function createCharts(expenses) {
-    createBalanceChart(expenses);
+async function createCharts(expenses) {
+    await createBalanceChart(expenses);
     createExpensesPieChart(expenses);
 }
 
-function createBalanceChart(expenses) {
+async function createBalanceChart(expenses) {
     const ctx = document.getElementById('balance-chart').getContext('2d');
     
     // Préparer les données pour les 6 derniers mois
-    const data = prepareBalanceData(expenses);
+    const data = await prepareBalanceData(expenses);
     
     new Chart(ctx, {
         type: 'line',
@@ -707,13 +718,19 @@ function createExpensesPieChart(expenses) {
     });
 }
 
-function prepareBalanceData(expenses) {
+async function prepareBalanceData(expenses) {
     const months = [];
     const balances = [];
     const now = new Date();
     
+    // Récupérer la configuration utilisateur
+    let userConfig = config;
+    if (window.authService) {
+        userConfig = await window.authService.getUserConfig();
+    }
+    
     // Solde initial depuis la config
-    let initialBalance = (USER_CONFIG && USER_CONFIG.initialBalance) ? USER_CONFIG.initialBalance : 0;
+    let initialBalance = userConfig.initialBalance || 0;
     
     // Générer les 6 derniers mois
     for (let i = 5; i >= 0; i--) {

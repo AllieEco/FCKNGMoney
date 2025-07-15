@@ -78,10 +78,81 @@ function createAuthPopup() {
                 <button class="popup-close-btn" id="auth-close">×</button>
             </div>
         </div>
+
+        <!-- POPUP D'INITIALISATION DU COMPTE -->
+        <div class="popup-overlay" id="init-popup" style="display: none;">
+            <div class="popup-content init-popup-content">
+                <h3>🎯 Initialisation de Ton Compte</h3>
+                <p class="init-subtitle">Allez, on va configurer ton profil pour que FCKNGMoney te connaisse mieux !</p>
+                
+                <form id="init-form" class="init-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="init-firstname">Ton Prénom</label>
+                            <input type="text" id="init-firstname" placeholder="Ton prénom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="init-lastname">Ton Nom</label>
+                            <input type="text" id="init-lastname" placeholder="Ton nom" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="init-age">Ton Âge</label>
+                            <input type="number" id="init-age" placeholder="25" min="13" max="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="init-balance">Ton Solde Bancaire Actuel (€)</label>
+                            <input type="number" id="init-balance" placeholder="1500.00" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <!-- AVERTISSEMENTS -->
+                    <div class="warning-section">
+                        <h4>⚠️ AVERTISSEMENTS IMPORTANTS</h4>
+                        <div class="warning-box">
+                            <p><strong>FCKNGMoney n'est PAS un conseiller financier !</strong></p>
+                            <p>Cette application est un outil de suivi personnel et humoristique. Elle ne remplace en aucun cas les conseils d'un professionnel de la finance.</p>
+                        </div>
+                        <div class="warning-box">
+                            <p><strong>Si tu as de vrais problèmes d'argent :</strong></p>
+                            <ul>
+                                <li>Parle-en à un conseiller financier</li>
+                                <li>Contacte une association d'aide aux consommateurs</li>
+                                <li>Consulte un travailleur social</li>
+                                <li>N'hésite pas à demander de l'aide à des personnes compétentes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- CONDITIONS -->
+                    <div class="terms-section">
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="accept-terms" required>
+                            <label for="accept-terms">
+                                J'accepte que FCKNGMoney soit un outil humoristique et non un conseiller financier. 
+                                Je comprends que pour de vrais problèmes d'argent, je dois consulter des professionnels compétents.
+                            </label>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="accept-data" required>
+                            <label for="accept-data">
+                                J'accepte que mes données soient stockées localement et sur le serveur pour le bon fonctionnement de l'application.
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="init-submit-btn">Finaliser Mon Compte</button>
+                </form>
+
+                <button class="popup-close-btn" id="init-close">×</button>
+            </div>
+        </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
-    console.log('📱 Popup d\'authentification créée');
+    console.log('📱 Popup d\'authentification et d\'initialisation créées');
 }
 
 function setupAuthEvents() {
@@ -236,19 +307,12 @@ function setupAuthEvents() {
             const result = await window.authService.register(email, password, uniqueId);
             
             if (result.success) {
-                showAuthMessage('🎉 Inscription réussie ! Bienvenue dans la famille des dépensiers !', 'success');
-                updateAuthButton();
+                // Fermer la popup d'authentification
+                authPopup.classList.remove('active');
+                clearAuthMessages();
                 
-                // Synchroniser les données locales avec le serveur
-                await window.authService.syncLocalData();
-                
-                // Recharger les données selon la page
-                reloadPageData();
-                
-                setTimeout(() => {
-                    authPopup.classList.remove('active');
-                    clearAuthMessages();
-                }, 1500);
+                // Afficher la popup d'initialisation
+                showInitPopup();
             } else {
                 showAuthMessage(result.message, 'error');
             }
@@ -344,29 +408,124 @@ function setupPasswordValidation() {
     }
 }
 
-// Fonction pour recharger les données selon la page
-function reloadPageData() {
-    // Détecter la page actuelle et recharger les données appropriées
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    
-    switch (currentPage) {
-        case 'index.html':
-        case '':
-            if (typeof window.loadDashboardData === 'function') {
-                window.loadDashboardData();
+    // Fonction pour afficher la popup d'initialisation
+    function showInitPopup() {
+        const initPopup = document.getElementById('init-popup');
+        const initForm = document.getElementById('init-form');
+        const initClose = document.getElementById('init-close');
+        
+        // Afficher la popup
+        initPopup.style.display = 'flex';
+        initPopup.classList.add('active');
+        
+        // Gérer la fermeture
+        initClose.addEventListener('click', () => {
+            initPopup.classList.remove('active');
+            setTimeout(() => {
+                initPopup.style.display = 'none';
+            }, 300);
+        });
+        
+        // Fermer en cliquant à l'extérieur
+        initPopup.addEventListener('click', (e) => {
+            if (e.target === initPopup) {
+                initPopup.classList.remove('active');
+                setTimeout(() => {
+                    initPopup.style.display = 'none';
+                }, 300);
             }
-            break;
-        case 'achat.html':
-            if (typeof window.render === 'function') {
-                window.render();
+        });
+        
+        // Gérer la soumission du formulaire
+        initForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const firstname = document.getElementById('init-firstname').value;
+            const lastname = document.getElementById('init-lastname').value;
+            const age = parseInt(document.getElementById('init-age').value);
+            const balance = parseFloat(document.getElementById('init-balance').value);
+            const acceptTerms = document.getElementById('accept-terms').checked;
+            const acceptData = document.getElementById('accept-data').checked;
+            
+            if (!acceptTerms || !acceptData) {
+                alert('Tu dois accepter les conditions pour continuer !');
+                return;
             }
-            break;
-        case 'rpghetto.html':
-            if (typeof window.loadMonthlyChallenges === 'function') {
-                window.loadMonthlyChallenges();
+            
+            // Créer l'objet de configuration
+            const userConfig = {
+                firstName: firstname,
+                lastName: lastname,
+                age: age,
+                initialBalance: balance,
+                warningThreshold: 200,
+                dangerThreshold: 0,
+                customMessages: {
+                    positive: "C'est bon on est laaaaarge",
+                    warning: "Fais gaffe à pas pousser le bouchon trop loin",
+                    danger: "OSKOUR !"
+                }
+            };
+            
+            try {
+                // Sauvegarder la configuration
+                await window.authService.saveConfig(userConfig);
+                
+                // Mettre à jour l'utilisateur local
+                const currentUser = window.authService.getCurrentUser();
+                currentUser.config = userConfig;
+                window.authService.saveCurrentUser(currentUser);
+                
+                // Fermer la popup
+                initPopup.classList.remove('active');
+                setTimeout(() => {
+                    initPopup.style.display = 'none';
+                }, 300);
+                
+                // Afficher le message de succès
+                showAuthMessage('🎉 Compte initialisé avec succès ! Bienvenue dans la famille des dépensiers !', 'success');
+                updateAuthButton();
+                
+                // Synchroniser les données locales avec le serveur
+                await window.authService.syncLocalData();
+                
+                // Recharger les données selon la page
+                reloadPageData();
+                
+                setTimeout(() => {
+                    clearAuthMessages();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation:', error);
+                alert('Erreur lors de l\'initialisation du compte. Réessaie !');
             }
-            // Mettre à jour l'état du bouton d'authentification
-            updateAuthButton();
-            break;
+        });
     }
-} 
+
+    // Fonction pour recharger les données selon la page
+    function reloadPageData() {
+        // Détecter la page actuelle et recharger les données appropriées
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        
+        switch (currentPage) {
+            case 'index.html':
+            case '':
+                if (typeof window.loadDashboardData === 'function') {
+                    window.loadDashboardData();
+                }
+                break;
+            case 'achat.html':
+                if (typeof window.render === 'function') {
+                    window.render();
+                }
+                break;
+            case 'rpghetto.html':
+                if (typeof window.loadMonthlyChallenges === 'function') {
+                    window.loadMonthlyChallenges();
+                }
+                // Mettre à jour l'état du bouton d'authentification
+                updateAuthButton();
+                break;
+        }
+    } 

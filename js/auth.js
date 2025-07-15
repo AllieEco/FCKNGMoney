@@ -175,6 +175,35 @@ class AuthService {
         }
     }
 
+    // Récupérer la configuration utilisateur avec fallback
+    async getUserConfig() {
+        if (this.isAuthenticated && this.currentUser) {
+            try {
+                const config = await this.getConfig();
+                if (config) {
+                    return config;
+                }
+            } catch (error) {
+                console.warn('Erreur lors de la récupération de la config, utilisation des valeurs par défaut');
+            }
+        }
+        
+        // Configuration par défaut si pas d'utilisateur connecté ou pas de config
+        return {
+            firstName: "",
+            lastName: "",
+            age: 25,
+            initialBalance: 0,
+            warningThreshold: 200,
+            dangerThreshold: 0,
+            customMessages: {
+                positive: "C'est bon on est laaaaarge",
+                warning: "Fais gaffe à pas pousser le bouchon trop loin",
+                danger: "OSKOUR !"
+            }
+        };
+    }
+
     // Récupérer la configuration utilisateur
     async getConfig() {
         if (!this.isAuthenticated || !this.currentUser) {
