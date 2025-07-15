@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCKNGMoney - Achat</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Staatliches&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="designed-by">
+            <a href="https://github.com/AllieEco/FCKNGMoney" target="_blank" rel="noopener noreferrer">
+                <img src="assets/images/logo_capslock.png" alt="cAPSLOCK Logo">
+            </a>
+        </div>
+        <h1><a href="index.html" class="site-title-link">FCKNGMoney</a></h1>
+        <p class="slogan">Fuck debt collectors for good.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link">Tableau de Bord</a>
+            <a href="achat.html" class="nav-link active">Ajouter une Dépense</a>
+            <a href="rpghetto.html" class="nav-link">RPGhetto</a>
+            <button id="auth-btn" class="auth-btn">Se Connecter</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- STATS QUI FONT MAL -->
+        <section id="stats-section">
+            <div class="stat-card">
+                <h3>Total des Dégâts</h3>
+                <p id="total-damage">0.00€</p>
+                <span>Toutes périodes</span>
+            </div>
+            <div class="stat-card">
+                <h3>Massacre du Mois</h3>
+                <p id="month-damage">0.00€</p>
+                <span id="current-month"></span>
+            </div>
+            <div class="stat-card">
+                <h3>Nombre de Craquages</h3>
+                <p id="total-cracks">0</p>
+                <span>Depuis le début</span>
+            </div>
+            <div class="stat-card">
+                <h3>Douleur Moyenne</h3>
+                <p id="avg-pain">0.00€</p>
+                <span>Par craquage</span>
+            </div>
+        </section>
+
+        <!-- FORMULAIRE DE LA HONTE -->
+        <section id="expense-form-section">
+            <h2><span class="plus-icon">+</span> Balancer une nouvelle dépense</h2>
+            <form id="expense-form">
+                <input type="hidden" id="expense-id">
+                <div class="form-row">
+                    <div class="form-control">
+                        <label for="culprit">Le Coupable (Qui a pris ton fric?)</label>
+                        <input type="text" id="culprit" placeholder="Ex: Amazon, ce démon..." required>
+                    </div>
+                    <div class="form-control">
+                        <label for="crime-date">Date du Crime</label>
+                        <input type="date" id="crime-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-control">
+                        <label for="category">Catégorie de la Honte</label>
+                        <select id="category" required>
+                            <option value="" disabled selected>Choisir une catégorie...</option>
+                            <option value="Alimentation (Graisse & Sucre)">Alimentation (Graisse & Sucre)</option>
+                            <option value="Loisirs (Procrastination Payante)">Loisirs (Procrastination Payante)</option>
+                            <option value="Banque (Ton banquier te remercie)">Banque (Ton banquier te remercie)</option>
+                            <option value="Revenu (Salaire (Bientôt Disparu))">Revenu (Salaire (Bientôt Disparu))</option>
+                            <option value="Maison (Le Foyer du Gouffre)">Maison (Le Foyer du Gouffre)</option>
+                            <option value="Epargne (Retarder l'inévitable)">Epargne (Retarder l'inévitable)</option>
+                            <option value="Cigarettes (Clopes & Toux Grasse)">Cigarettes (Clopes & Toux Grasse)</option>
+                            <option value="Transports (Gas-oil & Galères)">Transports (Gas-oil & Galères)</option>
+                            <option value="Restaurant (Se faire plumer au resto)">Restaurant (Se faire plumer au resto)</option>
+                            <option value="Alcool (Alcool & Mauvaises Décisions)">Alcool (Alcool & Mauvaises Décisions)</option>
+                            <option value="Autres (WTF (Autres purges))">Autres (WTF (Autres purges))</option>
+                            <option value="Vêtement (Pour mieux pleurer devant le miroir)">Vêtement (Pour mieux pleurer devant le miroir)</option>
+                            <option value="Cadeau (Pour acheter l'amour des autres)">Cadeau (Pour acheter l'amour des autres)</option>
+                            <option value="Ecole (L'école de la dette)">Ecole (L'école de la dette)</option>
+                            <option value="Medecin (La santé a un prix...)">Medecin (La santé a un prix...)</option>
+                            <option value="Animaux (Pour ton futur héritier à poils)">Animaux (Pour ton futur héritier à poils)</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label for="payment-method">L'Arme du Crime</label>
+                        <select id="payment-method" required>
+                            <option value="Carte Bleue">Carte Bleue</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Espèces">Espèces</option>
+                            <option value="Virement">Virement</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label for="transaction-type">Miracle ou Douille ?</label>
+                        <select id="transaction-type" required>
+                            <option value="expense">Douille (Dépense)</option>
+                            <option value="income">Miracle (Rentrée d'argent)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-control">
+                        <label for="necessity">C'était vraiment nécessaire ?</label>
+                        <select id="necessity" required>
+                            <option value="Oui oui, t'inquiète">Oui oui, t'inquiète</option>
+                            <option value="Pose pas de questions qui fâchent">Pose pas de questions qui fâchent</option>
+                        </select>
+                    </div>
+                     <div class="form-control">
+                        <label for="amount">La Douille (€)</label>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="description">La Preuve (Optionnel)</label>
+                    <textarea id="description" placeholder="Une excuse? Une justification? On t'écoute..."></textarea>
+                </div>
+                <button type="submit">J'assume (c'est la faute à Macron)</button>
+            </form>
+        </section>
+
+        <!-- CASIER JUDICIAIRE -->
+        <section id="history-section">
+            <h2>Le Casier Judiciaire</h2>
+
+            <!-- FILTERS -->
+            <div id="filter-section">
+                <div class="form-control">
+                    <label for="filter-year">Année</label>
+                    <select id="filter-year">
+                        <!-- Options ajoutées par JS -->
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-month">Mois</label>
+                    <select id="filter-month">
+                        <option value="all">Tous les mois</option>
+                        <option value="0">Janvier</option>
+                        <option value="1">Février</option>
+                        <option value="2">Mars</option>
+                        <option value="3">Avril</option>
+                        <option value="4">Mai</option>
+                        <option value="5">Juin</option>
+                        <option value="6">Juillet</option>
+                        <option value="7">Août</option>
+                        <option value="8">Septembre</option>
+                        <option value="9">Octobre</option>
+                        <option value="10">Novembre</option>
+                        <option value="11">Décembre</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-category">Catégorie</label>
+                    <select id="filter-category">
+                        <!-- Options ajoutées par JS -->
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="filter-culprit">Coupable</label>
+                    <input type="text" id="filter-culprit" placeholder="Rechercher un coupable...">
+                </div>
+                <button id="reset-filters">Réinitialiser</button>
+                <button id="export-pdf-btn" class="btn-secondary">📄 Exporter en PDF</button>
+            </div>
+
+
+
+            <div id="history-table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Coupable</th>
+                            <th>Catégorie</th>
+                            <th>Nécessaire ?</th>
+                            <th>La Douille</th>
+                            <th>Arme du Crime</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <!-- Les "crimes" seront listés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+
+
+    <footer>
+        <p>&copy; 2024 FCKNGMoney. Pas de pitié pour les dépensiers.</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/auth-popup.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html> 

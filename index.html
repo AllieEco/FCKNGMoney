@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCKNGMoney - Tableau de Bord</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Staatliches&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="designed-by">
+            <a href="https://github.com/AllieEco/FCKNGMoney" target="_blank" rel="noopener noreferrer">
+                <img src="assets/images/logo_capslock.png" alt="cAPSLOCK Logo">
+            </a>
+        </div>
+        <h1>FCKNGMoney</h1>
+        <p class="slogan">Fuck debt collectors for good.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link active">Tableau de Bord</a>
+            <a href="achat.html" class="nav-link">Ajouter une Dépense</a>
+            <a href="rpghetto.html" class="nav-link">RPGhetto</a>
+            <button id="auth-btn" class="auth-btn">Se Connecter</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- CARROUSEL DE CITATIONS POLITIQUES -->
+        <section id="quotes-section">
+            <div class="quote-container">
+                <div class="quote-text" id="quote-text">
+                    <span class="quote-mark">❞</span>
+                    <span id="quote-content">Chargement des citations...</span>
+                    <span class="quote-mark">❞</span>
+                </div>
+                <div class="quote-author" id="quote-author"></div>
+            </div>
+        </section>
+
+        <!-- TABLEAU DE BORD -->
+        <section id="dashboard-section">
+            <h2>Tableau de Bord</h2>
+            
+            <div class="dashboard-grid">
+                <!-- Carte 1: État du compte -->
+                <div class="dashboard-card" id="account-status-card">
+                    <div class="card-header">
+                        <h3>État du Compte</h3>
+                        <div class="card-icon">💰</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="balance-display">
+                            <span class="balance-amount" id="current-balance">0.00€</span>
+                        </div>
+                        <p class="status-message" id="balance-message">Calcul en cours...</p>
+                    </div>
+                </div>
+
+                <!-- Carte 2: Nombre de craquages du mois -->
+                <div class="dashboard-card" id="monthly-cracks-card">
+                    <div class="card-header">
+                        <h3>Craquages du Mois</h3>
+                        <div class="card-icon">💸</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="cracks-display">
+                            <span class="cracks-count" id="monthly-cracks">0</span>
+                            <span class="cracks-label">craquages</span>
+                        </div>
+                        <p class="status-message" id="cracks-message">Calcul en cours...</p>
+                    </div>
+                </div>
+
+                <!-- Carte 3: Somme des achats "Pas de questions qui fâche" -->
+                <div class="dashboard-card" id="unnecessary-spending-card">
+                    <div class="card-header">
+                        <h3>Dépenses Inutiles</h3>
+                        <div class="card-icon">🤦</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="unnecessary-display">
+                            <span class="unnecessary-amount" id="unnecessary-total">0.00€</span>
+                        </div>
+                        <p class="status-message" id="unnecessary-message">Tu vois si t'arrêtais tes conneries...</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- GRAPHIQUES -->
+        <section id="charts-section">
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>État de Santé du Compte</h3>
+                    <canvas id="balance-chart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <h3>Répartition des Dépenses</h3>
+                    <canvas id="expenses-pie-chart" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS DE CRIMINELS FINANCIERS -->
+        <section id="criminal-stats-section">
+            <h2>TES STATS DE CRIMINELS FINANCIERS</h2>
+            <p class="stats-subtitle">(c'est pas une fierté)</p>
+            
+            <div class="criminal-stats-grid">
+                <div class="criminal-stat-card">
+                    <h3>Jours Sans Craquage</h3>
+                    <div class="stat-value" id="days-without-crack">0</div>
+                    <p class="stat-description">jours d'affilée</p>
+                </div>
+                
+                <div class="criminal-stat-card">
+                    <h3>Plus Gros Crime</h3>
+                    <div class="stat-value" id="biggest-expense">0.00€</div>
+                    <p class="stat-description">ce mois-ci</p>
+                </div>
+                
+                <div class="criminal-stat-card">
+                    <h3>Amélioration</h3>
+                    <div class="stat-value" id="improvement">0.0%</div>
+                    <p class="stat-description">vs mois dernier</p>
+                </div>
+            </div>
+            
+            <!-- Bouton pour aller à la page d'achat -->
+            <div class="dashboard-actions">
+                <a href="achat.html" class="btn-primary">Balancer un Nouveau Crime</a>
+            </div>
+        </section>
+    </main>
+
+
+
+    <footer>
+        <p>&copy; 2024 FCKNGMoney. Pas de pitié pour les dépensiers.</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/auth-popup.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html> 

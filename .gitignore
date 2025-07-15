@@ -1,0 +1,29 @@
+# Configuration personnelle (contient des données sensibles)
+config.js
+.env
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Dependencies (si ajoutées plus tard)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build files (si ajoutés plus tard)
+dist/
+build/
+
+# FCKNGMoney specific
+users.json 
