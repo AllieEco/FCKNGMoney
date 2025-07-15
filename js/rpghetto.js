@@ -172,6 +172,55 @@ function closePopup() {
     popup.classList.remove('active');
 }
 
+// Fonction pour créer une explosion de confettis
+function createConfettiExplosion() {
+    // Trouver la popup pour calculer le point d'explosion
+    const popup = document.getElementById('challenge-popup');
+    if (!popup) return;
+    
+    const popupRect = popup.getBoundingClientRect();
+    const explosionX = popupRect.left + popupRect.width / 2;
+    const explosionY = popupRect.top + popupRect.height / 2;
+    
+    // Créer le conteneur de confettis
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti-container';
+    document.body.appendChild(confettiContainer);
+    
+    // Créer 60 confettis pour plus d'effet
+    const confettiCount = 60;
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Calculer une direction aléatoire pour chaque confetti
+        const angle = (Math.PI * 2 * i) / confettiCount + (Math.random() - 0.5) * 0.5;
+        const distance = 100 + Math.random() * 150; // Distance variable
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance - 50; // Monter un peu avant de tomber
+        
+        // Positionner le confetti au point d'explosion
+        confetti.style.left = explosionX + 'px';
+        confetti.style.top = explosionY + 'px';
+        
+        // Définir les variables CSS pour l'animation
+        confetti.style.setProperty('--explosion-x', x + 'px');
+        confetti.style.setProperty('--explosion-y', y + 'px');
+        
+        // Délai aléatoire pour un effet plus naturel
+        confetti.style.animationDelay = Math.random() * 0.3 + 's';
+        
+        confettiContainer.appendChild(confetti);
+    }
+    
+    // Supprimer le conteneur après l'animation
+    setTimeout(() => {
+        if (confettiContainer.parentNode) {
+            confettiContainer.parentNode.removeChild(confettiContainer);
+        }
+    }, 3500);
+}
+
 // Fonction pour marquer un défi comme réussi
 async function completeChallenge(challengeId) {
     localStorage.setItem(`challenge_${challengeId}_completed`, 'true');
@@ -179,6 +228,9 @@ async function completeChallenge(challengeId) {
     
     // Mettre à jour l'affichage
     updateChallengeDisplay(challengeId, 'completed');
+    
+    // Créer l'explosion de confettis ! 🎉
+    createConfettiExplosion();
     
     // Synchroniser avec le serveur si connecté
     if (window.authService && window.authService.isUserAuthenticated()) {

@@ -1550,3 +1550,84 @@ footer {
         width: 100%;
     }
 } 
+
+/* Animation d'explosion de confettis */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd);
+    border-radius: 2px;
+    animation: confetti-explosion 2.5s ease-out forwards;
+    transform-origin: center;
+    --explosion-x: 0px;
+    --explosion-y: 0px;
+}
+
+@keyframes confetti-explosion {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(0);
+        opacity: 1;
+    }
+    15% {
+        transform: translate(var(--explosion-x), var(--explosion-y)) rotate(180deg) scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(calc(var(--explosion-x) * 1.2), calc(var(--explosion-y) * 1.2)) rotate(360deg) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(calc(var(--explosion-x) * 2), calc(var(--explosion-y) * 2 + 100vh)) rotate(720deg) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Variantes de couleurs pour les confettis */
+.confetti:nth-child(3n) {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+}
+
+.confetti:nth-child(3n+1) {
+    background: linear-gradient(45deg, #45b7d1, #96ceb4);
+}
+
+.confetti:nth-child(3n+2) {
+    background: linear-gradient(45deg, #feca57, #ff9ff3);
+}
+
+.confetti:nth-child(5n) {
+    background: linear-gradient(45deg, #54a0ff, #5f27cd);
+}
+
+.confetti:nth-child(7n) {
+    background: linear-gradient(45deg, #ff9ff3, #ff6b6b);
+}
+
+/* Animation de rotation différente pour chaque confetti */
+.confetti:nth-child(2n) {
+    animation-duration: 2.2s;
+}
+
+.confetti:nth-child(3n) {
+    animation-duration: 2.8s;
+}
+
+.confetti:nth-child(4n) {
+    animation-duration: 2.4s;
+}
+
+.confetti:nth-child(5n) {
+    animation-duration: 2.6s;
+} 
