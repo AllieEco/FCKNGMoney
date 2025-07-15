@@ -20,6 +20,25 @@ app.get('/rpghetto.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'rpghetto.html'));
 });
 
+// Route pour servir les fichiers CSS
+app.get('/css/:file', (req, res) => {
+  const file = req.params.file;
+  res.sendFile(path.join(__dirname, 'css', file));
+});
+
+// Route pour servir les fichiers JS
+app.get('/js/:file', (req, res) => {
+  const file = req.params.file;
+  res.sendFile(path.join(__dirname, 'js', file));
+});
+
+// Route pour servir les assets
+app.get('/assets/:folder/:file', (req, res) => {
+  const folder = req.params.folder;
+  const file = req.params.file;
+  res.sendFile(path.join(__dirname, 'assets', folder, file));
+});
+
 // Route de test
 app.get('/test', (req, res) => {
   res.json({
