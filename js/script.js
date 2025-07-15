@@ -391,18 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Ouvrir la popup d'authentification
         authBtn.addEventListener('click', () => {
-            if (window.authService.isUserAuthenticated()) {
-                // Si connecté, proposer la déconnexion
-                if (confirm('Voulez-vous vous déconnecter ?')) {
-                    window.authService.logout();
-                    updateAuthButton();
-                    // Recharger les données
-                    render();
-                }
-            } else {
+            if (!window.authService.isUserAuthenticated()) {
                 // Si non connecté, ouvrir la popup
                 authPopup.classList.add('active');
             }
+            // Si connecté, le menu s'ouvre via les événements du menu utilisateur
         });
         
         // Fermer la popup
@@ -546,10 +539,46 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (window.authService.isUserAuthenticated()) {
             const user = window.authService.getCurrentUser();
-            authBtn.textContent = `Déconnexion (${user.uniqueId})`;
+            
+            // Créer le menu utilisateur
+            authBtn.innerHTML = `
+                <div class="user-menu">
+                    <div class="user-avatar">${user.uniqueId.charAt(0).toUpperCase()}</div>
+                    <div class="user-menu-dropdown">
+                        <div class="user-menu-header">
+                            <div class="user-name">${user.uniqueId}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                        <div class="user-menu-options">
+                            <button class="user-menu-option" onclick="window.authService.logout(); updateAuthButton(); render();">
+                                <span class="icon">🚪</span>
+                                Se déconnecter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             authBtn.className = 'auth-btn connected';
+            
+            // Ajouter les événements pour le menu
+            const userMenu = authBtn.querySelector('.user-menu');
+            const dropdown = userMenu.querySelector('.user-menu-dropdown');
+            
+            // Ouvrir/fermer le menu au clic
+            userMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+            
+            // Fermer le menu en cliquant ailleurs
+            document.addEventListener('click', (e) => {
+                if (!userMenu.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+            
         } else {
-            authBtn.textContent = 'Se Connecter';
+            authBtn.innerHTML = 'Se Connecter';
             authBtn.className = 'auth-btn';
         }
     }
