@@ -362,6 +362,15 @@ app.post('/api/save-config', (req, res) => {
     }
 });
 
+// Route de santé pour Vercel
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        success: true, 
+        message: 'FCKNGMoney API is running!',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Route racine pour servir l'application
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
