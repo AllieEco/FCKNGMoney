@@ -1,7 +1,10 @@
 // Service d'authentification pour FCKNGMoney
 class AuthService {
     constructor() {
-        this.baseUrl = 'http://localhost:3000/api';
+        // URL automatique : localhost en développement, Vercel en production
+        this.baseUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : `${window.location.origin}/api`;
         this.currentUser = null;
         this.isAuthenticated = false;
         
