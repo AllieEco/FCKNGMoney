@@ -43,6 +43,10 @@ header {
     padding: 2rem;
     width: 100%;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .designed-by {
@@ -149,17 +153,68 @@ header .slogan {
     }
 }
 
-@media (max-width: 768px) {
+/* Règle pour éviter le chevauchement sur écrans moyens */
+@media (max-width: 1400px) {
     header {
-        padding: 1rem;
         position: relative;
+        padding: 1.5rem;
+        gap: 0.8rem;
     }
     
     .designed-by {
         position: static;
         transform: none;
         justify-content: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
+    }
+    
+    .designed-by img {
+        height: 45px;
+    }
+    
+    header h1,
+    header h1 .site-title-link {
+        font-size: 2.5rem;
+        margin-bottom: 0;
+    }
+    
+    header .slogan {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+    
+    .main-nav {
+        position: static;
+        transform: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 0;
+    }
+    
+    .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .auth-btn {
+        margin-left: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 1rem;
+        position: relative;
+        gap: 0.5rem;
+    }
+    
+    .designed-by {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-bottom: 0;
     }
     
     .designed-by img {
@@ -169,12 +224,12 @@ header .slogan {
     header h1,
     header h1 .site-title-link {
         font-size: 2rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0;
     }
     
     header .slogan {
         font-size: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
     }
     
     .main-nav {
@@ -183,7 +238,7 @@ header .slogan {
         justify-content: center;
         flex-wrap: wrap;
         gap: 0.5rem;
-        margin-top: 1rem;
+        margin-top: 0;
     }
     
     .nav-link {
@@ -200,6 +255,7 @@ header .slogan {
 @media (max-width: 480px) {
     header {
         padding: 0.8rem;
+        gap: 0.3rem;
     }
     
     header h1,
@@ -211,6 +267,7 @@ header .slogan {
         flex-direction: column;
         align-items: center;
         gap: 0.3rem;
+        width: 100%;
     }
     
     .nav-link {
