@@ -1,43 +1,52 @@
+// Charger les variables d'environnement
+require('dotenv').config();
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
+const { MongoClient } = require('mongodb');
+const config = require('./config');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.app.port;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.')); // Servir les fichiers statiques
 
-// Base de données simple (fichier JSON)
-const DB_FILE = 'users.json';
+// Connexion MongoDB
+let db;
+let client;
 
-// Fonction pour charger les utilisateurs
-function loadUsers() {
+async function connectToMongoDB() {
     try {
-        if (fs.existsSync(DB_FILE)) {
-            const data = fs.readFileSync(DB_FILE, 'utf8');
-            return JSON.parse(data);
-        }
+        client = new MongoClient(config.mongodb.uri);
+        await client.connect();
+        db = client.db(config.mongodb.dbName);
+        console.log('✅ Connecté à MongoDB Atlas');
     } catch (error) {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-    }
-    return {};
-}
-
-// Fonction pour sauvegarder les utilisateurs
-function saveUsers(users) {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2));
-    } catch (error) {
-        console.error('Erreur lors de la sauvegarde des utilisateurs:', error);
+        console.error('❌ Erreur de connexion MongoDB:', error);
+        process.exit(1);
     }
 }
+
+// Fonction pour obtenir la collection users
+function getUsersCollection() {
+    return db.collection(config.mongodb.collectionName);
+}
+
+// Route de santé
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        success: true, 
+        message: 'FCKNGMoney API is running!',
+        timestamp: new Date().toISOString(),
+        database: 'MongoDB Atlas'
+    });
+});
 
 // Route d'inscription
 app.post('/api/register', async (req, res) => {
@@ -51,10 +60,11 @@ app.post('/api/register', async (req, res) => {
             });
         }
 
-        const users = loadUsers();
+        const usersCollection = getUsersCollection();
         
         // Vérifier si l'email existe déjà
-        if (users[email]) {
+        const existingUserByEmail = await usersCollection.findOne({ email });
+        if (existingUserByEmail) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Un compte avec cet email existe déjà' 
@@ -62,8 +72,8 @@ app.post('/api/register', async (req, res) => {
         }
 
         // Vérifier si l'identifiant unique existe déjà
-        const existingUser = Object.values(users).find(user => user.uniqueId === uniqueId);
-        if (existingUser) {
+        const existingUserById = await usersCollection.findOne({ uniqueId });
+        if (existingUserById) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Cet identifiant unique est déjà utilisé' 
@@ -96,8 +106,7 @@ app.post('/api/register', async (req, res) => {
             }
         };
 
-        users[email] = newUser;
-        saveUsers(users);
+        await usersCollection.insertOne(newUser);
 
         res.json({ 
             success: true, 
@@ -130,8 +139,8 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ 
@@ -170,7 +179,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Route pour sauvegarder les données utilisateur
-app.post('/api/save-data', (req, res) => {
+app.post('/api/save-data', async (req, res) => {
     try {
         const { email, dataType, data } = req.body;
         
@@ -181,8 +190,8 @@ app.post('/api/save-data', (req, res) => {
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -192,15 +201,16 @@ app.post('/api/save-data', (req, res) => {
         }
 
         // Sauvegarder les données selon le type
+        const updateData = {};
         switch (dataType) {
             case 'expenses':
-                user.expenses = data;
+                updateData.expenses = data;
                 break;
             case 'challenges':
-                user.challenges = data;
+                updateData.challenges = data;
                 break;
             case 'config':
-                user.config = data;
+                updateData.config = data;
                 break;
             default:
                 return res.status(400).json({ 
@@ -209,7 +219,10 @@ app.post('/api/save-data', (req, res) => {
                 });
         }
 
-        saveUsers(users);
+        await usersCollection.updateOne(
+            { email },
+            { $set: updateData }
+        );
 
         res.json({ 
             success: true, 
@@ -226,12 +239,12 @@ app.post('/api/save-data', (req, res) => {
 });
 
 // Route pour récupérer les données utilisateur
-app.get('/api/get-data/:email/:dataType', (req, res) => {
+app.get('/api/get-data/:email/:dataType', async (req, res) => {
     try {
         const { email, dataType } = req.params;
         
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -273,12 +286,12 @@ app.get('/api/get-data/:email/:dataType', (req, res) => {
 });
 
 // Route pour vérifier si un identifiant unique est disponible
-app.get('/api/check-unique-id/:uniqueId', (req, res) => {
+app.get('/api/check-unique-id/:uniqueId', async (req, res) => {
     try {
         const { uniqueId } = req.params;
         
-        const users = loadUsers();
-        const existingUser = Object.values(users).find(user => user.uniqueId === uniqueId);
+        const usersCollection = getUsersCollection();
+        const existingUser = await usersCollection.findOne({ uniqueId });
 
         res.json({ 
             success: true, 
@@ -295,12 +308,12 @@ app.get('/api/check-unique-id/:uniqueId', (req, res) => {
 });
 
 // Route pour récupérer la configuration utilisateur
-app.get('/api/user-config/:email', (req, res) => {
+app.get('/api/user-config/:email', async (req, res) => {
     try {
         const { email } = req.params;
         
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -324,19 +337,19 @@ app.get('/api/user-config/:email', (req, res) => {
 });
 
 // Route pour sauvegarder la configuration utilisateur
-app.post('/api/save-config', (req, res) => {
+app.post('/api/save-config', async (req, res) => {
     try {
-        const { email, config } = req.body;
+        const { email, config: userConfig } = req.body;
         
-        if (!email || !config) {
+        if (!email || !userConfig) {
             return res.status(400).json({ 
                 success: false, 
                 message: 'Email et configuration requis' 
             });
         }
 
-        const users = loadUsers();
-        const user = users[email];
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ 
@@ -345,8 +358,10 @@ app.post('/api/save-config', (req, res) => {
             });
         }
 
-        user.config = config;
-        saveUsers(users);
+        await usersCollection.updateOne(
+            { email },
+            { $set: { config: userConfig } }
+        );
 
         res.json({ 
             success: true, 
@@ -362,21 +377,25 @@ app.post('/api/save-config', (req, res) => {
     }
 });
 
-// Route de santé pour Vercel
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        success: true, 
-        message: 'FCKNGMoney API is running!',
-        timestamp: new Date().toISOString()
+// Démarrer le serveur
+async function startServer() {
+    await connectToMongoDB();
+    
+    app.listen(PORT, () => {
+        console.log(`🚀 Serveur FCKNGMoney démarré sur le port ${PORT}`);
+        console.log(`📊 Base de données: MongoDB Atlas`);
+        console.log(`🌐 URL: http://localhost:${PORT}`);
     });
+}
+
+// Gestion de l'arrêt propre
+process.on('SIGINT', async () => {
+    console.log('\n🛑 Arrêt du serveur...');
+    if (client) {
+        await client.close();
+        console.log('✅ Connexion MongoDB fermée');
+    }
+    process.exit(0);
 });
 
-// Route racine pour servir l'application
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 Serveur FCKNGMoney démarré sur le port ${PORT}`);
-    console.log(`📱 Accédez à l'application: http://localhost:${PORT}`);
-}); 
+startServer().catch(console.error); 

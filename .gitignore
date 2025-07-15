@@ -1,5 +1,6 @@
 # Configuration personnelle (contient des données sensibles)
 config.js
+.env
 
 # Fichiers système
 .DS_Store
