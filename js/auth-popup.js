@@ -253,6 +253,10 @@ function setupAuthEvents() {
                 showAuthMessage(result.message, 'error');
             }
         } catch (error) {
+            // Si l'utilisateur est connecté malgré tout, ne pas afficher d'erreur
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                return;
+            }
             showAuthMessage('💥 Erreur d\'inscription - Le serveur a encore bu trop de café', 'error');
         } finally {
             submitBtn.disabled = false;
@@ -267,7 +271,7 @@ function updateAuthButton() {
     
     if (window.authService && window.authService.isUserAuthenticated()) {
         const user = window.authService.getCurrentUser();
-        authBtn.textContent = `Déconnexion (${user.email})`;
+        authBtn.textContent = `Déconnexion (${user.uniqueId})`;
         authBtn.className = 'auth-btn connected';
     } else {
         authBtn.textContent = 'Se Connecter';

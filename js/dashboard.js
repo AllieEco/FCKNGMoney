@@ -296,7 +296,7 @@ function updateAuthButton() {
     
     if (window.authService.isUserAuthenticated()) {
         const user = window.authService.getCurrentUser();
-        authBtn.textContent = `Déconnexion (${user.email})`;
+        authBtn.textContent = `Déconnexion (${user.uniqueId})`;
         authBtn.className = 'auth-btn connected';
     } else {
         authBtn.textContent = 'Se Connecter';
