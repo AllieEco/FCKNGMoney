@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialiser l'authentification
+    initAuth();
 
     // Système de couleurs pour les catégories
     const categoryColors = {
@@ -168,8 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Core Functions ---
-    function saveExpensesToLocalStorage() {
+    async function saveExpensesToLocalStorage() {
         localStorage.setItem('expenses', JSON.stringify(expenses));
+        
+        // Synchroniser avec le serveur si connecté
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            try {
+                await window.authService.saveData('expenses', expenses);
+            } catch (error) {
+                console.error('Erreur lors de la synchronisation des dépenses:', error);
+            }
+        }
+        
         // Rafraîchir le tableau de bord si il existe
         if (typeof window.refreshDashboard === 'function') {
             window.refreshDashboard();
@@ -297,7 +309,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initial Load ---
-    function init() {
+    async function init() {
+        // Charger les données depuis le serveur si connecté
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            try {
+                const serverExpenses = await window.authService.getData('expenses');
+                if (serverExpenses && serverExpenses.length > 0) {
+                    expenses = serverExpenses;
+                    localStorage.setItem('expenses', JSON.stringify(expenses));
+                    console.log('✅ Dépenses chargées depuis le serveur');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des dépenses:', error);
+            }
+        }
+        
         resetForm();
         populateFilterOptions();
         render();
@@ -347,6 +373,251 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     init();
+
+    // Fonction d'initialisation de l'authentification (copiée depuis rpghetto.js)
+    function initAuth() {
+        const authBtn = document.getElementById('auth-btn');
+        const authPopup = document.getElementById('auth-popup');
+        const authClose = document.getElementById('auth-close');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        
+            // Mettre à jour l'état du bouton selon la connexion
+    updateAuthButton();
+    
+    // Configurer la validation du mot de passe
+    setupPasswordValidation();
+        
+        // Ouvrir la popup d'authentification
+        authBtn.addEventListener('click', () => {
+            if (window.authService.isUserAuthenticated()) {
+                // Si connecté, proposer la déconnexion
+                if (confirm('Voulez-vous vous déconnecter ?')) {
+                    window.authService.logout();
+                    updateAuthButton();
+                    // Recharger les données
+                    render();
+                }
+            } else {
+                // Si non connecté, ouvrir la popup
+                authPopup.classList.add('active');
+            }
+        });
+        
+        // Fermer la popup
+        authClose.addEventListener('click', () => {
+            authPopup.classList.remove('active');
+            clearAuthMessages();
+        });
+        
+        // Fermer en cliquant à l'extérieur
+        authPopup.addEventListener('click', (e) => {
+            if (e.target === authPopup) {
+                authPopup.classList.remove('active');
+                clearAuthMessages();
+            }
+        });
+        
+        // Gestion des onglets
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Mettre à jour les onglets actifs
+                authTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Afficher le bon formulaire
+                if (targetTab === 'login') {
+                    loginForm.style.display = 'block';
+                    registerForm.style.display = 'none';
+                } else {
+                    loginForm.style.display = 'none';
+                    registerForm.style.display = 'block';
+                }
+                
+                clearAuthMessages();
+            });
+        });
+        
+        // Gestion du formulaire de connexion
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const submitBtn = loginForm.querySelector('.auth-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Connexion...';
+            
+            try {
+                const result = await window.authService.login(email, password);
+                
+                            if (result.success) {
+                showAuthMessage('🎉 Connexion réussie ! Bienvenue dans le club des dépensiers !', 'success');
+                updateAuthButton();
+                    
+                    // Charger les données depuis le serveur
+                    await window.authService.loadServerData();
+                    
+                    // Recharger les données
+                    render();
+                    
+                    setTimeout(() => {
+                        authPopup.classList.remove('active');
+                        clearAuthMessages();
+                    }, 1500);
+                            } else {
+                showAuthMessage(result.message, 'error');
+            }
+        } catch (error) {
+            showAuthMessage('💥 Erreur de connexion - Le serveur fait la grève', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Se Connecter';
+            }
+        });
+        
+        // Gestion du formulaire d'inscription
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+                    const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const passwordConfirm = document.getElementById('register-password-confirm').value;
+        const uniqueId = document.getElementById('register-unique-id').value;
+        
+        // Validation du mot de passe
+        if (!validatePassword(password)) {
+            showAuthMessage('🤦 Ton mot de passe est trop faible ! Respecte les règles !', 'error');
+            return;
+        }
+        
+        // Vérification de la confirmation du mot de passe
+        if (password !== passwordConfirm) {
+            showAuthMessage('🤔 Les mots de passe ne correspondent pas - Tu sais pas taper ?', 'error');
+            return;
+        }
+            
+            const submitBtn = registerForm.querySelector('.auth-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Inscription...';
+            
+            try {
+                // Vérifier si l'identifiant unique est disponible
+                const isAvailable = await window.authService.checkUniqueId(uniqueId);
+                            if (!isAvailable) {
+                showAuthMessage('😤 Cet identifiant est déjà pris ! Sois plus original !', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'S\'inscrire';
+                return;
+            }
+                
+                const result = await window.authService.register(email, password, uniqueId);
+                
+                            if (result.success) {
+                showAuthMessage('🎉 Inscription réussie ! Bienvenue dans la famille des dépensiers !', 'success');
+                updateAuthButton();
+                    
+                    // Synchroniser les données locales avec le serveur
+                    await window.authService.syncLocalData();
+                    
+                    setTimeout(() => {
+                        authPopup.classList.remove('active');
+                        clearAuthMessages();
+                    }, 1500);
+                } else {
+                    showAuthMessage(result.message, 'error');
+                }
+                    } catch (error) {
+            showAuthMessage('💥 Erreur d\'inscription - Le serveur a encore bu trop de café', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'S\'inscrire';
+            }
+        });
+    }
+
+    // Fonction pour mettre à jour le bouton d'authentification
+    function updateAuthButton() {
+        const authBtn = document.getElementById('auth-btn');
+        
+        if (window.authService.isUserAuthenticated()) {
+            const user = window.authService.getCurrentUser();
+            authBtn.textContent = `Déconnexion (${user.email})`;
+            authBtn.className = 'auth-btn connected';
+        } else {
+            authBtn.textContent = 'Se Connecter';
+            authBtn.className = 'auth-btn';
+        }
+    }
+
+    // Fonction pour afficher un message d'authentification
+    function showAuthMessage(message, type) {
+        clearAuthMessages();
+        
+        const authPopup = document.getElementById('auth-popup');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `auth-message ${type}`;
+        messageDiv.textContent = message;
+        
+        authPopup.querySelector('.popup-content').appendChild(messageDiv);
+    }
+
+    // Fonction pour effacer les messages d'authentification
+    function clearAuthMessages() {
+        const messages = document.querySelectorAll('.auth-message');
+        messages.forEach(msg => msg.remove());
+    }
+
+    // Fonction de validation du mot de passe
+    function validatePassword(password) {
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar && password.length >= 8;
+    }
+
+    // Fonction pour valider le mot de passe en temps réel
+    function setupPasswordValidation() {
+        const passwordInput = document.getElementById('register-password');
+        const passwordConfirmInput = document.getElementById('register-password-confirm');
+        const requirementsElement = document.querySelector('.password-requirements');
+        
+        if (passwordInput && requirementsElement) {
+            passwordInput.addEventListener('input', () => {
+                const password = passwordInput.value;
+                const isValid = validatePassword(password);
+                
+                if (isValid) {
+                    requirementsElement.classList.add('valid');
+                    requirementsElement.textContent = '✅ Mot de passe valide';
+                } else {
+                    requirementsElement.classList.remove('valid');
+                    requirementsElement.textContent = 'Doit contenir : 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial';
+                }
+            });
+        }
+        
+        if (passwordConfirmInput && passwordInput) {
+            passwordConfirmInput.addEventListener('input', () => {
+                const password = passwordInput.value;
+                const passwordConfirm = passwordConfirmInput.value;
+                
+                if (passwordConfirm && password !== passwordConfirm) {
+                    passwordConfirmInput.style.borderColor = '#ef4444';
+                } else if (passwordConfirm) {
+                    passwordConfirmInput.style.borderColor = '#10b981';
+                } else {
+                    passwordConfirmInput.style.borderColor = '';
+                }
+            });
+        }
+    }
 
     // Fonction d'export PDF avec prise en compte des filtres
     function exportExpensesToPDF() {

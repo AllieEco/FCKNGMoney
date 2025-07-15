@@ -173,23 +173,71 @@ function closePopup() {
 }
 
 // Fonction pour marquer un défi comme réussi
-function completeChallenge(challengeId) {
+async function completeChallenge(challengeId) {
     localStorage.setItem(`challenge_${challengeId}_completed`, 'true');
     localStorage.removeItem(`challenge_${challengeId}_failed`); // Enlever le statut échoué si il existait
     
     // Mettre à jour l'affichage
     updateChallengeDisplay(challengeId, 'completed');
     
+    // Synchroniser avec le serveur si connecté
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        try {
+            const challenges = {};
+            const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
+            challengeKeys.forEach(key => {
+                const id = key.replace('challenge_', '').replace('_completed', '').replace('_failed', '');
+                if (!challenges[id]) {
+                    challenges[id] = {};
+                }
+                if (key.includes('_completed')) {
+                    challenges[id].completed = localStorage.getItem(key) === 'true';
+                }
+                if (key.includes('_failed')) {
+                    challenges[id].failed = localStorage.getItem(key) === 'true';
+                }
+            });
+            
+            await window.authService.saveData('challenges', challenges);
+        } catch (error) {
+            console.error('Erreur lors de la synchronisation du défi:', error);
+        }
+    }
+    
     console.log(`🎉 Challenge ${challengeId} completed!`);
 }
 
 // Fonction pour marquer un défi comme échoué
-function failChallenge(challengeId) {
+async function failChallenge(challengeId) {
     localStorage.setItem(`challenge_${challengeId}_failed`, 'true');
     localStorage.removeItem(`challenge_${challengeId}_completed`); // Enlever le statut réussi si il existait
     
     // Mettre à jour l'affichage
     updateChallengeDisplay(challengeId, 'failed');
+    
+    // Synchroniser avec le serveur si connecté
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        try {
+            const challenges = {};
+            const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
+            challengeKeys.forEach(key => {
+                const id = key.replace('challenge_', '').replace('_completed', '').replace('_failed', '');
+                if (!challenges[id]) {
+                    challenges[id] = {};
+                }
+                if (key.includes('_completed')) {
+                    challenges[id].completed = localStorage.getItem(key) === 'true';
+                }
+                if (key.includes('_failed')) {
+                    challenges[id].failed = localStorage.getItem(key) === 'true';
+                }
+            });
+            
+            await window.authService.saveData('challenges', challenges);
+        } catch (error) {
+            console.error('Erreur lors de la synchronisation du défi:', error);
+        }
+    }
     
     console.log(`😔 Challenge ${challengeId} failed!`);
 }
@@ -294,6 +342,8 @@ function checkAndRegenerateChallenges() {
 document.addEventListener('DOMContentLoaded', function() {
     checkAndRegenerateChallenges();
 });
+
+
 
 // Export des fonctions pour utilisation dans d'autres fichiers
 window.RPGhetto = {

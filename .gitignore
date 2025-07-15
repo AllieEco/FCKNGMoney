@@ -22,4 +22,7 @@ yarn-error.log*
 
 # Build files (si ajoutés plus tard)
 dist/
-build/ 
+build/
+
+# FCKNGMoney specific
+users.json 
