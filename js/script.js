@@ -62,7 +62,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentMonthEl = document.getElementById('current-month');
 
     // Data Store
-    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    let expenses = [];
+
+    // Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
+    function getExpensesStorageKey() {
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            const user = window.authService.getCurrentUser();
+            return `expenses_${user.email}`;
+        }
+        return 'expenses_local'; // Pour les utilisateurs non connectés
+    }
+
+    // Fonction pour charger les dépenses depuis le bon stockage
+    function loadExpenses() {
+        const storageKey = getExpensesStorageKey();
+        expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+    }
+
+    // Fonction pour sauvegarder les dépenses dans le bon stockage
+    function saveExpensesToStorage() {
+        const storageKey = getExpensesStorageKey();
+        localStorage.setItem(storageKey, JSON.stringify(expenses));
+    }
+
+    // Fonction pour gérer la déconnexion
+    function handleLogout() {
+        // Nettoyer les données de l'utilisateur connecté
+        if (window.authService && window.authService.getCurrentUser()) {
+            const user = window.authService.getCurrentUser();
+            const userStorageKey = `expenses_${user.email}`;
+            localStorage.removeItem(userStorageKey);
+        }
+        
+        // Déconnecter l'utilisateur
+        window.authService.logout();
+        
+        // Recharger les données pour l'utilisateur local
+        loadExpenses();
+        render();
+        
+        // Mettre à jour l'interface
+        updateAuthButton();
+        
+        // Rafraîchir le tableau de bord si il existe
+        if (typeof window.refreshDashboard === 'function') {
+            window.refreshDashboard();
+        }
+    }
 
     // --- Main Submit Handler (Add & Edit) ---
     expenseForm.addEventListener('submit', (e) => {
@@ -110,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        saveExpensesToLocalStorage();
+        saveExpensesToStorage();
         render();
         resetForm();
     });
@@ -144,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deleteBtn && expense) {
             if (confirm(`Sûr de vouloir effacer cette dépense de ${expense.amount}€ chez ${expense.culprit} ? C'est pas en l'effaçant que l'argent va revenir...`)) {
                 expenses = expenses.filter(exp => exp.id !== id);
-                saveExpensesToLocalStorage();
+                saveExpensesToStorage();
                 render();
             }
         }
@@ -171,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Core Functions ---
     async function saveExpensesToLocalStorage() {
-        localStorage.setItem('expenses', JSON.stringify(expenses));
+        saveExpensesToStorage();
         
         // Synchroniser avec le serveur si connecté
         if (window.authService && window.authService.isUserAuthenticated()) {
@@ -316,12 +362,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const serverExpenses = await window.authService.getData('expenses');
                 if (serverExpenses && serverExpenses.length > 0) {
                     expenses = serverExpenses;
-                    localStorage.setItem('expenses', JSON.stringify(expenses));
+                    saveExpensesToStorage(); // Sauvegarder dans le stockage local de l'utilisateur
                     console.log('✅ Dépenses chargées depuis le serveur');
+                } else {
+                    loadExpenses(); // Charger depuis le stockage local si pas de données serveur
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des dépenses:', error);
+                loadExpenses(); // Fallback vers le stockage local
             }
+        } else {
+            loadExpenses(); // Charger depuis le stockage local pour les utilisateurs non connectés
         }
         
         resetForm();
@@ -373,6 +424,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     init();
+
+    // Écouter les événements de déconnexion
+    window.addEventListener('userLogout', () => {
+        // Recharger les données pour l'utilisateur local
+        loadExpenses();
+        render();
+    });
 
     // Fonction d'initialisation de l'authentification (copiée depuis rpghetto.js)
     function initAuth() {
@@ -455,7 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Charger les données depuis le serveur
                     await window.authService.loadServerData();
                     
-                    // Recharger les données
+                    // Recharger les données avec les nouvelles données utilisateur
+                    loadExpenses();
                     render();
                     
                     setTimeout(() => {
@@ -517,6 +576,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Synchroniser les données locales avec le serveur
                     await window.authService.syncLocalData();
                     
+                    // Recharger les données avec les nouvelles données utilisateur
+                    loadExpenses();
+                    render();
+                    
                     setTimeout(() => {
                         authPopup.classList.remove('active');
                         clearAuthMessages();
@@ -550,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="user-email">${user.email}</div>
                         </div>
                         <div class="user-menu-options">
-                            <button class="user-menu-option" onclick="window.authService.logout(); updateAuthButton(); render();">
+                            <button class="user-menu-option" onclick="handleLogout();">
                                 <span class="icon">🚪</span>
                                 Se déconnecter
                             </button>

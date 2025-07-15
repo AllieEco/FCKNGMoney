@@ -98,6 +98,9 @@ class AuthService {
         
         // Revenir au mode local
         this.switchToLocalMode();
+        
+        // Déclencher un événement personnalisé pour notifier la déconnexion
+        window.dispatchEvent(new CustomEvent('userLogout'));
     }
 
     // Sauvegarder des données sur le serveur
