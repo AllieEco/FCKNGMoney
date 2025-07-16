@@ -343,6 +343,10 @@ function updateAuthButton() {
                             <span class="icon">🚪</span>
                             Se déconnecter
                         </button>
+                        <button class="user-menu-option delete-account" onclick="showDeleteAccountConfirmation();">
+                            <span class="icon">🗑️</span>
+                            Supprimer mon compte
+                        </button>
                     </div>
                 </div>
             </div>
@@ -557,4 +561,81 @@ function setupPasswordValidation() {
                 updateAuthButton();
                 break;
         }
-    } 
+    }
+
+    // Fonction pour afficher la popup de confirmation de suppression de compte
+    function showDeleteAccountConfirmation() {
+        // Créer la popup si elle n'existe pas
+        let deletePopup = document.getElementById('delete-account-popup');
+        if (!deletePopup) {
+            deletePopup = document.createElement('div');
+            deletePopup.id = 'delete-account-popup';
+            deletePopup.className = 'popup-overlay';
+            deletePopup.innerHTML = `
+                <div class="popup-content delete-account-popup">
+                    <div class="popup-header">
+                        <h3>🗑️ Supprimer mon compte</h3>
+                    </div>
+                    <div class="popup-body">
+                        <p>Es-tu sûr de vouloir abandonner la gestion de ton budget ?</p>
+                        <p class="warning-text">⚠️ Cette action est irréversible ! Toutes tes données seront définitivement supprimées.</p>
+                    </div>
+                    <div class="popup-buttons">
+                        <button class="popup-btn popup-btn-danger" id="confirm-delete-account">
+                            <span class="icon">💀</span>
+                            Oui, supprimer mon compte
+                        </button>
+                        <button class="popup-btn popup-btn-cancel" id="cancel-delete-account">
+                            <span class="icon">😅</span>
+                            Non, je garde mon compte
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(deletePopup);
+            
+            // Ajouter les événements
+            const confirmBtn = deletePopup.querySelector('#confirm-delete-account');
+            const cancelBtn = deletePopup.querySelector('#cancel-delete-account');
+            
+            confirmBtn.addEventListener('click', async () => {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="icon">⏳</span> Suppression en cours...';
+                
+                try {
+                    const result = await window.authService.deleteAccount();
+                    if (result.success) {
+                        deletePopup.classList.remove('active');
+                        showAuthMessage('💀 Compte supprimé avec succès. Adieu, dépensier !', 'success');
+                        updateAuthButton();
+                        reloadPageData();
+                    } else {
+                        showAuthMessage(result.message, 'error');
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<span class="icon">💀</span> Oui, supprimer mon compte';
+                    }
+                } catch (error) {
+                    showAuthMessage('Erreur lors de la suppression du compte', 'error');
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span class="icon">💀</span> Oui, supprimer mon compte';
+                }
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                deletePopup.classList.remove('active');
+            });
+            
+            // Fermer en cliquant à l'extérieur
+            deletePopup.addEventListener('click', (e) => {
+                if (e.target === deletePopup) {
+                    deletePopup.classList.remove('active');
+                }
+            });
+        }
+        
+        // Afficher la popup
+        deletePopup.classList.add('active');
+    }
+
+    // Exposer la fonction globalement
+    window.showDeleteAccountConfirmation = showDeleteAccountConfirmation;

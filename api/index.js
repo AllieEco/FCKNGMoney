@@ -439,5 +439,46 @@ app.post('/api/save-config', async (req, res) => {
     }
 });
 
+// Route pour supprimer un compte utilisateur
+app.delete('/api/delete-account', async (req, res) => {
+    try {
+        await connectToMongoDB();
+        
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email requis' 
+            });
+        }
+
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Utilisateur non trouvé' 
+            });
+        }
+
+        // Supprimer l'utilisateur de la base de données
+        await usersCollection.deleteOne({ email });
+
+        res.json({ 
+            success: true, 
+            message: 'Compte supprimé avec succès' 
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression du compte:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur lors de la suppression du compte' 
+        });
+    }
+});
+
 // Export pour Vercel
 module.exports = app; 

@@ -330,6 +330,36 @@ class AuthService {
     isUserAuthenticated() {
         return this.isAuthenticated;
     }
+
+    // Supprimer le compte utilisateur
+    async deleteAccount() {
+        if (!this.isAuthenticated || !this.currentUser) {
+            return { success: false, message: 'Utilisateur non connecté' };
+        }
+
+        try {
+            const response = await fetch(`${this.baseUrl}/delete-account`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: this.currentUser.email })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Déconnecter l'utilisateur après suppression
+                this.logout();
+                return { success: true, message: data.message };
+            } else {
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression du compte:', error);
+            return { success: false, message: 'Erreur de connexion au serveur' };
+        }
+    }
 }
 
 // Créer une instance globale du service d'authentification
