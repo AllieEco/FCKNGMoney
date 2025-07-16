@@ -96,8 +96,18 @@ class AuthService {
         this.isAuthenticated = false;
         localStorage.removeItem('fckngmoney_user');
         
+        // Effacer les données du localStorage lors de la déconnexion
+        localStorage.removeItem('expenses');
+        
+        // Effacer les défis
+        const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
+        challengeKeys.forEach(key => localStorage.removeItem(key));
+        
         // Revenir au mode local
         this.switchToLocalMode();
+        
+        // Rafraîchir la page pour réinitialiser complètement l'interface
+        window.location.reload();
     }
 
     // Sauvegarder des données sur le serveur

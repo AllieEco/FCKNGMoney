@@ -110,8 +110,11 @@ function initQuotesCarousel() {
 }
 
 async function loadDashboardData() {
-    // Récupérer les données depuis le localStorage
-    const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    // Récupérer les données depuis le localStorage seulement si connecté
+    const expenses = isAuthenticated ? (JSON.parse(localStorage.getItem('expenses')) || []) : [];
     
     // Calculer les données du tableau de bord
     const dashboardData = await calculateDashboardData(expenses);
@@ -119,11 +122,17 @@ async function loadDashboardData() {
     // Mettre à jour l'affichage
     await updateDashboardDisplay(dashboardData);
     
-    // Calculer et afficher les stats de criminels financiers
-    updateCriminalStats(expenses);
-    
-    // Créer les graphiques
-    await createCharts(expenses);
+    // Calculer et afficher les stats de criminels financiers seulement si connecté
+    if (isAuthenticated) {
+        updateCriminalStats(expenses);
+        // Créer les graphiques seulement si connecté
+        await createCharts(expenses);
+    } else {
+        // Réinitialiser les stats si non connecté
+        updateCriminalStats([]);
+        // Masquer ou réinitialiser les graphiques
+        await createCharts([]);
+    }
 }
 
 // Fonction d'initialisation de l'authentification (copiée depuis rpghetto.js)
@@ -412,6 +421,18 @@ async function calculateDashboardData(expenses) {
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    // Si non connecté, retourner des valeurs par défaut
+    if (!isAuthenticated) {
+        return {
+            balance: 0,
+            monthlyCracks: 0,
+            unnecessarySpending: 0
+        };
+    }
+    
     // Récupérer la configuration utilisateur
     let userConfig = config;
     if (window.authService) {
@@ -472,6 +493,17 @@ async function updateAccountStatus(balance) {
     const messageElement = document.getElementById('balance-message');
     const cardElement = document.getElementById('account-status-card');
     
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    if (!isAuthenticated) {
+        // Si non connecté, afficher un message d'invitation
+        balanceElement.textContent = '0.00€';
+        messageElement.textContent = 'Connecte-toi pour voir tes finances !';
+        cardElement.className = 'dashboard-card';
+        return;
+    }
+    
     // Formater le solde
     balanceElement.textContent = `${balance.toFixed(2)}€`;
     
@@ -511,6 +543,17 @@ function updateMonthlyCracks(cracksCount) {
     const messageElement = document.getElementById('cracks-message');
     const cardElement = document.getElementById('monthly-cracks-card');
     
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    if (!isAuthenticated) {
+        // Si non connecté, afficher un message d'invitation
+        cracksElement.textContent = '0';
+        messageElement.textContent = 'Connecte-toi pour voir tes craquages !';
+        cardElement.className = 'dashboard-card';
+        return;
+    }
+    
     cracksElement.textContent = cracksCount;
     
     // Déterminer le message selon le nombre de craquages
@@ -544,6 +587,16 @@ function updateUnnecessarySpending(total) {
     const amountElement = document.getElementById('unnecessary-total');
     const messageElement = document.getElementById('unnecessary-message');
     
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    if (!isAuthenticated) {
+        // Si non connecté, afficher un message d'invitation
+        amountElement.textContent = '0.00€';
+        messageElement.textContent = 'Connecte-toi pour voir tes dépenses !';
+        return;
+    }
+    
     amountElement.textContent = `${total.toFixed(2)}€`;
     
     // Le message reste toujours le même comme demandé
@@ -556,6 +609,17 @@ function refreshDashboard() {
 }
 
 function updateCriminalStats(expenses) {
+    // Vérifier si l'utilisateur est connecté
+    const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    if (!isAuthenticated) {
+        // Si non connecté, afficher des valeurs par défaut
+        document.getElementById('days-without-crack').textContent = '0';
+        document.getElementById('biggest-expense').textContent = '0.00€';
+        document.getElementById('improvement').textContent = '0.0%';
+        return;
+    }
+    
     // Calculer les jours sans craquage
     const daysWithoutCrack = calculateDaysWithoutCrack(expenses);
     
