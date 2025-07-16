@@ -333,11 +333,19 @@ class AuthService {
 
     // Supprimer le compte utilisateur
     async deleteAccount() {
+        console.log('🗑️ deleteAccount appelée');
+        console.log('👤 Utilisateur actuel:', this.currentUser);
+        console.log('🔐 Authentifié:', this.isAuthenticated);
+        
         if (!this.isAuthenticated || !this.currentUser) {
+            console.error('❌ Utilisateur non connecté');
             return { success: false, message: 'Utilisateur non connecté' };
         }
 
         try {
+            console.log('📡 Envoi de la requête DELETE à:', `${this.baseUrl}/delete-account`);
+            console.log('📧 Email à supprimer:', this.currentUser.email);
+            
             const response = await fetch(`${this.baseUrl}/delete-account`, {
                 method: 'DELETE',
                 headers: {
@@ -346,17 +354,21 @@ class AuthService {
                 body: JSON.stringify({ email: this.currentUser.email })
             });
 
+            console.log('📡 Réponse reçue, status:', response.status);
             const data = await response.json();
+            console.log('📡 Données reçues:', data);
             
             if (data.success) {
+                console.log('✅ Suppression réussie, déconnexion...');
                 // Déconnecter l'utilisateur après suppression
                 this.logout();
                 return { success: true, message: data.message };
             } else {
+                console.error('❌ Erreur de suppression:', data.message);
                 return { success: false, message: data.message };
             }
         } catch (error) {
-            console.error('Erreur lors de la suppression du compte:', error);
+            console.error('❌ Erreur lors de la suppression du compte:', error);
             return { success: false, message: 'Erreur de connexion au serveur' };
         }
     }

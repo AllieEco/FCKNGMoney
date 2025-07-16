@@ -565,9 +565,19 @@ function setupPasswordValidation() {
 
     // Fonction pour afficher la popup de confirmation de suppression de compte
     function showDeleteAccountConfirmation() {
+        console.log('🔍 showDeleteAccountConfirmation appelée (auth-popup)');
+        
+        // Vérifier que l'utilisateur est connecté
+        if (!window.authService || !window.authService.isUserAuthenticated()) {
+            console.error('❌ Utilisateur non connecté');
+            alert('Tu dois être connecté pour supprimer ton compte');
+            return;
+        }
+        
         // Créer la popup si elle n'existe pas
         let deletePopup = document.getElementById('delete-account-popup');
         if (!deletePopup) {
+            console.log('📝 Création de la popup de suppression (auth-popup)');
             deletePopup = document.createElement('div');
             deletePopup.id = 'delete-account-popup';
             deletePopup.className = 'popup-overlay';
@@ -599,22 +609,28 @@ function setupPasswordValidation() {
             const cancelBtn = deletePopup.querySelector('#cancel-delete-account');
             
             confirmBtn.addEventListener('click', async () => {
+                console.log('💀 Bouton de suppression cliqué (auth-popup)');
                 confirmBtn.disabled = true;
                 confirmBtn.innerHTML = '<span class="icon">⏳</span> Suppression en cours...';
                 
                 try {
+                    console.log('📡 Appel de deleteAccount... (auth-popup)');
                     const result = await window.authService.deleteAccount();
+                    console.log('📡 Résultat:', result);
+                    
                     if (result.success) {
                         deletePopup.classList.remove('active');
                         showAuthMessage('💀 Compte supprimé avec succès. Adieu, dépensier !', 'success');
                         updateAuthButton();
-                        reloadPageData();
+                        // Recharger la page pour revenir à l'état initial
+                        window.location.reload();
                     } else {
-                        showAuthMessage(result.message, 'error');
+                        showAuthMessage(result.message || 'Erreur lors de la suppression', 'error');
                         confirmBtn.disabled = false;
                         confirmBtn.innerHTML = '<span class="icon">💀</span> Oui, supprimer mon compte';
                     }
                 } catch (error) {
+                    console.error('❌ Erreur lors de la suppression:', error);
                     showAuthMessage('Erreur lors de la suppression du compte', 'error');
                     confirmBtn.disabled = false;
                     confirmBtn.innerHTML = '<span class="icon">💀</span> Oui, supprimer mon compte';
@@ -622,6 +638,7 @@ function setupPasswordValidation() {
             });
             
             cancelBtn.addEventListener('click', () => {
+                console.log('😅 Annulation de la suppression (auth-popup)');
                 deletePopup.classList.remove('active');
             });
             
@@ -634,6 +651,7 @@ function setupPasswordValidation() {
         }
         
         // Afficher la popup
+        console.log('🎭 Affichage de la popup (auth-popup)');
         deletePopup.classList.add('active');
     }
 
