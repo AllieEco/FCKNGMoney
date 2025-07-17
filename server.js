@@ -377,6 +377,198 @@ app.post('/api/save-config', async (req, res) => {
     }
 });
 
+// Configuration des défis mensuels (même que dans rpghetto.js)
+const MONTHLY_CHALLENGES = [
+    {
+        id: 'ruin-starbucks',
+        icon: '☕',
+        title: 'Ruin Starbucks !',
+        description: 'N\'achète pas de café à l\'extérieur, même au bureau. Privilégie ton thermos !',
+        target: 30,
+        unit: 'jours'
+    },
+    {
+        id: 'one-mistake-per-day',
+        icon: '🛒',
+        title: '1 Bêtise par Jour',
+        description: 'Un achat non essentiel par jour MAXIMUM. Pas plus !',
+        target: 31,
+        unit: 'achats'
+    },
+    {
+        id: 'uber-fear',
+        icon: '🍝',
+        title: 'Uber T\'as Peur',
+        description: 'On ne commande pas à manger. Des pâtes et basta !',
+        target: 30,
+        unit: 'jours'
+    },
+    {
+        id: 'zero-waste-warrior',
+        icon: '♻️',
+        title: 'Warrior du Zéro Déchet',
+        description: 'Termine tous tes restes avant d\'acheter de la nouvelle bouffe !',
+        duration: 'daily',
+        target: 1
+    },
+    {
+        id: 'meal-prep-master',
+        icon: '🍱',
+        title: 'Meal Prep Master',
+        description: 'Prépare tous tes repas de la semaine le dimanche',
+        duration: 'weekly',
+        target: 7
+    },
+    {
+        id: 'list-or-bust',
+        icon: '📝',
+        title: 'Liste ou Crève',
+        description: 'N\'achète QUE ce qui est sur ta liste de courses',
+        duration: 'weekly',
+        target: 7
+    },
+    {
+        id: 'payday-protector',
+        icon: '💰',
+        title: 'Protecteur de Paie',
+        description: 'Les 3 premiers jours après la paie, AUCUN achat non-essentiel',
+        trigger: 'payday',
+        duration: 3
+    },
+    {
+        id: 'unlock-treat',
+        icon: '🍰',
+        title: 'Récompense Débloquée',
+        description: 'Après 10 jours sans dépense plaisir, offre-toi un petit truc',
+        unlock: 'after_10_days_no_pleasure',
+        reward: 'budget_bonus_20'
+    }
+];
+
+// Fonction pour sélectionner des défis aléatoirement
+function getRandomChallenges(count) {
+    const shuffled = [...MONTHLY_CHALLENGES].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+}
+
+// Fonction pour obtenir la clé du mois actuel
+function getCurrentMonthKey() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Route pour récupérer les défis du mois actuel
+app.get('/api/monthly-challenges/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        const currentMonthKey = getCurrentMonthKey();
+        
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Utilisateur non trouvé' 
+            });
+        }
+
+        // Vérifier si l'utilisateur a déjà des défis pour ce mois
+        let monthlyChallenges = user.monthlyChallenges || {};
+        let currentMonthChallenges = monthlyChallenges[currentMonthKey];
+
+        // Si pas de défis pour ce mois, en créer de nouveaux
+        if (!currentMonthChallenges) {
+            const selectedChallenges = getRandomChallenges(3);
+            currentMonthChallenges = {
+                challenges: selectedChallenges,
+                status: {} // Statuts des défis (completed/failed)
+            };
+
+            // Sauvegarder les nouveaux défis
+            monthlyChallenges[currentMonthKey] = currentMonthChallenges;
+            await usersCollection.updateOne(
+                { email },
+                { $set: { monthlyChallenges } }
+            );
+        }
+
+        res.json({ 
+            success: true, 
+            monthKey: currentMonthKey,
+            challenges: currentMonthChallenges.challenges,
+            status: currentMonthChallenges.status
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des défis:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur lors de la récupération des défis' 
+        });
+    }
+});
+
+// Route pour mettre à jour le statut d'un défi
+app.post('/api/update-challenge-status', async (req, res) => {
+    try {
+        const { email, challengeId, status } = req.body;
+        
+        if (!email || !challengeId || !status) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email, ID du défi et statut requis' 
+            });
+        }
+
+        if (!['completed', 'failed'].includes(status)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Statut doit être "completed" ou "failed"' 
+            });
+        }
+
+        const currentMonthKey = getCurrentMonthKey();
+        const usersCollection = getUsersCollection();
+        const user = await usersCollection.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Utilisateur non trouvé' 
+            });
+        }
+
+        // Mettre à jour le statut du défi
+        const monthlyChallenges = user.monthlyChallenges || {};
+        if (!monthlyChallenges[currentMonthKey]) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Aucun défi trouvé pour ce mois' 
+            });
+        }
+
+        monthlyChallenges[currentMonthKey].status[challengeId] = status;
+
+        await usersCollection.updateOne(
+            { email },
+            { $set: { monthlyChallenges } }
+        );
+
+        res.json({ 
+            success: true, 
+            message: 'Statut du défi mis à jour avec succès' 
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du statut:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur lors de la mise à jour du statut' 
+        });
+    }
+});
+
 // Route pour supprimer un compte utilisateur
 app.delete('/api/delete-account', async (req, res) => {
     try {

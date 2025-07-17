@@ -7,73 +7,8 @@ const BADGES_CONFIG = {
     ]
 };
 
-// Configuration des défis mensuels
-const MONTHLY_CHALLENGES = [
-    {
-        id: 'ruin-starbucks',
-        icon: '☕',
-        title: 'Ruin Starbucks !',
-        description: 'N\'achète pas de café à l\'extérieur, même au bureau. Privilégie ton thermos !',
-        target: 30, // jours sans café extérieur
-        unit: 'jours'
-    },
-    {
-        id: 'one-mistake-per-day',
-        icon: '🛒',
-        title: '1 Bêtise par Jour',
-        description: 'Un achat non essentiel par jour MAXIMUM. Pas plus !',
-        target: 31, // max 1 par jour
-        unit: 'achats'
-    },
-    {
-        id: 'uber-fear',
-        icon: '🍝',
-        title: 'Uber T\'as Peur',
-        description: 'On ne commande pas à manger. Des pâtes et basta !',
-        target: 30, // jours sans commande
-        unit: 'jours'
-    },
-    {
-        id: 'zero-waste-warrior',
-        icon: '♻️',
-        title: 'Warrior du Zéro Déchet',
-        description: 'Termine tous tes restes avant d\'acheter de la nouvelle bouffe !',
-        duration: 'daily',
-        target: 1
-    },
-    {
-        id: 'meal-prep-master',
-        icon: '🍱',
-        title: 'Meal Prep Master',
-        description: 'Prépare tous tes repas de la semaine le dimanche',
-        duration: 'weekly',
-        target: 7
-    },
-    {
-        id: 'list-or-bust',
-        icon: '📝',
-        title: 'Liste ou Crève',
-        description: 'N\'achète QUE ce qui est sur ta liste de courses',
-        duration: 'weekly',
-        target: 7
-    },
-    {
-        id: 'payday-protector',
-        icon: '💰',
-        title: 'Protecteur de Paie',
-        description: 'Les 3 premiers jours après la paie, AUCUN achat non-essentiel',
-        trigger: 'payday',
-        duration: 3
-    },
-    {
-        id: 'unlock-treat',
-        icon: '🍰',
-        title: 'Récompense Débloquée',
-        description: 'Après 10 jours sans dépense plaisir, offre-toi un petit truc',
-        unlock: 'after_10_days_no_pleasure',
-        reward: 'budget_bonus_20'
-    }
-];
+// Configuration des défis mensuels (maintenant gérée côté serveur)
+// Cette liste est maintenant synchronisée avec server.js
 
 // Initialisation de la page
 document.addEventListener('DOMContentLoaded', function() {
@@ -100,54 +35,71 @@ function loadBadges() {
 }
 
 // Fonction pour charger les défis mensuels
-function loadMonthlyChallenges() {
+async function loadMonthlyChallenges() {
     const challengesGrid = document.getElementById('challenges-grid');
     
     if (!challengesGrid) return;
     
-    // Vider la grille
-    challengesGrid.innerHTML = '';
-    
-    // Récupérer les défis sélectionnés pour ce mois
-    const savedChallenges = localStorage.getItem('currentMonthChallenges');
-    let selectedChallenges;
-    
-    if (savedChallenges) {
-        // Utiliser les défis sauvegardés pour ce mois
-        const challengeIds = JSON.parse(savedChallenges);
-        selectedChallenges = MONTHLY_CHALLENGES.filter(challenge => 
-            challengeIds.includes(challenge.id)
-        );
-    } else {
-        // Si pas de défis sauvegardés, en sélectionner 3 aléatoirement
-        selectedChallenges = getRandomChallenges(3);
-        localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        // Si non connecté, afficher un message
+        challengesGrid.innerHTML = `
+            <div class="challenge-card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <h3>🔐 Connexion requise</h3>
+                <p>Connectez-vous pour voir vos défis mensuels</p>
+            </div>
+        `;
+        return;
     }
     
-    // Générer les défis pour le mois actuel
-    selectedChallenges.forEach(challenge => {
-        const challengeElement = createChallengeElement(challenge);
-        challengesGrid.appendChild(challengeElement);
-    });
-    
-    console.log('🎯 Monthly challenges loaded');
-}
-
-// Fonction pour sélectionner des défis aléatoirement
-function getRandomChallenges(count) {
-    const shuffled = [...MONTHLY_CHALLENGES].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
+    try {
+        // Récupérer l'email de l'utilisateur connecté
+        const currentUser = window.authService.getCurrentUser();
+        if (!currentUser || !currentUser.email) {
+            throw new Error('Email utilisateur non trouvé');
+        }
+        const userEmail = currentUser.email;
+        
+        // Appeler l'API pour récupérer les défis
+        const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(userEmail)}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Erreur lors du chargement des défis');
+        }
+        
+        // Vider la grille
+        challengesGrid.innerHTML = '';
+        
+        // Générer les défis pour le mois actuel
+        data.challenges.forEach(challenge => {
+            const challengeElement = createChallengeElement(challenge, data.status);
+            challengesGrid.appendChild(challengeElement);
+        });
+        
+        console.log('🎯 Monthly challenges loaded from server');
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des défis:', error);
+        challengesGrid.innerHTML = `
+            <div class="challenge-card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <h3>❌ Erreur</h3>
+                <p>Impossible de charger les défis: ${error.message}</p>
+            </div>
+        `;
+    }
 }
 
 // Fonction pour créer un élément de défi
-function createChallengeElement(challenge) {
+function createChallengeElement(challenge, statusData = {}) {
     const challengeDiv = document.createElement('div');
     challengeDiv.className = 'challenge-card';
     challengeDiv.dataset.challengeId = challenge.id;
     
-    // Vérifier si le défi a été complété
-    const isCompleted = localStorage.getItem(`challenge_${challenge.id}_completed`) === 'true';
-    const isFailed = localStorage.getItem(`challenge_${challenge.id}_failed`) === 'true';
+    // Vérifier le statut du défi depuis les données du serveur
+    const challengeStatus = statusData[challenge.id];
+    const isCompleted = challengeStatus === 'completed';
+    const isFailed = challengeStatus === 'failed';
     
     let statusText = 'Clique pour valider le défi';
     let statusClass = '';
@@ -285,75 +237,93 @@ function createConfettiExplosion() {
 
 // Fonction pour marquer un défi comme réussi
 async function completeChallenge(challengeId) {
-    localStorage.setItem(`challenge_${challengeId}_completed`, 'true');
-    localStorage.removeItem(`challenge_${challengeId}_failed`); // Enlever le statut échoué si il existait
-    
-    // Mettre à jour l'affichage
-    updateChallengeDisplay(challengeId, 'completed');
-    
-    // Créer l'explosion de confettis ! 🎉
-    createConfettiExplosion();
-    
-    // Synchroniser avec le serveur si connecté
-    if (window.authService && window.authService.isUserAuthenticated()) {
-        try {
-            const challenges = {};
-            const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
-            challengeKeys.forEach(key => {
-                const id = key.replace('challenge_', '').replace('_completed', '').replace('_failed', '');
-                if (!challenges[id]) {
-                    challenges[id] = {};
-                }
-                if (key.includes('_completed')) {
-                    challenges[id].completed = localStorage.getItem(key) === 'true';
-                }
-                if (key.includes('_failed')) {
-                    challenges[id].failed = localStorage.getItem(key) === 'true';
-                }
-            });
-            
-            await window.authService.saveData('challenges', challenges);
-        } catch (error) {
-            console.error('Erreur lors de la synchronisation du défi:', error);
-        }
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        console.error('Utilisateur non connecté');
+        return;
     }
     
-    console.log(`🎉 Challenge ${challengeId} completed!`);
+    try {
+        const currentUser = window.authService.getCurrentUser();
+        if (!currentUser || !currentUser.email) {
+            throw new Error('Email utilisateur non trouvé');
+        }
+        const userEmail = currentUser.email;
+        
+        // Appeler l'API pour mettre à jour le statut
+        const response = await fetch('/api/update-challenge-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: userEmail,
+                challengeId: challengeId,
+                status: 'completed'
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.message || 'Erreur lors de la mise à jour du statut');
+        }
+        
+        // Mettre à jour l'affichage
+        updateChallengeDisplay(challengeId, 'completed');
+        
+        // Créer l'explosion de confettis ! 🎉
+        createConfettiExplosion();
+        
+        console.log(`🎉 Challenge ${challengeId} completed!`);
+        
+    } catch (error) {
+        console.error('Erreur lors de la complétion du défi:', error);
+        alert('Erreur lors de la sauvegarde du défi: ' + error.message);
+    }
 }
 
 // Fonction pour marquer un défi comme échoué
 async function failChallenge(challengeId) {
-    localStorage.setItem(`challenge_${challengeId}_failed`, 'true');
-    localStorage.removeItem(`challenge_${challengeId}_completed`); // Enlever le statut réussi si il existait
-    
-    // Mettre à jour l'affichage
-    updateChallengeDisplay(challengeId, 'failed');
-    
-    // Synchroniser avec le serveur si connecté
-    if (window.authService && window.authService.isUserAuthenticated()) {
-        try {
-            const challenges = {};
-            const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
-            challengeKeys.forEach(key => {
-                const id = key.replace('challenge_', '').replace('_completed', '').replace('_failed', '');
-                if (!challenges[id]) {
-                    challenges[id] = {};
-                }
-                if (key.includes('_completed')) {
-                    challenges[id].completed = localStorage.getItem(key) === 'true';
-                }
-                if (key.includes('_failed')) {
-                    challenges[id].failed = localStorage.getItem(key) === 'true';
-                }
-            });
-            
-            await window.authService.saveData('challenges', challenges);
-        } catch (error) {
-            console.error('Erreur lors de la synchronisation du défi:', error);
-        }
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        console.error('Utilisateur non connecté');
+        return;
     }
     
-    console.log(`😔 Challenge ${challengeId} failed!`);
+    try {
+        const currentUser = window.authService.getCurrentUser();
+        if (!currentUser || !currentUser.email) {
+            throw new Error('Email utilisateur non trouvé');
+        }
+        const userEmail = currentUser.email;
+        
+        // Appeler l'API pour mettre à jour le statut
+        const response = await fetch('/api/update-challenge-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: userEmail,
+                challengeId: challengeId,
+                status: 'failed'
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.message || 'Erreur lors de la mise à jour du statut');
+        }
+        
+        // Mettre à jour l'affichage
+        updateChallengeDisplay(challengeId, 'failed');
+        
+        console.log(`😔 Challenge ${challengeId} failed!`);
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'échec du défi:', error);
+        alert('Erreur lors de la sauvegarde du défi: ' + error.message);
+    }
 }
 
 // Fonction pour mettre à jour l'affichage d'un défi
@@ -420,50 +390,8 @@ function calculateTotalScore() {
     return 0;
 }
 
-// Fonction pour vérifier si les défis doivent être régénérés (nouveau mois)
-function checkAndRegenerateChallenges() {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    
-    const lastChallengeDate = localStorage.getItem('lastChallengeDate');
-    
-    if (lastChallengeDate) {
-        const lastDate = new Date(lastChallengeDate);
-        const lastMonth = lastDate.getMonth();
-        const lastYear = lastDate.getFullYear();
-        
-        // Si c'est un nouveau mois, régénérer les défis
-        if (currentMonth !== lastMonth || currentYear !== lastYear) {
-            localStorage.setItem('lastChallengeDate', currentDate.toISOString());
-            
-            // Réinitialiser tous les statuts des défis
-            MONTHLY_CHALLENGES.forEach(challenge => {
-                localStorage.removeItem(`challenge_${challenge.id}_completed`);
-                localStorage.removeItem(`challenge_${challenge.id}_failed`);
-            });
-            
-            // Sauvegarder les défis sélectionnés pour ce mois
-            const selectedChallenges = getRandomChallenges(3);
-            localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
-            
-            loadMonthlyChallenges();
-            console.log('🔄 Challenges regenerated for new month');
-        }
-    } else {
-        // Première visite
-        localStorage.setItem('lastChallengeDate', currentDate.toISOString());
-        
-        // Sélectionner les défis pour le mois actuel
-        const selectedChallenges = getRandomChallenges(3);
-        localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
-    }
-}
-
-// Vérifier les défis au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    checkAndRegenerateChallenges();
-});
+// La régénération des défis est maintenant gérée côté serveur
+// Les défis sont automatiquement créés lors de la première visite du mois
 
 
 
@@ -472,6 +400,5 @@ window.RPGhetto = {
     addBadge,
     updateBadgeStats,
     calculateTotalScore,
-    loadMonthlyChallenges,
-    checkAndRegenerateChallenges
+    loadMonthlyChallenges
 }; 
