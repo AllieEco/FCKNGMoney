@@ -32,6 +32,46 @@ const MONTHLY_CHALLENGES = [
         description: 'On ne commande pas à manger. Des pâtes et basta !',
         target: 30, // jours sans commande
         unit: 'jours'
+    },
+    {
+        id: 'zero-waste-warrior',
+        icon: '♻️',
+        title: 'Warrior du Zéro Déchet',
+        description: 'Termine tous tes restes avant d\'acheter de la nouvelle bouffe !',
+        duration: 'daily',
+        target: 1
+    },
+    {
+        id: 'meal-prep-master',
+        icon: '🍱',
+        title: 'Meal Prep Master',
+        description: 'Prépare tous tes repas de la semaine le dimanche',
+        duration: 'weekly',
+        target: 7
+    },
+    {
+        id: 'list-or-bust',
+        icon: '📝',
+        title: 'Liste ou Crève',
+        description: 'N\'achète QUE ce qui est sur ta liste de courses',
+        duration: 'weekly',
+        target: 7
+    },
+    {
+        id: 'payday-protector',
+        icon: '💰',
+        title: 'Protecteur de Paie',
+        description: 'Les 3 premiers jours après la paie, AUCUN achat non-essentiel',
+        trigger: 'payday',
+        duration: 3
+    },
+    {
+        id: 'unlock-treat',
+        icon: '🍰',
+        title: 'Récompense Débloquée',
+        description: 'Après 10 jours sans dépense plaisir, offre-toi un petit truc',
+        unlock: 'after_10_days_no_pleasure',
+        reward: 'budget_bonus_20'
     }
 ];
 
@@ -68,13 +108,35 @@ function loadMonthlyChallenges() {
     // Vider la grille
     challengesGrid.innerHTML = '';
     
+    // Récupérer les défis sélectionnés pour ce mois
+    const savedChallenges = localStorage.getItem('currentMonthChallenges');
+    let selectedChallenges;
+    
+    if (savedChallenges) {
+        // Utiliser les défis sauvegardés pour ce mois
+        const challengeIds = JSON.parse(savedChallenges);
+        selectedChallenges = MONTHLY_CHALLENGES.filter(challenge => 
+            challengeIds.includes(challenge.id)
+        );
+    } else {
+        // Si pas de défis sauvegardés, en sélectionner 3 aléatoirement
+        selectedChallenges = getRandomChallenges(3);
+        localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
+    }
+    
     // Générer les défis pour le mois actuel
-    MONTHLY_CHALLENGES.forEach(challenge => {
+    selectedChallenges.forEach(challenge => {
         const challengeElement = createChallengeElement(challenge);
         challengesGrid.appendChild(challengeElement);
     });
     
     console.log('🎯 Monthly challenges loaded');
+}
+
+// Fonction pour sélectionner des défis aléatoirement
+function getRandomChallenges(count) {
+    const shuffled = [...MONTHLY_CHALLENGES].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
 }
 
 // Fonction pour créer un élément de défi
@@ -381,12 +443,20 @@ function checkAndRegenerateChallenges() {
                 localStorage.removeItem(`challenge_${challenge.id}_failed`);
             });
             
+            // Sauvegarder les défis sélectionnés pour ce mois
+            const selectedChallenges = getRandomChallenges(3);
+            localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
+            
             loadMonthlyChallenges();
             console.log('🔄 Challenges regenerated for new month');
         }
     } else {
         // Première visite
         localStorage.setItem('lastChallengeDate', currentDate.toISOString());
+        
+        // Sélectionner les défis pour le mois actuel
+        const selectedChallenges = getRandomChallenges(3);
+        localStorage.setItem('currentMonthChallenges', JSON.stringify(selectedChallenges.map(c => c.id)));
     }
 }
 
