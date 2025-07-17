@@ -44,6 +44,13 @@
         <section id="dashboard-section">
             <h2>Tableau de Bord</h2>
             
+            <!-- Boutons de sélection de période -->
+            <div class="period-selector">
+                <button class="period-btn active" data-period="year">Année</button>
+                <button class="period-btn" data-period="month">Mois</button>
+                <button class="period-btn" data-period="week">Semaine</button>
+            </div>
+            
             <div class="dashboard-grid">
                 <!-- Carte 1: État du compte -->
                 <div class="dashboard-card" id="account-status-card">
@@ -62,7 +69,7 @@
                 <!-- Carte 2: Nombre de craquages du mois -->
                 <div class="dashboard-card" id="monthly-cracks-card">
                     <div class="card-header">
-                        <h3>Craquages du Mois</h3>
+                        <h3 id="cracks-title">Craquages du Mois</h3>
                         <div class="card-icon">💸</div>
                     </div>
                     <div class="card-content">
@@ -95,12 +102,12 @@
         <section id="charts-section">
             <div class="charts-container">
                 <div class="chart-wrapper">
-                    <h3>État de Santé du Compte</h3>
+                    <h3 id="balance-chart-title">État de Santé du Compte</h3>
                     <canvas id="balance-chart" width="400" height="200"></canvas>
                 </div>
                 
                 <div class="chart-wrapper">
-                    <h3>Répartition des Dépenses</h3>
+                    <h3 id="pie-chart-title">Répartition des Dépenses</h3>
                     <canvas id="expenses-pie-chart" width="200" height="200"></canvas>
                 </div>
             </div>
@@ -121,13 +128,13 @@
                 <div class="criminal-stat-card">
                     <h3>Plus Gros Crime</h3>
                     <div class="stat-value" id="biggest-expense">0.00€</div>
-                    <p class="stat-description">ce mois-ci</p>
+                    <p class="stat-description" id="biggest-expense-desc">ce mois-ci</p>
                 </div>
                 
                 <div class="criminal-stat-card">
                     <h3>Amélioration</h3>
                     <div class="stat-value" id="improvement">0.0%</div>
-                    <p class="stat-description">vs mois dernier</p>
+                    <p class="stat-description" id="improvement-desc">vs mois dernier</p>
                 </div>
             </div>
             

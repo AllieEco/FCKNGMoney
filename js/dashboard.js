@@ -1,4 +1,6 @@
 // Dashboard JavaScript pour FCKNGMoney
+let selectedPeriod = 'year'; // Période par défaut
+
 document.addEventListener('DOMContentLoaded', async function() {
     // Charger la configuration utilisateur
     if (window.authService) {
@@ -7,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Initialiser l'authentification
     initAuth();
+    
+    // Initialiser les boutons de sélection de période
+    initPeriodSelector();
     
     await loadDashboardData();
     initQuotesCarousel();
@@ -79,6 +84,26 @@ const politicalQuotes = [
         author: "Zinedine Zidane"
     }
 ];
+
+function initPeriodSelector() {
+    const periodButtons = document.querySelectorAll('.period-btn');
+    
+    periodButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const period = button.dataset.period;
+            
+            // Mettre à jour la période sélectionnée
+            selectedPeriod = period;
+            
+            // Mettre à jour l'état actif des boutons
+            periodButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Recharger les données du tableau de bord avec la nouvelle période
+            loadDashboardData();
+        });
+    });
+}
 
 function initQuotesCarousel() {
     const quoteContent = document.getElementById('quote-content');
@@ -428,7 +453,7 @@ async function calculateDashboardData(expenses) {
     if (!isAuthenticated) {
         return {
             balance: 0,
-            monthlyCracks: 0,
+            periodCracks: 0,
             unnecessarySpending: 0
         };
     }
@@ -441,30 +466,35 @@ async function calculateDashboardData(expenses) {
     
     // Utiliser le solde initial de la config + les transactions
     let totalBalance = userConfig.initialBalance || 0;
-    let monthlyCracks = 0;
+    let periodCracks = 0;
     let unnecessarySpending = 0;
+    
+    // Calculer les dates de début et fin selon la période sélectionnée
+    const { startDate, endDate } = getPeriodDates(selectedPeriod);
     
     expenses.forEach(expense => {
         const expenseDate = new Date(expense.date);
         const amount = parseFloat(expense.amount);
         
-        // Calculer le solde total
+        // Calculer le solde total (toujours sur toute la période)
         if (expense.type === 'income') {
             totalBalance += amount;
         } else {
             totalBalance += amount; // Les dépenses sont déjà négatives dans le stockage
         }
         
-        // Compter les craquages du mois en cours (dépenses "pose pas de question")
-        if (expenseDate.getMonth() === currentMonth && 
-            expenseDate.getFullYear() === currentYear &&
+        // Compter les craquages selon la période sélectionnée
+        if (expenseDate >= startDate && 
+            expenseDate <= endDate &&
             expense.type === 'expense' &&
             expense.necessity === 'Pose pas de questions qui fâchent') {
-            monthlyCracks++;
+            periodCracks++;
         }
         
-        // Calculer les dépenses inutiles
-        if (expense.necessity === 'Pose pas de questions qui fâchent' && 
+        // Calculer les dépenses inutiles selon la période sélectionnée
+        if (expenseDate >= startDate && 
+            expenseDate <= endDate &&
+            expense.necessity === 'Pose pas de questions qui fâchent' && 
             expense.type === 'expense') {
             unnecessarySpending += Math.abs(amount); // Utiliser la valeur absolue pour l'affichage
         }
@@ -472,9 +502,45 @@ async function calculateDashboardData(expenses) {
     
     return {
         balance: totalBalance,
-        monthlyCracks: monthlyCracks,
+        periodCracks: periodCracks,
         unnecessarySpending: unnecessarySpending
     };
+}
+
+// Fonction pour calculer les dates de début et fin selon la période
+function getPeriodDates(period) {
+    const now = new Date();
+    let startDate, endDate;
+    
+    switch (period) {
+        case 'week':
+            // Semaine en cours (lundi au dimanche)
+            const dayOfWeek = now.getDay();
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 = dimanche
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - daysToMonday);
+            startDate.setHours(0, 0, 0, 0);
+            
+            endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            endDate.setHours(23, 59, 59, 999);
+            break;
+            
+        case 'month':
+            // Mois en cours
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+            break;
+            
+        case 'year':
+        default:
+            // Année en cours
+            startDate = new Date(now.getFullYear(), 0, 1);
+            endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+            break;
+    }
+    
+    return { startDate, endDate };
 }
 
 async function updateDashboardDisplay(data) {
@@ -482,7 +548,7 @@ async function updateDashboardDisplay(data) {
     await updateAccountStatus(data.balance);
     
     // Mettre à jour le nombre de craquages
-    updateMonthlyCracks(data.monthlyCracks);
+    updatePeriodCracks(data.periodCracks);
     
     // Mettre à jour les dépenses inutiles
     updateUnnecessarySpending(data.unnecessarySpending);
@@ -538,10 +604,11 @@ async function updateAccountStatus(balance) {
     cardElement.className = `dashboard-card ${statusClass}`;
 }
 
-function updateMonthlyCracks(cracksCount) {
+function updatePeriodCracks(cracksCount) {
     const cracksElement = document.getElementById('monthly-cracks');
     const messageElement = document.getElementById('cracks-message');
     const cardElement = document.getElementById('monthly-cracks-card');
+    const titleElement = document.getElementById('cracks-title');
     
     // Vérifier si l'utilisateur est connecté
     const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
@@ -554,22 +621,57 @@ function updateMonthlyCracks(cracksCount) {
         return;
     }
     
+    // Mettre à jour le titre selon la période
+    switch (selectedPeriod) {
+        case 'week':
+            titleElement.textContent = 'Craquages de la Semaine';
+            break;
+        case 'month':
+            titleElement.textContent = 'Craquages du Mois';
+            break;
+        case 'year':
+        default:
+            titleElement.textContent = 'Craquages de l\'Année';
+            break;
+    }
+    
     cracksElement.textContent = cracksCount;
     
-    // Déterminer le message selon le nombre de craquages
+    // Déterminer le message selon le nombre de craquages et la période
     let message = '';
     let statusClass = '';
     
+    // Seuils adaptés selon la période
+    let lowThreshold, mediumThreshold, highThreshold;
+    switch (selectedPeriod) {
+        case 'week':
+            lowThreshold = 1;
+            mediumThreshold = 3;
+            highThreshold = 7;
+            break;
+        case 'month':
+            lowThreshold = 3;
+            mediumThreshold = 7;
+            highThreshold = 15;
+            break;
+        case 'year':
+        default:
+            lowThreshold = 10;
+            mediumThreshold = 25;
+            highThreshold = 50;
+            break;
+    }
+    
     if (cracksCount === 0) {
-        message = "Bravo ! Tu as tenu bon ce mois-ci !";
+        message = `Bravo ! Tu as tenu bon ${getPeriodText()} !`;
         statusClass = 'low';
-    } else if (cracksCount <= 3) {
+    } else if (cracksCount <= lowThreshold) {
         message = "Pas mal, tu te tiens encore !";
         statusClass = 'low';
-    } else if (cracksCount <= 7) {
+    } else if (cracksCount <= mediumThreshold) {
         message = "Bon, ça commence à faire beaucoup là...";
         statusClass = 'medium';
-    } else if (cracksCount <= 15) {
+    } else if (cracksCount <= highThreshold) {
         message = "Tu as un problème avec l'argent ou quoi ?";
         statusClass = 'high';
     } else {
@@ -581,6 +683,19 @@ function updateMonthlyCracks(cracksCount) {
     
     // Appliquer la classe CSS pour les couleurs
     cardElement.className = `dashboard-card ${statusClass}`;
+}
+
+// Fonction pour obtenir le texte de la période
+function getPeriodText() {
+    switch (selectedPeriod) {
+        case 'week':
+            return 'cette semaine';
+        case 'month':
+            return 'ce mois-ci';
+        case 'year':
+        default:
+            return 'cette année';
+    }
 }
 
 function updateUnnecessarySpending(total) {
@@ -623,16 +738,36 @@ function updateCriminalStats(expenses) {
     // Calculer les jours sans craquage
     const daysWithoutCrack = calculateDaysWithoutCrack(expenses);
     
-    // Calculer la plus grosse dépense du mois
-    const biggestExpense = calculateBiggestExpenseThisMonth(expenses);
+    // Calculer la plus grosse dépense de la période
+    const biggestExpense = calculateBiggestExpenseThisPeriod(expenses);
     
-    // Calculer l'amélioration vs mois dernier
-    const improvement = calculateImprovementVsLastMonth(expenses);
+    // Calculer l'amélioration vs période précédente
+    const improvement = calculateImprovementVsLastPeriod(expenses);
     
     // Mettre à jour l'affichage
     document.getElementById('days-without-crack').textContent = daysWithoutCrack;
     document.getElementById('biggest-expense').textContent = `${biggestExpense.toFixed(2)}€`;
     document.getElementById('improvement').textContent = `${improvement.toFixed(1)}%`;
+    
+    // Mettre à jour les descriptions selon la période
+    const biggestExpenseDesc = document.getElementById('biggest-expense-desc');
+    const improvementDesc = document.getElementById('improvement-desc');
+    
+    switch (selectedPeriod) {
+        case 'week':
+            biggestExpenseDesc.textContent = 'cette semaine';
+            improvementDesc.textContent = 'vs semaine dernière';
+            break;
+        case 'month':
+            biggestExpenseDesc.textContent = 'ce mois-ci';
+            improvementDesc.textContent = 'vs mois dernier';
+            break;
+        case 'year':
+        default:
+            biggestExpenseDesc.textContent = 'cette année';
+            improvementDesc.textContent = 'vs année dernière';
+            break;
+    }
 }
 
 function calculateDaysWithoutCrack(expenses) {
@@ -660,62 +795,60 @@ function calculateDaysWithoutCrack(expenses) {
     return Math.max(0, diffDays);
 }
 
-function calculateBiggestExpenseThisMonth(expenses) {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+function calculateBiggestExpenseThisPeriod(expenses) {
+    const { startDate, endDate } = getPeriodDates(selectedPeriod);
     
-    // Filtrer les dépenses du mois en cours
-    const thisMonthExpenses = expenses.filter(exp => {
+    // Filtrer les dépenses de la période sélectionnée
+    const periodExpenses = expenses.filter(exp => {
         const expDate = new Date(exp.date);
-        return expDate.getMonth() === currentMonth && 
-               expDate.getFullYear() === currentYear && 
+        return expDate >= startDate && 
+               expDate <= endDate && 
                exp.type === 'expense'; // Seulement les dépenses
     });
     
-    if (thisMonthExpenses.length === 0) {
+    if (periodExpenses.length === 0) {
         return 0;
     }
     
     // Trouver la plus grosse dépense (valeur absolue la plus élevée)
-    const biggest = thisMonthExpenses.reduce((max, exp) => {
+    const biggest = periodExpenses.reduce((max, exp) => {
         return Math.abs(exp.amount) > Math.abs(max.amount) ? exp : max;
     });
     
     return Math.abs(biggest.amount);
 }
 
-function calculateImprovementVsLastMonth(expenses) {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+function calculateImprovementVsLastPeriod(expenses) {
+    const { startDate, endDate } = getPeriodDates(selectedPeriod);
     
-    // Calculer le total du mois en cours
-    const thisMonthTotal = expenses
+    // Calculer le total de la période actuelle
+    const currentPeriodTotal = expenses
         .filter(exp => {
             const expDate = new Date(exp.date);
-            return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+            return expDate >= startDate && expDate <= endDate;
         })
         .reduce((sum, exp) => sum + exp.amount, 0);
     
-    // Calculer le total du mois dernier
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    // Calculer les dates de la période précédente
+    const periodDuration = endDate.getTime() - startDate.getTime();
+    const previousStartDate = new Date(startDate.getTime() - periodDuration);
+    const previousEndDate = new Date(startDate.getTime() - 1); // Juste avant le début de la période actuelle
     
-    const lastMonthTotal = expenses
+    // Calculer le total de la période précédente
+    const previousPeriodTotal = expenses
         .filter(exp => {
             const expDate = new Date(exp.date);
-            return expDate.getMonth() === lastMonth && expDate.getFullYear() === lastMonthYear;
+            return expDate >= previousStartDate && expDate <= previousEndDate;
         })
         .reduce((sum, exp) => sum + exp.amount, 0);
     
     // Calculer le pourcentage d'amélioration
-    if (lastMonthTotal === 0) {
-        // Si pas de données le mois dernier, on ne peut pas calculer de pourcentage
-        return thisMonthTotal > 0 ? 100 : 0;
+    if (previousPeriodTotal === 0) {
+        // Si pas de données la période précédente, on ne peut pas calculer de pourcentage
+        return currentPeriodTotal > 0 ? 100 : 0;
     }
     
-    const percentageChange = ((thisMonthTotal - lastMonthTotal) / Math.abs(lastMonthTotal)) * 100;
+    const percentageChange = ((currentPeriodTotal - previousPeriodTotal) / Math.abs(previousPeriodTotal)) * 100;
     return percentageChange;
 }
 
@@ -725,12 +858,35 @@ async function createCharts(expenses) {
 }
 
 async function createBalanceChart(expenses) {
-    const ctx = document.getElementById('balance-chart').getContext('2d');
+    const canvas = document.getElementById('balance-chart');
+    const titleElement = document.getElementById('balance-chart-title');
     
-    // Préparer les données pour les 6 derniers mois
+    // Détruire l'ancien graphique s'il existe
+    if (window.balanceChart) {
+        window.balanceChart.destroy();
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Mettre à jour le titre selon la période
+    switch (selectedPeriod) {
+        case 'week':
+            titleElement.textContent = 'État de Santé du Compte - Cette Semaine';
+            break;
+        case 'month':
+            titleElement.textContent = 'État de Santé du Compte - Ce Mois';
+            break;
+        case 'year':
+        default:
+            titleElement.textContent = 'État de Santé du Compte - Cette Année';
+            break;
+    }
+    
+    // Préparer les données selon la période
     const data = await prepareBalanceData(expenses);
     
-    new Chart(ctx, {
+    // Créer le nouveau graphique et le stocker globalement
+    window.balanceChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.labels,
@@ -776,12 +932,35 @@ async function createBalanceChart(expenses) {
 }
 
 function createExpensesPieChart(expenses) {
-    const ctx = document.getElementById('expenses-pie-chart').getContext('2d');
+    const canvas = document.getElementById('expenses-pie-chart');
+    const titleElement = document.getElementById('pie-chart-title');
+    
+    // Détruire l'ancien graphique s'il existe
+    if (window.pieChart) {
+        window.pieChart.destroy();
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Mettre à jour le titre selon la période
+    switch (selectedPeriod) {
+        case 'week':
+            titleElement.textContent = 'Répartition des Dépenses - Cette Semaine';
+            break;
+        case 'month':
+            titleElement.textContent = 'Répartition des Dépenses - Ce Mois';
+            break;
+        case 'year':
+        default:
+            titleElement.textContent = 'Répartition des Dépenses - Cette Année';
+            break;
+    }
     
     // Préparer les données pour le camembert
     const data = prepareExpensesPieData(expenses);
     
-    new Chart(ctx, {
+    // Créer le nouveau graphique et le stocker globalement
+    window.pieChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: data.labels,
@@ -816,7 +995,7 @@ function createExpensesPieChart(expenses) {
 }
 
 async function prepareBalanceData(expenses) {
-    const months = [];
+    const labels = [];
     const balances = [];
     const now = new Date();
     
@@ -829,33 +1008,91 @@ async function prepareBalanceData(expenses) {
     // Solde initial depuis la config
     let initialBalance = userConfig.initialBalance || 0;
     
-    // Générer les 6 derniers mois
-    for (let i = 5; i >= 0; i--) {
-        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthName = month.toLocaleString('fr-FR', { month: 'short' });
-        months.push(monthName);
-        
-        // Calculer le solde à la fin de ce mois
-        // Filtrer toutes les transactions jusqu'à la fin de ce mois
-        const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
-        const transactionsUntilMonth = expenses.filter(exp => {
-            const expDate = new Date(exp.date);
-            return expDate <= monthEnd;
-        });
-        
-        // Calculer le solde : solde initial + toutes les transactions jusqu'à ce mois
-        const monthBalance = initialBalance + transactionsUntilMonth.reduce((sum, exp) => sum + exp.amount, 0);
-        balances.push(monthBalance);
+    switch (selectedPeriod) {
+        case 'week':
+            // Générer 7 points pour la semaine (lundi au dimanche)
+            const { startDate: weekStart } = getPeriodDates('week');
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(weekStart);
+                day.setDate(weekStart.getDate() + i);
+                
+                // Format du label : "Lun", "Mar", etc.
+                const dayName = day.toLocaleString('fr-FR', { weekday: 'short' });
+                labels.push(dayName);
+                
+                // Calculer le solde à la fin de ce jour
+                const dayEnd = new Date(day);
+                dayEnd.setHours(23, 59, 59, 999);
+                
+                const transactionsUntilDay = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate <= dayEnd;
+                });
+                
+                const dayBalance = initialBalance + transactionsUntilDay.reduce((sum, exp) => sum + exp.amount, 0);
+                balances.push(dayBalance);
+            }
+            break;
+            
+        case 'month':
+            // Générer ~30 points pour le mois (un par jour)
+            const { startDate: monthStart, endDate: monthEnd } = getPeriodDates('month');
+            const daysInMonth = Math.ceil((monthEnd - monthStart) / (1000 * 60 * 60 * 24));
+            
+            for (let i = 0; i < daysInMonth; i++) {
+                const day = new Date(monthStart);
+                day.setDate(monthStart.getDate() + i);
+                
+                // Format du label : "1", "2", "3", etc.
+                labels.push(day.getDate().toString());
+                
+                // Calculer le solde à la fin de ce jour
+                const dayEnd = new Date(day);
+                dayEnd.setHours(23, 59, 59, 999);
+                
+                const transactionsUntilDay = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate <= dayEnd;
+                });
+                
+                const dayBalance = initialBalance + transactionsUntilDay.reduce((sum, exp) => sum + exp.amount, 0);
+                balances.push(dayBalance);
+            }
+            break;
+            
+        case 'year':
+        default:
+            // Générer 12 points pour l'année (un par mois)
+            for (let i = 0; i < 12; i++) {
+                const month = new Date(now.getFullYear(), i, 1);
+                const monthName = month.toLocaleString('fr-FR', { month: 'short' });
+                labels.push(monthName);
+                
+                // Calculer le solde à la fin de ce mois
+                const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
+                const transactionsUntilMonth = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate <= monthEnd;
+                });
+                
+                const monthBalance = initialBalance + transactionsUntilMonth.reduce((sum, exp) => sum + exp.amount, 0);
+                balances.push(monthBalance);
+            }
+            break;
     }
     
-    return { labels: months, balances: balances };
+    return { labels: labels, balances: balances };
 }
 
 function prepareExpensesPieData(expenses) {
-    // Filtrer seulement les dépenses (pas les revenus)
-    // Prendre toutes les transactions avec un montant négatif OU type 'expense'
+    const { startDate, endDate } = getPeriodDates(selectedPeriod);
+    
+    // Filtrer seulement les dépenses de la période sélectionnée
     const expenseOnly = expenses.filter(exp => {
-        return exp.type === 'expense' || exp.amount < 0;
+        const expDate = new Date(exp.date);
+        return (exp.type === 'expense' || exp.amount < 0) && 
+               expDate >= startDate && 
+               expDate <= endDate;
     });
     
     // Grouper par catégorie
