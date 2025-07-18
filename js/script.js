@@ -613,11 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="user-email">${user.email}</div>
                         </div>
                         <div class="user-menu-options">
-<<<<<<< HEAD
-                            <button class="user-menu-option logout" onclick="window.authService.logout(); updateAuthButton(); render();">
-=======
                             <button class="user-menu-option" onclick="handleLogout();">
->>>>>>> 674845d371ce3323688c8f2a59f23640e2b4c895
                                 <span class="icon">🚪</span>
                                 Se déconnecter
                             </button>

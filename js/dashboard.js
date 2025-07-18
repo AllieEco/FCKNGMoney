@@ -169,17 +169,12 @@ function handleLogout() {
 }
 
 async function loadDashboardData() {
-<<<<<<< HEAD
     // Vérifier si l'utilisateur est connecté
     const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
     
-    // Récupérer les données depuis le localStorage seulement si connecté
-    const expenses = isAuthenticated ? (JSON.parse(localStorage.getItem('expenses')) || []) : [];
-=======
     // Récupérer les données depuis le bon stockage
     const storageKey = getExpensesStorageKey();
     const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
->>>>>>> 674845d371ce3323688c8f2a59f23640e2b4c895
     
     // Calculer les données du tableau de bord
     const dashboardData = await calculateDashboardData(expenses);
