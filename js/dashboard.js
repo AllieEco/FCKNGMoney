@@ -151,14 +151,7 @@ function getExpensesStorageKey() {
 
 // Fonction pour gérer la déconnexion
 function handleLogout() {
-    // Nettoyer les données de l'utilisateur connecté
-    if (window.authService && window.authService.getCurrentUser()) {
-        const user = window.authService.getCurrentUser();
-        const userStorageKey = `expenses_${user.email}`;
-        localStorage.removeItem(userStorageKey);
-    }
-    
-    // Déconnecter l'utilisateur
+    // Déconnecter l'utilisateur (les données sont conservées)
     window.authService.logout();
     
     // Recharger les données pour l'utilisateur local

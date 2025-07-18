@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const user = window.authService.getCurrentUser();
             return `expenses_${user.email}`;
         }
-        return 'expenses_local'; // Pour les utilisateurs non connectés
+        return 'expenses'; // Pour les utilisateurs non connectés
     }
 
     // Fonction pour charger les dépenses depuis le bon stockage
@@ -87,14 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour gérer la déconnexion
     function handleLogout() {
-        // Nettoyer les données de l'utilisateur connecté
-        if (window.authService && window.authService.getCurrentUser()) {
-            const user = window.authService.getCurrentUser();
-            const userStorageKey = `expenses_${user.email}`;
-            localStorage.removeItem(userStorageKey);
-        }
-        
-        // Déconnecter l'utilisateur
+        // Déconnecter l'utilisateur (les données sont conservées)
         window.authService.logout();
         
         // Recharger les données pour l'utilisateur local
@@ -111,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Main Submit Handler (Add & Edit) ---
-    expenseForm.addEventListener('submit', (e) => {
+    expenseForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const transactionType = transactionTypeInput.value;
@@ -157,12 +150,21 @@ document.addEventListener('DOMContentLoaded', () => {
         expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         saveExpensesToStorage();
+        // Synchroniser avec le serveur si connecté
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            try {
+                await window.authService.saveData('expenses', expenses);
+                console.log('✅ Dépenses synchronisées avec le serveur');
+            } catch (error) {
+                console.error('Erreur lors de la synchronisation des dépenses:', error);
+            }
+        }
         render();
         resetForm();
     });
 
     // --- Event Delegation for Edit & Delete in Table ---
-    historyBody.addEventListener('click', (e) => {
+    historyBody.addEventListener('click', async (e) => {
         const editBtn = e.target.closest('.edit-btn');
         const deleteBtn = e.target.closest('.delete-btn');
         const row = e.target.closest('tr');
@@ -191,6 +193,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Sûr de vouloir effacer cette dépense de ${expense.amount}€ chez ${expense.culprit} ? C'est pas en l'effaçant que l'argent va revenir...`)) {
                 expenses = expenses.filter(exp => exp.id !== id);
                 saveExpensesToStorage();
+                // Synchroniser avec le serveur si connecté
+                if (window.authService && window.authService.isUserAuthenticated()) {
+                    try {
+                        await window.authService.saveData('expenses', expenses);
+                        console.log('✅ Dépenses synchronisées avec le serveur');
+                    } catch (error) {
+                        console.error('Erreur lors de la synchronisation des dépenses:', error);
+                    }
+                }
                 render();
             }
         }
@@ -223,8 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.authService && window.authService.isUserAuthenticated()) {
             try {
                 await window.authService.saveData('expenses', expenses);
+                console.log('✅ Dépenses synchronisées avec le serveur');
             } catch (error) {
                 console.error('Erreur lors de la synchronisation des dépenses:', error);
+                // En cas d'erreur, on garde les données locales
             }
         }
         
@@ -365,7 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveExpensesToStorage(); // Sauvegarder dans le stockage local de l'utilisateur
                     console.log('✅ Dépenses chargées depuis le serveur');
                 } else {
-                    loadExpenses(); // Charger depuis le stockage local si pas de données serveur
+                    // Vérifier s'il y a des données locales pour cet utilisateur
+                    const storageKey = getExpensesStorageKey();
+                    const localExpenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+                    if (localExpenses.length > 0) {
+                        expenses = localExpenses;
+                        console.log('✅ Dépenses chargées depuis le stockage local utilisateur');
+                    } else {
+                        loadExpenses(); // Charger depuis le stockage local générique si pas de données
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des dépenses:', error);
@@ -512,6 +533,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Charger les données depuis le serveur
                     await window.authService.loadServerData();
+                    
+                    // Synchroniser les données locales avec le serveur
+                    await window.authService.syncLocalData();
                     
                     // Recharger les données avec les nouvelles données utilisateur
                     loadExpenses();

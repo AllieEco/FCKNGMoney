@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Synchronisation FCKNGMoney</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Synchronisation FCKNGMoney</h1>
+    
+    <div class="test-section">
+        <h2>1. État de l'authentification</h2>
+        <div id="auth-status">Chargement...</div>
+        <button onclick="checkAuthStatus()">Vérifier l'état</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test des clés de stockage</h2>
+        <div id="storage-keys">Chargement...</div>
+        <button onclick="checkStorageKeys()">Vérifier les clés</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test de synchronisation</h2>
+        <button onclick="addTestExpense()">Ajouter une dépense de test</button>
+        <button onclick="checkSync()">Vérifier la synchronisation</button>
+        <div id="sync-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test de déconnexion/reconnexion</h2>
+        <button onclick="testLogoutLogin()">Tester déco/reco</button>
+        <div id="logout-login-result"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Attendre que le service d'authentification soit chargé
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                checkAuthStatus();
+                checkStorageKeys();
+            }, 1000);
+        });
+
+        function checkAuthStatus() {
+            const statusDiv = document.getElementById('auth-status');
+            const authService = window.authService;
+            
+            if (!authService) {
+                statusDiv.innerHTML = '<span class="error">❌ Service d\'authentification non chargé</span>';
+                return;
+            }
+
+            const isAuth = authService.isUserAuthenticated();
+            const user = authService.getCurrentUser();
+            
+            if (isAuth && user) {
+                statusDiv.innerHTML = `
+                    <span class="success">✅ Connecté</span><br>
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>ID Unique:</strong> ${user.uniqueId}<br>
+                    <strong>ID:</strong> ${user.id}
+                `;
+            } else {
+                statusDiv.innerHTML = '<span class="info">ℹ️ Non connecté</span>';
+            }
+        }
+
+        function checkStorageKeys() {
+            const keysDiv = document.getElementById('storage-keys');
+            const authService = window.authService;
+            
+            if (!authService) {
+                keysDiv.innerHTML = '<span class="error">❌ Service d\'authentification non chargé</span>';
+                return;
+            }
+
+            const isAuth = authService.isUserAuthenticated();
+            const user = authService.getCurrentUser();
+            
+            let html = '<h3>Clés de stockage trouvées:</h3>';
+            
+            // Clé générique
+            const genericExpenses = localStorage.getItem('expenses');
+            html += `<div><strong>expenses:</strong> ${genericExpenses ? '✅ Présent' : '❌ Absent'}</div>`;
+            
+            if (genericExpenses) {
+                try {
+                    const parsed = JSON.parse(genericExpenses);
+                    html += `<div class="info">→ ${parsed.length} dépenses</div>`;
+                } catch (e) {
+                    html += `<div class="error">→ Erreur de parsing</div>`;
+                }
+            }
+            
+            // Clé utilisateur si connecté
+            if (isAuth && user) {
+                const userKey = `expenses_${user.email}`;
+                const userExpenses = localStorage.getItem(userKey);
+                html += `<div><strong>${userKey}:</strong> ${userExpenses ? '✅ Présent' : '❌ Absent'}</div>`;
+                
+                if (userExpenses) {
+                    try {
+                        const parsed = JSON.parse(userExpenses);
+                        html += `<div class="info">→ ${parsed.length} dépenses</div>`;
+                    } catch (e) {
+                        html += `<div class="error">→ Erreur de parsing</div>`;
+                    }
+                }
+            }
+            
+            // Autres clés liées à l'utilisateur
+            const userKeys = Object.keys(localStorage).filter(key => 
+                key.startsWith('expenses_') || key === 'fckngmoney_user'
+            );
+            
+            if (userKeys.length > 0) {
+                html += '<h3>Autres clés utilisateur:</h3>';
+                userKeys.forEach(key => {
+                    html += `<div><strong>${key}:</strong> ✅ Présent</div>`;
+                });
+            }
+            
+            keysDiv.innerHTML = html;
+        }
+
+        async function addTestExpense() {
+            const authService = window.authService;
+            if (!authService) {
+                alert('Service d\'authentification non chargé');
+                return;
+            }
+
+            const testExpense = {
+                id: Date.now(),
+                culprit: 'Test Store',
+                date: new Date().toISOString().split('T')[0],
+                category: 'Test',
+                paymentMethod: 'Carte',
+                necessity: 'Non essentiel',
+                amount: -15.50,
+                description: 'Dépense de test pour vérifier la synchronisation',
+                type: 'expense'
+            };
+
+            // Ajouter à la liste des dépenses
+            const storageKey = authService.isUserAuthenticated() 
+                ? `expenses_${authService.getCurrentUser().email}` 
+                : 'expenses';
+            
+            const currentExpenses = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            currentExpenses.push(testExpense);
+            localStorage.setItem(storageKey, JSON.stringify(currentExpenses));
+
+            // Synchroniser avec le serveur si connecté
+            if (authService.isUserAuthenticated()) {
+                try {
+                    await authService.saveData('expenses', currentExpenses);
+                    alert('✅ Dépense de test ajoutée et synchronisée !');
+                } catch (error) {
+                    alert('⚠️ Dépense ajoutée localement mais erreur de synchronisation');
+                }
+            } else {
+                alert('✅ Dépense de test ajoutée localement !');
+            }
+
+            checkStorageKeys();
+        }
+
+        async function checkSync() {
+            const resultDiv = document.getElementById('sync-result');
+            const authService = window.authService;
+            
+            if (!authService) {
+                resultDiv.innerHTML = '<span class="error">❌ Service d\'authentification non chargé</span>';
+                return;
+            }
+
+            if (!authService.isUserAuthenticated()) {
+                resultDiv.innerHTML = '<span class="info">ℹ️ Non connecté - synchronisation non disponible</span>';
+                return;
+            }
+
+            try {
+                // Récupérer les données du serveur
+                const serverData = await authService.getData('expenses');
+                const user = authService.getCurrentUser();
+                const localKey = `expenses_${user.email}`;
+                const localData = JSON.parse(localStorage.getItem(localKey) || '[]');
+
+                let html = '<h3>Résultat de la synchronisation:</h3>';
+                html += `<div><strong>Données locales (${localKey}):</strong> ${localData.length} dépenses</div>`;
+                html += `<div><strong>Données serveur:</strong> ${serverData ? serverData.length : 0} dépenses</div>`;
+
+                if (serverData && serverData.length === localData.length) {
+                    html += '<div class="success">✅ Synchronisation OK</div>';
+                } else {
+                    html += '<div class="error">❌ Désynchronisation détectée</div>';
+                }
+
+                html += '<h3>Détails:</h3>';
+                html += '<pre>' + JSON.stringify({
+                    local: localData.length,
+                    server: serverData ? serverData.length : 0,
+                    localKey: localKey,
+                    userEmail: user.email
+                }, null, 2) + '</pre>';
+
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Erreur lors de la vérification: ${error.message}</span>`;
+            }
+        }
+
+        async function testLogoutLogin() {
+            const resultDiv = document.getElementById('logout-login-result');
+            const authService = window.authService;
+            
+            if (!authService) {
+                resultDiv.innerHTML = '<span class="error">❌ Service d\'authentification non chargé</span>';
+                return;
+            }
+
+            if (!authService.isUserAuthenticated()) {
+                resultDiv.innerHTML = '<span class="info">ℹ️ Non connecté - test non applicable</span>';
+                return;
+            }
+
+            const user = authService.getCurrentUser();
+            const userKey = `expenses_${user.email}`;
+            
+            // Sauvegarder les données avant déconnexion
+            const expensesBefore = localStorage.getItem(userKey);
+            
+            resultDiv.innerHTML = '<div class="info">🔄 Test en cours...</div>';
+
+            try {
+                // Simuler une déconnexion
+                authService.logout();
+                
+                // Vérifier que les données sont conservées
+                const expensesAfterLogout = localStorage.getItem(userKey);
+                
+                if (expensesAfterLogout === expensesBefore) {
+                    resultDiv.innerHTML = '<div class="success">✅ Données conservées après déconnexion</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Données perdues après déconnexion</div>';
+                }
+
+                // Recharger les données
+                setTimeout(() => {
+                    checkStorageKeys();
+                }, 500);
+
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Erreur lors du test: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html> 

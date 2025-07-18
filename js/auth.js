@@ -92,12 +92,19 @@ class AuthService {
 
     // Déconnexion
     logout() {
+        // Sauvegarder les données de l'utilisateur avant de se déconnecter
+        if (this.currentUser) {
+            const userStorageKey = `expenses_${this.currentUser.email}`;
+            const userExpenses = localStorage.getItem(userStorageKey);
+            if (userExpenses) {
+                // Garder les données utilisateur pour une reconnexion ultérieure
+                console.log('💾 Données utilisateur conservées pour reconnexion');
+            }
+        }
+        
         this.currentUser = null;
         this.isAuthenticated = false;
         localStorage.removeItem('fckngmoney_user');
-        
-        // Effacer les données du localStorage lors de la déconnexion
-        localStorage.removeItem('expenses');
         
         // Effacer les défis
         const challengeKeys = Object.keys(localStorage).filter(key => key.startsWith('challenge_'));
@@ -246,7 +253,8 @@ class AuthService {
 
         try {
             // Synchroniser les dépenses
-            const localExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            const userStorageKey = `expenses_${this.currentUser.email}`;
+            const localExpenses = JSON.parse(localStorage.getItem(userStorageKey)) || [];
             if (localExpenses.length > 0) {
                 await this.saveData('expenses', localExpenses);
                 console.log('✅ Dépenses synchronisées');
@@ -293,7 +301,8 @@ class AuthService {
             // Charger les dépenses
             const serverExpenses = await this.getData('expenses');
             if (serverExpenses && serverExpenses.length > 0) {
-                localStorage.setItem('expenses', JSON.stringify(serverExpenses));
+                const userStorageKey = `expenses_${this.currentUser.email}`;
+                localStorage.setItem(userStorageKey, JSON.stringify(serverExpenses));
                 console.log('✅ Dépenses chargées depuis le serveur');
             }
 
