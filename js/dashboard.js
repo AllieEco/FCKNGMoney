@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     await loadDashboardData();
     initQuotesCarousel();
+    
+    // Écouter les événements de déconnexion
+    window.addEventListener('userLogout', () => {
+        // Recharger les données pour l'utilisateur local
+        loadDashboardData();
+    });
 });
 
 // Citations politiques
@@ -134,12 +140,46 @@ function initQuotesCarousel() {
     setInterval(showRandomQuote, 8000);
 }
 
+// Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
+function getExpensesStorageKey() {
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        const user = window.authService.getCurrentUser();
+        return `expenses_${user.email}`;
+    }
+    return 'expenses_local'; // Pour les utilisateurs non connectés
+}
+
+// Fonction pour gérer la déconnexion
+function handleLogout() {
+    // Nettoyer les données de l'utilisateur connecté
+    if (window.authService && window.authService.getCurrentUser()) {
+        const user = window.authService.getCurrentUser();
+        const userStorageKey = `expenses_${user.email}`;
+        localStorage.removeItem(userStorageKey);
+    }
+    
+    // Déconnecter l'utilisateur
+    window.authService.logout();
+    
+    // Recharger les données pour l'utilisateur local
+    loadDashboardData();
+    
+    // Mettre à jour l'interface
+    updateAuthButton();
+}
+
 async function loadDashboardData() {
+<<<<<<< HEAD
     // Vérifier si l'utilisateur est connecté
     const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
     
     // Récupérer les données depuis le localStorage seulement si connecté
     const expenses = isAuthenticated ? (JSON.parse(localStorage.getItem('expenses')) || []) : [];
+=======
+    // Récupérer les données depuis le bon stockage
+    const storageKey = getExpensesStorageKey();
+    const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+>>>>>>> 674845d371ce3323688c8f2a59f23640e2b4c895
     
     // Calculer les données du tableau de bord
     const dashboardData = await calculateDashboardData(expenses);
@@ -339,7 +379,7 @@ function updateAuthButton() {
                         <div class="user-email">${user.email}</div>
                     </div>
                     <div class="user-menu-options">
-                        <button class="user-menu-option logout" onclick="window.authService.logout(); updateAuthButton(); loadDashboardData();">
+                        <button class="user-menu-option logout" onclick="handleLogout();">
                             <span class="icon">🚪</span>
                             Se déconnecter
                         </button>

@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mettre à jour l'état du bouton
     updateAuthButton();
     
+    // Écouter les événements de déconnexion
+    window.addEventListener('userLogout', () => {
+        // Recharger les données de la page
+        if (typeof reloadPageData === 'function') {
+            reloadPageData();
+        }
+    });
+    
     console.log('✅ Authentification initialisée avec succès');
 });
 
@@ -322,6 +330,27 @@ function setupAuthEvents() {
     });
 }
 
+// Fonction pour gérer la déconnexion
+function handleLogout() {
+    // Nettoyer les données de l'utilisateur connecté
+    if (window.authService && window.authService.getCurrentUser()) {
+        const user = window.authService.getCurrentUser();
+        const userStorageKey = `expenses_${user.email}`;
+        localStorage.removeItem(userStorageKey);
+    }
+    
+    // Déconnecter l'utilisateur
+    window.authService.logout();
+    
+    // Recharger les données de la page
+    if (typeof reloadPageData === 'function') {
+        reloadPageData();
+    }
+    
+    // Mettre à jour l'interface
+    updateAuthButton();
+}
+
 // Fonction pour mettre à jour le bouton d'authentification
 function updateAuthButton() {
     const authBtn = document.getElementById('auth-btn');
@@ -339,7 +368,7 @@ function updateAuthButton() {
                         <div class="user-email">${user.email}</div>
                     </div>
                     <div class="user-menu-options">
-                        <button class="user-menu-option logout" onclick="window.authService.logout(); updateAuthButton(); reloadPageData();">
+                        <button class="user-menu-option logout" onclick="handleLogout();">
                             <span class="icon">🚪</span>
                             Se déconnecter
                         </button>
