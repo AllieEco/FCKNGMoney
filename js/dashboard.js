@@ -471,6 +471,7 @@ function setupPasswordValidation() {
 
 async function calculateDashboardData(expenses) {
     const currentDate = new Date();
+    currentDate.setHours(23, 59, 59, 999); // On inclut toute la journée en cours
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
@@ -492,7 +493,7 @@ async function calculateDashboardData(expenses) {
         userConfig = await window.authService.getUserConfig();
     }
     
-    // Utiliser le solde initial de la config + les transactions
+    // Utiliser le solde initial de la config + les transactions jusqu'à aujourd'hui
     let totalBalance = userConfig.initialBalance || 0;
     let periodCracks = 0;
     let unnecessarySpending = 0;
@@ -500,11 +501,17 @@ async function calculateDashboardData(expenses) {
     // Calculer les dates de début et fin selon la période sélectionnée
     const { startDate, endDate } = getPeriodDates(selectedPeriod);
     
-    expenses.forEach(expense => {
+    // Filtrer les transactions jusqu'à aujourd'hui uniquement
+    const filteredExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate <= currentDate;
+    });
+    
+    filteredExpenses.forEach(expense => {
         const expenseDate = new Date(expense.date);
         const amount = parseFloat(expense.amount);
         
-        // Calculer le solde total (toujours sur toute la période)
+        // Calculer le solde total (toujours sur toute la période jusqu'à aujourd'hui)
         if (expense.type === 'income') {
             totalBalance += amount;
         } else {
@@ -512,18 +519,24 @@ async function calculateDashboardData(expenses) {
         }
         
         // Compter les craquages selon la période sélectionnée
-        if (expenseDate >= startDate && 
+        if (
+            expenseDate >= startDate && 
             expenseDate <= endDate &&
+            expenseDate <= currentDate &&
             expense.type === 'expense' &&
-            expense.necessity === 'Pose pas de questions qui fâchent') {
+            expense.necessity === 'Pose pas de questions qui fâchent'
+        ) {
             periodCracks++;
         }
         
         // Calculer les dépenses inutiles selon la période sélectionnée
-        if (expenseDate >= startDate && 
+        if (
+            expenseDate >= startDate && 
             expenseDate <= endDate &&
+            expenseDate <= currentDate &&
             expense.necessity === 'Pose pas de questions qui fâchent' && 
-            expense.type === 'expense') {
+            expense.type === 'expense'
+        ) {
             unnecessarySpending += Math.abs(amount); // Utiliser la valeur absolue pour l'affichage
         }
     });
