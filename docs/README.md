@@ -4,7 +4,7 @@
 
 Un tracker de dépenses qui ne prend pas de gants pour te dire la vérité sur tes finances. Parce que parfois, il faut un coup de pied au cul pour arrêter de cramer ton fric.
 
-[<img width="1901" height="960" alt="FCKNGMoney - Tracker de dépenses" src="https://github.com/user-attachments/assets/707adffb-a2a6-41b4-bc50-0cedc4c68f3c" />](https://fckng-money.vercel.app)
+[<img width="1894" height="943" alt="image" src="https://github.com/user-attachments/assets/cd38da27-bc4e-4978-be20-54202d6bacb1" />](https://fckng-money.vercel.app)
 
 
 ## 🚨 Qu'est-ce que c'est que cette merde ?
