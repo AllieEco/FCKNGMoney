@@ -270,7 +270,7 @@ function initAuth() {
                 await window.authService.loadServerData();
                 
                 // Recharger le dashboard avec les données synchronisées
-                loadDashboardData();
+                await loadDashboardData();
                 
                 setTimeout(() => {
                     authPopup.classList.remove('active');
