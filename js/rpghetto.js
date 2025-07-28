@@ -226,6 +226,210 @@ async function checkLevelUp(currentLevel) {
         // Mettre à jour le niveau précédent et le sauvegarder
         previousLevel = currentLevel;
         await savePreviousLevel(currentLevel);
+        
+        // Sauvegarder la date d'atteinte du niveau
+        await saveLevelAchievement(currentLevel, levelTitle);
+    }
+}
+
+// Fonction pour sauvegarder la date d'atteinte d'un niveau
+async function saveLevelAchievement(level, title) {
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        const achievementData = {
+            level: level,
+            title: title,
+            date: new Date().toISOString(),
+            type: 'level'
+        };
+        
+        // Récupérer les accomplissements existants
+        const existingAchievements = await window.authService.getData('achievements') || [];
+        
+        // Vérifier si ce niveau n'a pas déjà été enregistré
+        const levelExists = existingAchievements.some(achievement => 
+            achievement.type === 'level' && achievement.level === level
+        );
+        
+        if (!levelExists) {
+            existingAchievements.push(achievementData);
+            await window.authService.saveData('achievements', existingAchievements);
+            console.log(`📅 Date d'atteinte du niveau ${level} sauvegardée`);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de la date de niveau:', error);
+    }
+}
+
+// Fonction pour détecter et sauvegarder les nouveaux badges acquis
+async function detectAndSaveNewBadges(currentEarnedBadges) {
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        // Récupérer les badges déjà enregistrés
+        const existingAchievements = await window.authService.getData('achievements') || [];
+        const existingBadgeIds = existingAchievements
+            .filter(achievement => achievement.type === 'badge')
+            .map(achievement => achievement.badgeId);
+        
+        // Identifier les nouveaux badges
+        const newBadges = currentEarnedBadges.filter(badge => 
+            !existingBadgeIds.includes(badge.id)
+        );
+        
+        // Sauvegarder les nouveaux badges
+        if (newBadges.length > 0) {
+            const newAchievements = newBadges.map(badge => ({
+                badgeId: badge.id,
+                title: badge.title,
+                description: badge.description,
+                points: badge.points,
+                date: new Date().toISOString(),
+                type: 'badge'
+            }));
+            
+            existingAchievements.push(...newAchievements);
+            await window.authService.saveData('achievements', existingAchievements);
+            
+            console.log(`📅 ${newBadges.length} nouveau(x) badge(s) sauvegardé(s):`, 
+                newBadges.map(b => b.title).join(', '));
+        }
+    } catch (error) {
+        console.error('Erreur lors de la détection des nouveaux badges:', error);
+    }
+}
+
+// Fonction pour sauvegarder la date de complétion/échec d'un défi
+async function saveChallengeAchievement(challengeId, status) {
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        const achievementData = {
+            challengeId: challengeId,
+            status: status, // 'completed' ou 'failed'
+            date: new Date().toISOString(),
+            type: 'challenge'
+        };
+        
+        // Récupérer les accomplissements existants
+        const existingAchievements = await window.authService.getData('achievements') || [];
+        
+        // Vérifier si ce défi n'a pas déjà été enregistré pour ce statut
+        const challengeExists = existingAchievements.some(achievement => 
+            achievement.type === 'challenge' && 
+            achievement.challengeId === challengeId && 
+            achievement.status === status
+        );
+        
+        if (!challengeExists) {
+            existingAchievements.push(achievementData);
+            await window.authService.saveData('achievements', existingAchievements);
+            console.log(`📅 Date de ${status} du défi ${challengeId} sauvegardée`);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de la date de défi:', error);
+    }
+}
+
+// Fonction pour charger et afficher l'historique des accomplissements
+async function loadAchievementsHistory() {
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        const achievements = await window.authService.getData('achievements') || [];
+        
+        if (achievements.length === 0) {
+            console.log('📅 Aucun accomplissement enregistré');
+            return;
+        }
+        
+        // Trier par date (plus récent en premier)
+        achievements.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        console.log('📅 Historique des accomplissements:', achievements);
+        
+        // Créer un résumé des accomplissements
+        const summary = {
+            levels: achievements.filter(a => a.type === 'level').length,
+            badges: achievements.filter(a => a.type === 'badge').length,
+            challengesCompleted: achievements.filter(a => a.type === 'challenge' && a.status === 'completed').length,
+            challengesFailed: achievements.filter(a => a.type === 'challenge' && a.status === 'failed').length,
+            total: achievements.length
+        };
+        
+        console.log('📊 Résumé des accomplissements:', summary);
+        
+        // Optionnel : Afficher dans une section dédiée de la page
+        displayAchievementsSummary(summary);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement de l\'historique des accomplissements:', error);
+    }
+}
+
+// Fonction pour afficher un résumé des accomplissements
+function displayAchievementsSummary(summary) {
+    // Chercher une section existante ou en créer une nouvelle
+    let summarySection = document.getElementById('achievements-summary');
+    
+    if (!summarySection) {
+        // Créer une nouvelle section si elle n'existe pas
+        const main = document.querySelector('main');
+        if (main) {
+            summarySection = document.createElement('section');
+            summarySection.id = 'achievements-summary';
+            summarySection.innerHTML = `
+                <h2>📅 Historique des Accomplissements</h2>
+                <div class="achievements-summary-grid">
+                    <div class="achievement-stat">
+                        <span class="achievement-icon">⭐</span>
+                        <span class="achievement-count">${summary.levels}</span>
+                        <span class="achievement-label">Niveaux atteints</span>
+                    </div>
+                    <div class="achievement-stat">
+                        <span class="achievement-icon">🏆</span>
+                        <span class="achievement-count">${summary.badges}</span>
+                        <span class="achievement-label">Badges acquis</span>
+                    </div>
+                    <div class="achievement-stat">
+                        <span class="achievement-icon">✅</span>
+                        <span class="achievement-count">${summary.challengesCompleted}</span>
+                        <span class="achievement-label">Défis réussis</span>
+                    </div>
+                    <div class="achievement-stat">
+                        <span class="achievement-icon">❌</span>
+                        <span class="achievement-count">${summary.challengesFailed}</span>
+                        <span class="achievement-label">Défis échoués</span>
+                    </div>
+                </div>
+            `;
+            
+            // Insérer après la section des défis mensuels
+            const challengesSection = document.getElementById('monthly-challenges-section');
+            if (challengesSection && challengesSection.nextSibling) {
+                main.insertBefore(summarySection, challengesSection.nextSibling);
+            } else {
+                main.appendChild(summarySection);
+            }
+        }
+    } else {
+        // Mettre à jour la section existante
+        const counts = summarySection.querySelectorAll('.achievement-count');
+        if (counts.length >= 4) {
+            counts[0].textContent = summary.levels;
+            counts[1].textContent = summary.badges;
+            counts[2].textContent = summary.challengesCompleted;
+            counts[3].textContent = summary.challengesFailed;
+        }
     }
 }
 
@@ -521,6 +725,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialiser la popup des badges
     initializeBadgesPopup();
+    
+    // Charger l'historique des accomplissements
+    await loadAchievementsHistory();
 });
 
 // Fonction pour charger les badges
@@ -567,6 +774,9 @@ async function loadBadges() {
                 lockedBadges.push(badge);
             }
         });
+        
+        // Détecter et sauvegarder les nouveaux badges acquis
+        await detectAndSaveNewBadges(earnedBadges);
         
         // Afficher d'abord les badges débloqués, puis les verrouillés
         [...earnedBadges, ...lockedBadges].forEach(badge => {
@@ -828,6 +1038,9 @@ async function completeChallenge(challengeId) {
         // Mettre à jour l'affichage
         updateChallengeDisplay(challengeId, 'completed');
         
+        // Sauvegarder la date de complétion du défi
+        await saveChallengeAchievement(challengeId, 'completed');
+        
         // Mettre à jour les statistiques des badges
         await updateBadgeStats();
         
@@ -880,6 +1093,9 @@ async function failChallenge(challengeId) {
         
         // Mettre à jour l'affichage
         updateChallengeDisplay(challengeId, 'failed');
+        
+        // Sauvegarder la date d'échec du défi
+        await saveChallengeAchievement(challengeId, 'failed');
         
         // Mettre à jour les statistiques des badges
         await updateBadgeStats();
