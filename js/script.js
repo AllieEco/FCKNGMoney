@@ -663,6 +663,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="user-email">${user.email}</div>
                         </div>
                         <div class="user-menu-options">
+                            <button class="user-menu-option theme-toggle" onclick="toggleTheme();">
+                                <span class="icon">🌙</span>
+                                <span class="theme-text">Passer en mode clair</span>
+                            </button>
                             <button class="user-menu-option" onclick="handleLogout();">
                                 <span class="icon">🚪</span>
                                 Se déconnecter
@@ -704,6 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.error('Erreur lors du chargement de l\'avatar:', error);
                         }
                     }
+                }
+                
+                // Mettre à jour le bouton de thème
+                if (typeof window.updateThemeButton === 'function') {
+                    window.updateThemeButton();
                 }
             }, 100);
             authBtn.className = 'auth-btn connected';

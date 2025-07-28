@@ -394,6 +394,10 @@ function updateAuthButton() {
                         <div class="user-email">${user.email}</div>
                     </div>
                     <div class="user-menu-options">
+                        <button class="user-menu-option theme-toggle" onclick="toggleTheme();">
+                            <span class="icon">🌙</span>
+                            <span class="theme-text">Passer en mode clair</span>
+                        </button>
                         <button class="user-menu-option logout" onclick="handleLogout();">
                             <span class="icon">🚪</span>
                             Se déconnecter
@@ -436,6 +440,9 @@ function updateAuthButton() {
                     }
                 }
             }
+            
+            // Mettre à jour le bouton de thème
+            updateThemeButton();
         }, 100);
         authBtn.className = 'auth-btn connected';
         
