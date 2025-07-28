@@ -1,5 +1,9 @@
 // RPGhetto.js - Gestion des badges et défis mensuels
 
+// Variables globales pour le carrousel
+let currentCarouselIndex = 0;
+let badgesPerView = 3; // Nombre de badges visibles à la fois
+
 // Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
 function getExpensesStorageKey() {
     if (window.authService && window.authService.isUserAuthenticated()) {
@@ -234,20 +238,30 @@ async function loadBadges() {
             ...BADGES_CONFIG.positive_balance
         ];
         
-        let earnedBadges = 0;
+        // Séparer les badges débloqués et verrouillés
+        const earnedBadges = [];
+        const lockedBadges = [];
         
-        // Afficher tous les badges (débloqués et non débloqués)
         allBadges.forEach(badge => {
             const isEarned = badge.condition(expenses);
-            const badgeElement = createBadgeElement(badge, isEarned);
-            bonusGrid.appendChild(badgeElement);
-            
             if (isEarned) {
-                earnedBadges++;
+                earnedBadges.push(badge);
+            } else {
+                lockedBadges.push(badge);
             }
         });
         
-        console.log(`📛 ${earnedBadges} badges loaded`);
+        // Afficher d'abord les badges débloqués, puis les verrouillés
+        [...earnedBadges, ...lockedBadges].forEach(badge => {
+            const isEarned = badge.condition(expenses);
+            const badgeElement = createBadgeElement(badge, isEarned);
+            bonusGrid.appendChild(badgeElement);
+        });
+        
+        console.log(`📛 ${earnedBadges.length} badges débloqués affichés en premier`);
+        
+        // Initialiser le carrousel après avoir chargé les badges
+        initializeCarousel();
         
     } catch (error) {
         console.error('Erreur lors du chargement des badges:', error);
@@ -828,6 +842,105 @@ async function refreshBadges() {
     });
 }
 
+// Fonctions pour le carrousel
+function moveCarousel(direction) {
+    const carousel = document.getElementById('badges-carousel');
+    const badges = document.querySelectorAll('.badge-placeholder');
+    const totalBadges = badges.length;
+    
+    if (totalBadges === 0) return;
+    
+    // Calculer le nombre total de pages
+    const totalPages = Math.ceil(totalBadges / badgesPerView);
+    
+    // Mettre à jour l'index
+    currentCarouselIndex += direction;
+    
+    // Gérer les limites
+    if (currentCarouselIndex < 0) {
+        currentCarouselIndex = totalPages - 1;
+    } else if (currentCarouselIndex >= totalPages) {
+        currentCarouselIndex = 0;
+    }
+    
+    // Calculer la translation
+    const translateX = -(currentCarouselIndex * badgesPerView * (280 + 32)); // 280px largeur badge + 32px gap
+    
+    // Appliquer la translation
+    carousel.style.transform = `translateX(${translateX}px)`;
+    
+    // Mettre à jour les boutons
+    updateCarouselControls(totalPages);
+    
+    // Mettre à jour les indicateurs
+    updateCarouselIndicators(totalPages);
+}
+
+function updateCarouselControls(totalPages) {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.disabled = totalPages <= 1;
+        nextBtn.disabled = totalPages <= 1;
+    }
+}
+
+function updateCarouselIndicators(totalPages) {
+    const indicatorsContainer = document.getElementById('carousel-indicators');
+    
+    if (!indicatorsContainer) return;
+    
+    indicatorsContainer.innerHTML = '';
+    
+    for (let i = 0; i < totalPages; i++) {
+        const indicator = document.createElement('div');
+        indicator.className = `carousel-indicator ${i === currentCarouselIndex ? 'active' : ''}`;
+        indicator.onclick = () => goToCarouselPage(i);
+        indicatorsContainer.appendChild(indicator);
+    }
+}
+
+function goToCarouselPage(pageIndex) {
+    const carousel = document.getElementById('badges-carousel');
+    const badges = document.querySelectorAll('.badge-placeholder');
+    const totalBadges = badges.length;
+    const totalPages = Math.ceil(totalBadges / badgesPerView);
+    
+    if (pageIndex < 0 || pageIndex >= totalPages) return;
+    
+    currentCarouselIndex = pageIndex;
+    
+    // Calculer la translation
+    const translateX = -(currentCarouselIndex * badgesPerView * (280 + 32));
+    
+    // Appliquer la translation
+    carousel.style.transform = `translateX(${translateX}px)`;
+    
+    // Mettre à jour les contrôles
+    updateCarouselControls(totalPages);
+    updateCarouselIndicators(totalPages);
+}
+
+function initializeCarousel() {
+    const badges = document.querySelectorAll('.badge-placeholder');
+    const totalBadges = badges.length;
+    const totalPages = Math.ceil(totalBadges / badgesPerView);
+    
+    // Réinitialiser l'index
+    currentCarouselIndex = 0;
+    
+    // Mettre à jour les contrôles
+    updateCarouselControls(totalPages);
+    updateCarouselIndicators(totalPages);
+    
+    // Réinitialiser la position
+    const carousel = document.getElementById('badges-carousel');
+    if (carousel) {
+        carousel.style.transform = 'translateX(0px)';
+    }
+}
+
 // Export des fonctions pour utilisation dans d'autres fichiers
 window.RPGhetto = {
     addBadge,
@@ -835,4 +948,9 @@ window.RPGhetto = {
     calculateTotalScore,
     loadMonthlyChallenges,
     refreshBadges
-}; 
+};
+
+// Exporter les fonctions du carrousel
+window.moveCarousel = moveCarousel;
+window.goToCarouselPage = goToCarouselPage;
+window.initializeCarousel = initializeCarousel; 

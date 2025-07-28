@@ -1147,26 +1147,99 @@ footer {
     font-size: 1.1rem;
 }
 
-/* Badges Grid */
-.badges-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+/* Badges Carousel */
+.badges-container {
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
     margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.badges-carousel {
+    display: flex;
+    gap: 2rem;
+    transition: transform 0.3s ease;
+    padding: 1rem;
+}
+
+.badges-grid {
+    display: flex;
+    gap: 2rem;
+    min-width: max-content;
+}
+
+.carousel-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.carousel-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.carousel-btn:hover {
+    background: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+.carousel-btn:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d1d5db;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-indicator.active {
+    background: var(--accent-color);
+    transform: scale(1.2);
 }
 
 .badge-placeholder {
     background-color: var(--card-bg);
     border: 2px dashed var(--border-color);
     border-radius: 12px;
-    padding: 2.5rem 1.5rem;
+    padding: 2rem 1.5rem;
     text-align: center;
     transition: all 0.3s ease;
-    min-height: 320px;
+    min-height: 300px;
+    min-width: 240px;
+    max-width: 280px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .badge-placeholder:hover {
@@ -1195,8 +1268,8 @@ footer {
 }
 
 .badge-icon img {
-    width: 120px !important;
-    height: 120px !important;
+    width: 90px !important;
+    height: 90px !important;
     object-fit: contain;
     margin: 0 auto;
     display: block;
@@ -1351,14 +1424,19 @@ footer {
 
 /* Responsive adjustments for RPGhetto page */
 @media (max-width: 768px) {
+    .badges-container {
+        padding: 1.5rem;
+    }
+    
     .badges-grid {
-        grid-template-columns: 1fr;
         gap: 1rem;
     }
     
     .badge-placeholder {
-        padding: 2rem 1rem;
+        min-width: 200px;
+        max-width: 240px;
         min-height: 280px;
+        padding: 1.5rem 1rem;
     }
     
     .badge-icon {
@@ -1366,12 +1444,22 @@ footer {
     }
     
     .badge-icon img {
-        width: 100px !important;
-        height: 100px !important;
+        width: 80px !important;
+        height: 80px !important;
     }
     
     .badge-placeholder h3 {
         font-size: 1.1rem;
+    }
+    
+    .carousel-controls {
+        margin-top: 1rem;
+    }
+    
+    .carousel-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
     }
     
     .badge-stats-grid {

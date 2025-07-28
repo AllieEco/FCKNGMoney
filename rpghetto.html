@@ -33,12 +33,20 @@
             <h2>🏆 Badges Bonus</h2>
             <p class="section-subtitle">Tes exploits financiers (si si, ça existe)</p>
             
-            <div class="badges-grid" id="bonus-badges-grid">
-                <!-- Les badges bonus seront ajoutés ici dynamiquement -->
-                <div class="badge-placeholder">
-                    <div class="badge-icon">🎯</div>
-                    <h3>Badge à venir...</h3>
-                    <p>Zone de développement des badges bonus</p>
+            <div class="badges-container">
+                <div class="badges-carousel" id="badges-carousel">
+                    <div class="badges-grid" id="bonus-badges-grid">
+                        <!-- Les badges bonus seront ajoutés ici dynamiquement -->
+                    </div>
+                </div>
+                
+                <div class="carousel-controls">
+                    <button class="carousel-btn" id="prev-btn" onclick="moveCarousel(-1)">‹</button>
+                    <button class="carousel-btn" id="next-btn" onclick="moveCarousel(1)">›</button>
+                </div>
+                
+                <div class="carousel-indicators" id="carousel-indicators">
+                    <!-- Les indicateurs seront générés dynamiquement -->
                 </div>
             </div>
         </section>
