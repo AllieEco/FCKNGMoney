@@ -162,6 +162,11 @@ async function updateUserProfile() {
         // Vérifier le statut d'avatar après la mise à jour du profil
         await checkAvatarUnlockStatus();
         
+        // Mettre à jour le bouton de thème
+        if (typeof window.updateThemeButton === 'function') {
+            window.updateThemeButton();
+        }
+        
     } catch (error) {
         console.error('Erreur lors de la mise à jour du profil:', error);
     }
@@ -232,6 +237,11 @@ async function checkLevelUp(currentLevel) {
         
         // Sauvegarder la date d'atteinte du niveau
         await saveLevelAchievement(currentLevel, levelTitle);
+        
+        // Mettre à jour le bouton de thème si le niveau 5 est atteint
+        if (currentLevel >= 5 && typeof window.updateThemeButton === 'function') {
+            window.updateThemeButton();
+        }
     }
 }
 
@@ -2090,8 +2100,9 @@ function showAvatarLockedMessage() {
         <div class="avatar-locked-content">
             <div class="avatar-locked-icon">🔒</div>
             <div class="avatar-locked-text">
-                <h3>Fonctionnalité verrouillée</h3>
-                <p>Disponible au niveau 3</p>
+                <h3>Changement d'Avatar Verrouillé</h3>
+                <p>Tu dois atteindre le niveau 3 pour débloquer le changement d'avatar !</p>
+                <p>Continue à gérer ton budget pour progresser !</p>
             </div>
         </div>
     `;
@@ -2104,15 +2115,15 @@ function showAvatarLockedMessage() {
         notification.classList.add('show');
     }, 100);
     
-    // Supprimer après 3 secondes
+    // Supprimer après 4 secondes
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-        }, 500);
-    }, 3000);
+        }, 300);
+    }, 4000);
 }
 
 function applyAvatar(avatarId) {

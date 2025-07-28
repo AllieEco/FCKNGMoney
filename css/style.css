@@ -230,6 +230,74 @@
     background-color: rgba(239, 68, 68, 0.1);
 }
 
+/* Styles pour le bouton de thème verrouillé */
+.user-menu-option.theme-toggle.locked {
+    color: #9ca3af; /* Gray 400 */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.user-menu-option.theme-toggle.locked:hover {
+    background-color: rgba(156, 163, 175, 0.1);
+    transform: none;
+}
+
+.user-menu-option.theme-toggle.locked .icon {
+    transform: none;
+}
+
+/* Notification de verrouillage du mode clair */
+.light-mode-locked-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 2px solid var(--accent-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 350px;
+}
+
+.light-mode-locked-notification.show {
+    transform: translateX(0);
+}
+
+.light-mode-locked-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.light-mode-locked-icon {
+    font-size: 2rem;
+    color: var(--accent-color);
+    flex-shrink: 0;
+}
+
+.light-mode-locked-text h3 {
+    margin: 0 0 0.5rem 0;
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+}
+
+.light-mode-locked-text p {
+    margin: 0 0 0.5rem 0;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.light-mode-locked-text p:last-child {
+    margin-bottom: 0;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
 @keyframes scan {
     from { transform: translateY(-100%); }
     to { transform: translateY(100%); }
@@ -3589,15 +3657,15 @@ footer {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: linear-gradient(135deg, #374151, #1f2937);
-    border: 1px solid #4b5563;
+    background: var(--card-bg);
+    border: 2px solid var(--accent-color);
     border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 10000;
     transform: translateX(400px);
-    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    max-width: 300px;
+    transition: transform 0.3s ease;
+    max-width: 350px;
 }
 
 .avatar-locked-notification.show {
@@ -3606,27 +3674,34 @@ footer {
 
 .avatar-locked-content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
 }
 
 .avatar-locked-icon {
     font-size: 2rem;
-    color: #9ca3af;
+    color: var(--accent-color);
+    flex-shrink: 0;
 }
 
 .avatar-locked-text h3 {
-    color: #f9fafb;
+    margin: 0 0 0.5rem 0;
     font-family: var(--font-title);
-    font-size: 1rem;
-    margin: 0 0 0.3rem 0;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
 }
 
 .avatar-locked-text p {
-    color: #9ca3af;
-    font-size: 0.8rem;
-    margin: 0;
-    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.avatar-locked-text p:last-child {
+    margin-bottom: 0;
+    font-weight: bold;
+    color: var(--accent-color);
 }
 
 /* Popup de sélection d'avatar */

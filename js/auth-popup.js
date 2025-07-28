@@ -442,7 +442,9 @@ function updateAuthButton() {
             }
             
             // Mettre à jour le bouton de thème
-            updateThemeButton();
+            if (typeof window.updateThemeButton === 'function') {
+                window.updateThemeButton();
+            }
         }, 100);
         authBtn.className = 'auth-btn connected';
         
