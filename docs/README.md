@@ -37,6 +37,7 @@ FCKNGMoney est une application web qui te permet de :
 - **Jours sans craquage** : Depuis ta dernière dépense
 - **Plus gros crime** : Ta plus grosse dépense du mois
 - **Amélioration** : En pourcentage vs le mois dernier
+- **Messages variés** : Différents messages selon tes performances (avec emojis)
 
 ### 💀 Gestion des Dépenses
 - **Ajouter des crimes** : Balancer tes nouvelles dépenses
@@ -49,6 +50,7 @@ FCKNGMoney est une application web qui te permet de :
 - **Validation interactive** : Popup avec chat mignon
 - **Explosion de confettis** : 🎉 Animation lors de la réussite
 - **Badges à venir** : Système de récompenses
+- **Statistiques des défis** : Compteur de défis réussis en temps réel
 
 ## 🚀 Déploiement en Ligne
 
@@ -134,7 +136,8 @@ node server.js
 1. Va dans l'onglet "RPGhetto"
 2. Choisis un défi à relever
 3. Valide ta réussite (explosion de confettis !)
-4. Suis tes progrès
+4. Suis tes progrès dans les statistiques
+5. Vérifie ton compteur de "Défis Relevés" en temps réel
 
 ## 🎭 Messages et Citations
 
@@ -168,10 +171,14 @@ Le site t'envoie des messages selon tes performances :
 
 ### Craquages du Mois
 - **0** : "Bravo ! Tu as tenu bon ce mois-ci !"
-- **1-3** : "Pas mal, tu te tiens encore !"
-- **4-7** : "Bon, ça commence à faire beaucoup là..."
-- **8-15** : "Tu as un problème avec l'argent ou quoi ?"
-- **> 15** : "Tu es complètement dingue ou quoi ?!"
+- **1-2** : "Pas mal, tu te tiens encore !" / "Tu résistes bien à la tentation !" / "Continue comme ça, champion !" / "Tu maîtrises tes pulsions !"
+- **3** : "Bon, ça commence à faire beaucoup là..." / "Tu te lâches un peu trop non ?" / "Attention, ça part en couille !" / "Tu devrais peut-être te calmer..."
+- **4+** : "Tu as un problème avec l'argent ou quoi ?" / "Tu es complètement dingue ou quoi ?!" / "Tu veux vraiment finir à la rue ?" / "Ton banquier va te remercier..."
+
+**Nouveaux seuils ajustés :**
+- **Semaine** : Rouge à partir de 4 craquages
+- **Mois** : Rouge à partir de 19 craquages  
+- **Année** : Rouge à partir de 100 craquages
 
 ## 🔧 Technologies
 
@@ -208,6 +215,18 @@ Tu veux améliorer ce projet ? Parfait !
 Ce projet est sous licence MIT. Tu peux faire ce que tu veux avec, mais assume tes choix.
 
 - **Tous les criminels financiers** : Pour les données de test
+
+## 🆕 Dernières Mises à Jour
+
+### ✅ Seuils de Craquage Ajustés
+- **Seuils plus réalistes** : 4/semaine, 19/mois, 100/an avant le rouge
+- **Messages variés** : Plus de diversité dans les encouragements
+- **Emojis ajoutés** : Pour plus de dynamisme visuel
+
+### ✅ Statistiques des Défis
+- **Nouvelle carte** : "Défis Relevés" dans RPGhetto
+- **Compteur en temps réel** : Mise à jour automatique
+- **Synchronisation serveur** : Données cohérentes partout
 
 ## 🚨 Disclaimer
 
