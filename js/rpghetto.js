@@ -1,117 +1,113 @@
 // RPGhetto.js - Gestion des badges et défis mensuels
 
+// Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
+function getExpensesStorageKey() {
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        const user = window.authService.getCurrentUser();
+        return `expenses_${user.email}`;
+    }
+    return 'expenses_local'; // Pour les utilisateurs non connectés
+}
+
 // Configuration des badges basée sur les images disponibles
 const BADGES_CONFIG = {
     resistance: [
         {
             id: '7days_no_crack',
             title: '7 Jours Sans Craquage',
-            description: 'Tu as tenu 7 jours sans dépense inutile !',
+            description: 'Tu as tenu 7 jours consécutifs sans dépense inutile !',
             icon: 'assets/images/7-jours-sans-craquages.png',
             points: 25,
             condition: (expenses) => {
-                const today = new Date();
-                const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const recentExpenses = expenses.filter(exp => 
-                    exp.type === 'expense' && 
-                    exp.necessity === 'Pose pas de questions qui fâchent' &&
-                    new Date(exp.date) >= sevenDaysAgo
-                );
-                return recentExpenses.length === 0;
+                return hasEverReachedConsecutiveDays(expenses, 7);
             }
         },
         {
             id: '14days_no_crack',
             title: '14 Jours Sans Craquage',
-            description: 'Deux semaines de discipline !',
+            description: 'Deux semaines consécutives de discipline !',
             icon: 'assets/images/14_jours_sans_craquages.png',
             points: 50,
             condition: (expenses) => {
-                const today = new Date();
-                const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-                const recentExpenses = expenses.filter(exp => 
-                    exp.type === 'expense' && 
-                    exp.necessity === 'Pose pas de questions qui fâchent' &&
-                    new Date(exp.date) >= fourteenDaysAgo
-                );
-                return recentExpenses.length === 0;
+                return hasEverReachedConsecutiveDays(expenses, 14);
             }
         },
         {
             id: '20days_no_crack',
             title: '20 Jours Sans Craquage',
-            description: 'Près de 3 semaines de maîtrise !',
+            description: 'Près de 3 semaines consécutives de maîtrise !',
             icon: 'assets/images/20-jours-sans-craquages.png',
             points: 75,
             condition: (expenses) => {
-                const today = new Date();
-                const twentyDaysAgo = new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000);
-                const recentExpenses = expenses.filter(exp => 
-                    exp.type === 'expense' && 
-                    exp.necessity === 'Pose pas de questions qui fâchent' &&
-                    new Date(exp.date) >= twentyDaysAgo
-                );
-                return recentExpenses.length === 0;
+                return hasEverReachedConsecutiveDays(expenses, 20);
             }
         }
     ],
     savings: [
         {
             id: '100_economies_mois',
-            title: '100€ d\'Économies',
-            description: 'Tu as économisé 100€ ce mois-ci !',
+            title: '100€ d\'Épargne',
+            description: 'Tu as épargné 100€ ce mois-ci !',
             icon: 'assets/images/100-economies-mois.png',
             points: 30,
             condition: (expenses) => {
                 const currentMonth = new Date().getMonth();
                 const currentYear = new Date().getFullYear();
-                const monthlyExpenses = expenses.filter(exp => {
+                
+                // Compter les dépenses d'épargne du mois actuel
+                const monthlySavings = expenses.filter(exp => {
                     const expDate = new Date(exp.date);
                     return expDate.getMonth() === currentMonth && 
                            expDate.getFullYear() === currentYear &&
-                           exp.type === 'expense';
+                           exp.category === 'Epargne (Retarder l\'inévitable)';
                 });
-                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
-                // Comparer avec le mois précédent ou un seuil fixe
-                return totalSpent < 500; // Exemple de condition
+                
+                const totalSavings = monthlySavings.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                return totalSavings >= 100;
             }
         },
         {
             id: '200_economies_mois',
-            title: '200€ d\'Économies',
-            description: '200€ économisés ce mois-ci !',
+            title: '200€ d\'Épargne',
+            description: 'Tu as épargné 200€ ce mois-ci !',
             icon: 'assets/images/200-economies-mois.png',
             points: 60,
             condition: (expenses) => {
                 const currentMonth = new Date().getMonth();
                 const currentYear = new Date().getFullYear();
-                const monthlyExpenses = expenses.filter(exp => {
+                
+                // Compter les dépenses d'épargne du mois actuel
+                const monthlySavings = expenses.filter(exp => {
                     const expDate = new Date(exp.date);
                     return expDate.getMonth() === currentMonth && 
                            expDate.getFullYear() === currentYear &&
-                           exp.type === 'expense';
+                           exp.category === 'Epargne (Retarder l\'inévitable)';
                 });
-                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
-                return totalSpent < 400; // Condition plus stricte
+                
+                const totalSavings = monthlySavings.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                return totalSavings >= 200;
             }
         },
         {
             id: '300_economies_mois',
-            title: '300€ d\'Économies',
-            description: '300€ économisés ce mois-ci !',
+            title: '300€ d\'Épargne',
+            description: 'Tu as épargné 300€ ce mois-ci !',
             icon: 'assets/images/300-economie-mois.png',
             points: 100,
             condition: (expenses) => {
                 const currentMonth = new Date().getMonth();
                 const currentYear = new Date().getFullYear();
-                const monthlyExpenses = expenses.filter(exp => {
+                
+                // Compter les dépenses d'épargne du mois actuel
+                const monthlySavings = expenses.filter(exp => {
                     const expDate = new Date(exp.date);
                     return expDate.getMonth() === currentMonth && 
                            expDate.getFullYear() === currentYear &&
-                           exp.type === 'expense';
+                           exp.category === 'Epargne (Retarder l\'inévitable)';
                 });
-                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
-                return totalSpent < 300; // Condition très stricte
+                
+                const totalSavings = monthlySavings.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                return totalSavings >= 300;
             }
         }
     ],
@@ -674,7 +670,7 @@ function createBadgeElement(badgeData, isEarned = false) {
     
     badgeDiv.innerHTML = `
         <div class="badge-icon">
-            <img src="${badgeData.icon}" alt="${badgeData.title}" style="width: 80px; height: 80px; object-fit: contain;">
+            <img src="${badgeData.icon}" alt="${badgeData.title}" style="width: 120px; height: 120px; object-fit: contain;">
         </div>
         <h3>${badgeData.title}</h3>
         <p>${badgeData.description}</p>
@@ -683,6 +679,105 @@ function createBadgeElement(badgeData, isEarned = false) {
     `;
     
     return badgeDiv;
+}
+
+// Fonction pour calculer les jours consécutifs sans craquage
+function calculateConsecutiveDaysWithoutCrack(expenses) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Remettre à minuit
+    
+    // Filtrer les dépenses "craquage" (non essentielles)
+    const crackExpenses = expenses.filter(exp => 
+        exp.type === 'expense' && 
+        exp.necessity === 'Pose pas de questions qui fâchent'
+    );
+    
+    // Si aucune dépense de craquage, retourner le nombre de jours depuis la première dépense
+    if (crackExpenses.length === 0) {
+        if (expenses.length === 0) {
+            return 0; // Aucune dépense du tout
+        }
+        // Retourner les jours depuis la première dépense
+        const firstExpense = new Date(expenses[0].date);
+        firstExpense.setHours(0, 0, 0, 0);
+        const daysSinceFirst = Math.floor((today - firstExpense) / (1000 * 60 * 60 * 24));
+        return Math.max(0, daysSinceFirst);
+    }
+    
+    // Trier les dépenses de craquage par date (plus récentes en premier)
+    crackExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Prendre la date de la dernière dépense de craquage
+    const lastCrackDate = new Date(crackExpenses[0].date);
+    lastCrackDate.setHours(0, 0, 0, 0);
+    
+    // Calculer les jours depuis la dernière dépense de craquage
+    const daysSinceLastCrack = Math.floor((today - lastCrackDate) / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, daysSinceLastCrack);
+}
+
+// Fonction pour vérifier si l'utilisateur a déjà atteint un nombre de jours consécutifs
+function hasEverReachedConsecutiveDays(expenses, targetDays) {
+    // Filtrer les dépenses "craquage" (non essentielles)
+    const crackExpenses = expenses.filter(exp => 
+        exp.type === 'expense' && 
+        exp.necessity === 'Pose pas de questions qui fâchent'
+    );
+    
+    // Si aucune dépense de craquage, vérifier depuis la première dépense
+    if (crackExpenses.length === 0) {
+        if (expenses.length === 0) {
+            return false;
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const firstExpense = new Date(expenses[0].date);
+        firstExpense.setHours(0, 0, 0, 0);
+        const daysSinceFirst = Math.floor((today - firstExpense) / (1000 * 60 * 60 * 24));
+        return daysSinceFirst >= targetDays;
+    }
+    
+    // Trier les dépenses de craquage par date (plus anciennes en premier)
+    crackExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Vérifier chaque période entre les craquages
+    for (let i = 0; i < crackExpenses.length; i++) {
+        const currentCrackDate = new Date(crackExpenses[i].date);
+        currentCrackDate.setHours(0, 0, 0, 0);
+        
+        let previousCrackDate;
+        if (i === 0) {
+            // Première dépense de craquage - vérifier depuis le début
+            if (expenses.length === 0) {
+                continue;
+            }
+            const firstExpense = new Date(expenses[0].date);
+            firstExpense.setHours(0, 0, 0, 0);
+            previousCrackDate = firstExpense;
+        } else {
+            // Dépense de craquage précédente
+            previousCrackDate = new Date(crackExpenses[i - 1].date);
+            previousCrackDate.setHours(0, 0, 0, 0);
+        }
+        
+        // Calculer les jours entre les deux craquages
+        const daysBetweenCracks = Math.floor((currentCrackDate - previousCrackDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysBetweenCracks >= targetDays) {
+            return true;
+        }
+    }
+    
+    // Vérifier la période depuis le dernier craquage jusqu'à aujourd'hui
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastCrackDate = new Date(crackExpenses[crackExpenses.length - 1].date);
+    lastCrackDate.setHours(0, 0, 0, 0);
+    
+    const daysSinceLastCrack = Math.floor((today - lastCrackDate) / (1000 * 60 * 60 * 24));
+    
+    return daysSinceLastCrack >= targetDays;
 }
 
 // Fonction pour calculer le score total (à implémenter plus tard)

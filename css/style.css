@@ -1159,10 +1159,10 @@ footer {
     background-color: var(--card-bg);
     border: 2px dashed var(--border-color);
     border-radius: 12px;
-    padding: 2rem;
+    padding: 2.5rem 1.5rem;
     text-align: center;
     transition: all 0.3s ease;
-    min-height: 200px;
+    min-height: 320px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1192,6 +1192,14 @@ footer {
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.6;
+}
+
+.badge-icon img {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
 }
 
 .badge-placeholder h3 {
@@ -1349,12 +1357,17 @@ footer {
     }
     
     .badge-placeholder {
-        padding: 1.5rem;
-        min-height: 150px;
+        padding: 2rem 1rem;
+        min-height: 280px;
     }
     
     .badge-icon {
         font-size: 2.5rem;
+    }
+    
+    .badge-icon img {
+        width: 100px !important;
+        height: 100px !important;
     }
     
     .badge-placeholder h3 {
