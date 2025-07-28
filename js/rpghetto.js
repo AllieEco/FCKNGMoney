@@ -1996,7 +1996,12 @@ function applyGlobalAvatar(avatarElement, avatarId) {
     
     if (avatar.type === 'emoji') {
         avatarElement.textContent = avatar.image;
-        avatarElement.style.backgroundImage = 'none';
+        // Garder le dégradé vert pour l'avatar par défaut
+        if (avatarId === 'default') {
+            avatarElement.style.backgroundImage = 'linear-gradient(135deg, var(--accent-color), #4ade80)';
+        } else {
+            avatarElement.style.backgroundImage = 'none';
+        }
         avatarElement.style.fontSize = '1.5rem';
         avatarElement.style.display = 'flex';
         avatarElement.style.alignItems = 'center';
@@ -2118,7 +2123,12 @@ function applyAvatar(avatarId) {
     
     if (avatar.type === 'emoji') {
         avatarElement.textContent = avatar.image;
-        avatarElement.style.backgroundImage = 'none';
+        // Garder le dégradé vert pour l'avatar par défaut
+        if (avatarId === 'default') {
+            avatarElement.style.backgroundImage = 'linear-gradient(135deg, var(--accent-color), #4ade80)';
+        } else {
+            avatarElement.style.backgroundImage = 'none';
+        }
         avatarElement.style.fontSize = '3rem';
     } else {
         avatarElement.textContent = '';
