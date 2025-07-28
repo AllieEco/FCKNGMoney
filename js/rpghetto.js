@@ -11,11 +11,11 @@ const BADGES_CONFIG = {
 // Cette liste est maintenant synchronisée avec server.js
 
 // Initialisation de la page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎮 RPGhetto page loaded');
     
     // Initialiser les statistiques
-    updateBadgeStats();
+    await updateBadgeStats();
     
     // Charger les badges (pour l'instant, juste les placeholders)
     loadBadges();
@@ -271,6 +271,9 @@ async function completeChallenge(challengeId) {
         // Mettre à jour l'affichage
         updateChallengeDisplay(challengeId, 'completed');
         
+        // Mettre à jour les statistiques des badges
+        await updateBadgeStats();
+        
         // Créer l'explosion de confettis ! 🎉
         createConfettiExplosion();
         
@@ -318,6 +321,9 @@ async function failChallenge(challengeId) {
         // Mettre à jour l'affichage
         updateChallengeDisplay(challengeId, 'failed');
         
+        // Mettre à jour les statistiques des badges
+        await updateBadgeStats();
+        
         console.log(`😔 Challenge ${challengeId} failed!`);
         
     } catch (error) {
@@ -343,13 +349,46 @@ function updateChallengeDisplay(challengeId, status) {
 }
 
 // Fonction pour mettre à jour les statistiques des badges
-function updateBadgeStats() {
+async function updateBadgeStats() {
     const bonusCount = document.getElementById('bonus-badges-count');
     const totalScore = document.getElementById('total-badge-score');
+    const completedChallengesCount = document.getElementById('completed-challenges-count');
     
-    // Pour l'instant, on met des valeurs par défaut
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        bonusCount.textContent = '0';
+        totalScore.textContent = '0';
+        completedChallengesCount.textContent = '0';
+        return;
+    }
+    
+    try {
+        // Récupérer l'email de l'utilisateur connecté
+        const currentUser = window.authService.getCurrentUser();
+        if (!currentUser || !currentUser.email) {
+            throw new Error('Email utilisateur non trouvé');
+        }
+        const userEmail = currentUser.email;
+        
+        // Appeler l'API pour récupérer les défis et leur statut
+        const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(userEmail)}`);
+        const data = await response.json();
+        
+        if (data.success && data.status) {
+            // Compter les défis réussis
+            const completedCount = Object.values(data.status).filter(status => status === 'completed').length;
+            completedChallengesCount.textContent = completedCount;
+        } else {
+            completedChallengesCount.textContent = '0';
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors du calcul des défis réussis:', error);
+        completedChallengesCount.textContent = '0';
+    }
+    
+    // Pour l'instant, on met des valeurs par défaut pour les badges
     // Plus tard, on calculera ces valeurs basées sur les badges obtenus
-    
     bonusCount.textContent = '0';
     totalScore.textContent = '0';
     
