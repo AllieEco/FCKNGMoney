@@ -1225,7 +1225,7 @@ async function buildCompleteAchievementsList(achievements, expenses, challengesD
                 description: `Tu as atteint le niveau ${achievement.level} !`,
                 date: achievement.date,
                 icon: '⭐',
-                points: achievement.level * 50
+                points: null // Pas de points pour les niveaux
             });
         } else if (achievement.type === 'badge') {
             allAchievements.push({
@@ -1313,12 +1313,21 @@ async function detectAndAddMissingLevels(allAchievements, existingAchievements) 
     
     try {
         // Calculer le niveau actuel basé sur le score total
-        const currentLevel = calculateLevel(calculateTotalScore());
+        const totalScore = await calculateTotalScore();
+        const currentLevel = calculateLevel(totalScore);
+        
+        console.log('🔍 Debug niveaux:', {
+            totalScore: totalScore,
+            currentLevel: currentLevel,
+            existingAchievements: existingAchievements.length
+        });
         
         // Récupérer les niveaux déjà enregistrés
         const recordedLevels = existingAchievements
             .filter(achievement => achievement.type === 'level')
             .map(achievement => achievement.level);
+        
+        console.log('📊 Niveaux enregistrés:', recordedLevels);
         
         // Identifier les niveaux manquants
         const missingLevels = [];
@@ -1327,6 +1336,8 @@ async function detectAndAddMissingLevels(allAchievements, existingAchievements) 
                 missingLevels.push(level);
             }
         }
+        
+        console.log('❌ Niveaux manquants:', missingLevels);
         
         // Ajouter les niveaux manquants à l'affichage
         missingLevels.forEach(level => {
@@ -1337,7 +1348,7 @@ async function detectAndAddMissingLevels(allAchievements, existingAchievements) 
                 description: `Tu as atteint le niveau ${level} !`,
                 date: 'Date inconnue',
                 icon: '⭐',
-                points: level * 50,
+                points: null, // Pas de points pour les niveaux
                 unknownDate: true
             });
         });
@@ -1395,7 +1406,7 @@ function displayAchievementsList(container, achievements) {
                     <p class="achievement-description">${achievement.description}</p>
                     <div class="achievement-meta">
                         ${dateDisplay}
-                        <span class="achievement-points">+${achievement.points} points</span>
+                        ${achievement.points !== null ? `<span class="achievement-points">+${achievement.points} points</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -1545,10 +1556,64 @@ function hasEverReachedConsecutiveDays(expenses, targetDays) {
     return daysSinceLastCrack >= targetDays;
 }
 
-// Fonction pour calculer le score total (à implémenter plus tard)
-function calculateTotalScore() {
-    // Logique pour calculer le score basé sur les badges obtenus
-    return 0;
+// Fonction pour calculer le score total
+async function calculateTotalScore() {
+    try {
+        // Récupérer les dépenses
+        const storageKey = getExpensesStorageKey();
+        const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        // Calculer les points des badges
+        const allBadges = [
+            ...BADGES_CONFIG.resistance,
+            ...BADGES_CONFIG.savings,
+            ...BADGES_CONFIG.positive_balance
+        ];
+        
+        let badgePoints = 0;
+        allBadges.forEach(badge => {
+            if (badge.condition(expenses)) {
+                badgePoints += badge.points;
+            }
+        });
+        
+        // Calculer les points des défis (seulement les réussites)
+        let challengePoints = 0;
+        
+        // Essayer de récupérer les défis depuis le serveur
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            try {
+                const user = window.authService.getCurrentUser();
+                const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(user.email)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Gérer les deux formats possibles de réponse
+                    const challengesData = data.status || data;
+                    console.log('🎯 Défis récupérés:', challengesData);
+                    Object.values(challengesData).forEach(status => {
+                        if (status === 'completed') {
+                            challengePoints += 50; // 50 points par défi réussi
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn('Impossible de récupérer les défis pour le calcul du score:', error);
+            }
+        }
+        
+        const totalScore = badgePoints + challengePoints;
+        console.log('📊 Calcul du score total:', {
+            badgePoints: badgePoints,
+            challengePoints: challengePoints,
+            totalScore: totalScore
+        });
+        
+        return totalScore;
+        
+    } catch (error) {
+        console.error('Erreur lors du calcul du score total:', error);
+        return 0;
+    }
 }
 
 // La régénération des défis est maintenant gérée côté serveur
