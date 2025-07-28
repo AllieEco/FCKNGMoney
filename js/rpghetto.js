@@ -159,6 +159,9 @@ async function updateUserProfile() {
         // Détecter et célébrer les montées de niveau
         checkLevelUp(levelInfo.currentLevel);
         
+        // Vérifier le statut d'avatar après la mise à jour du profil
+        await checkAvatarUnlockStatus();
+        
     } catch (error) {
         console.error('Erreur lors de la mise à jour du profil:', error);
     }
@@ -710,6 +713,44 @@ const BADGES_CONFIG = {
 // Configuration des défis mensuels (maintenant gérée côté serveur)
 // Cette liste est maintenant synchronisée avec server.js
 
+// Configuration des avatars disponibles
+const AVATARS_CONFIG = [
+    {
+        id: 'default',
+        name: 'Défaut',
+        image: '👤',
+        type: 'emoji'
+    },
+    {
+        id: 'cat',
+        name: 'Chat Mignon',
+        image: 'assets/images/cutecat.gif',
+        type: 'gif',
+        unlockLevel: 3
+    },
+    {
+        id: 'dog',
+        name: 'Chien Loyal',
+        image: 'assets/images/dog.gif',
+        type: 'gif',
+        unlockLevel: 3
+    },
+    {
+        id: 'racoon',
+        name: 'Raton Laveur',
+        image: 'assets/images/racoon.gif',
+        type: 'gif',
+        unlockLevel: 3
+    },
+    {
+        id: 'ptdrtki',
+        name: 'Mystérieux',
+        image: 'assets/images/ptdrtki.gif',
+        type: 'gif',
+        unlockLevel: 5
+    }
+];
+
 // Initialisation de la page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎮 RPGhetto page loaded');
@@ -731,6 +772,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialiser la popup des badges
     initializeBadgesPopup();
+    
+    // Initialiser la fonctionnalité d'avatar
+    initializeAvatarSystem();
     
     // Charger l'historique des accomplissements
     await loadAchievementsHistory();
@@ -1852,6 +1896,240 @@ function initializeBadgesPopup() {
     }
 }
 
+// Fonctions pour le système d'avatar
+async function initializeAvatarSystem() {
+    // Charger l'avatar actuel
+    await loadCurrentAvatar();
+    
+    // Ajouter l'événement au bouton de changement d'avatar
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    if (changeAvatarBtn) {
+        changeAvatarBtn.addEventListener('click', openAvatarPopup);
+    }
+    
+    // Ajouter l'événement pour fermer la popup
+    const closeAvatarBtn = document.getElementById('close-avatar-popup');
+    if (closeAvatarBtn) {
+        closeAvatarBtn.addEventListener('click', closeAvatarPopup);
+    }
+    
+    // Fermer en cliquant à l'extérieur
+    const avatarPopup = document.getElementById('avatar-popup');
+    if (avatarPopup) {
+        avatarPopup.addEventListener('click', (e) => {
+            if (e.target === avatarPopup) {
+                closeAvatarPopup();
+            }
+        });
+    }
+}
+
+async function loadCurrentAvatar() {
+    const avatarElement = document.getElementById('user-avatar');
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    
+    if (!avatarElement) return;
+    
+    try {
+        // Récupérer l'avatar sauvegardé
+        let currentAvatarId = 'default';
+        
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            const savedAvatar = await window.authService.getData('selectedAvatar');
+            if (savedAvatar) {
+                currentAvatarId = savedAvatar;
+            }
+        } else {
+            currentAvatarId = localStorage.getItem('selectedAvatar_local') || 'default';
+        }
+        
+        // Appliquer l'avatar
+        applyAvatar(currentAvatarId);
+        
+        // Vérifier si l'utilisateur peut changer d'avatar
+        await checkAvatarUnlockStatus();
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement de l\'avatar:', error);
+        applyAvatar('default');
+    }
+}
+
+async function checkAvatarUnlockStatus() {
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    if (!changeAvatarBtn) return;
+    
+    try {
+        // Calculer le niveau actuel
+        const totalScore = await calculateTotalScore();
+        const currentLevel = calculateLevel(totalScore);
+        
+        // Vérifier si l'utilisateur a le niveau requis (niveau 3)
+        if (currentLevel >= 3) {
+            changeAvatarBtn.style.display = 'block';
+            console.log('🎭 Changement d\'avatar débloqué (niveau 3+)');
+        } else {
+            changeAvatarBtn.style.display = 'none';
+            console.log('🔒 Changement d\'avatar verrouillé (niveau requis: 3)');
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors de la vérification du statut d\'avatar:', error);
+        changeAvatarBtn.style.display = 'none';
+    }
+}
+
+function applyAvatar(avatarId) {
+    const avatarElement = document.getElementById('user-avatar');
+    if (!avatarElement) return;
+    
+    const avatar = AVATARS_CONFIG.find(a => a.id === avatarId) || AVATARS_CONFIG[0];
+    
+    if (avatar.type === 'emoji') {
+        avatarElement.textContent = avatar.image;
+        avatarElement.style.backgroundImage = 'none';
+        avatarElement.style.fontSize = '3rem';
+    } else {
+        avatarElement.textContent = '';
+        avatarElement.style.backgroundImage = `url(${avatar.image})`;
+        avatarElement.style.backgroundSize = 'cover';
+        avatarElement.style.backgroundPosition = 'center';
+        avatarElement.style.fontSize = '0';
+    }
+    
+    console.log(`🎭 Avatar appliqué: ${avatar.name}`);
+}
+
+function openAvatarPopup() {
+    const popup = document.getElementById('avatar-popup');
+    const avatarsGrid = document.getElementById('avatars-grid');
+    
+    if (!popup || !avatarsGrid) return;
+    
+    // Vider la grille
+    avatarsGrid.innerHTML = '';
+    
+    // Calculer le niveau actuel
+    calculateTotalScore().then(totalScore => {
+        const currentLevel = calculateLevel(totalScore);
+        
+        // Créer les options d'avatar
+        AVATARS_CONFIG.forEach(avatar => {
+            const isUnlocked = !avatar.unlockLevel || currentLevel >= avatar.unlockLevel;
+            const avatarOption = createAvatarOption(avatar, isUnlocked, currentLevel);
+            avatarsGrid.appendChild(avatarOption);
+        });
+        
+        // Ajouter le bouton de sélection
+        const selectBtn = document.createElement('button');
+        selectBtn.className = 'avatar-select-btn';
+        selectBtn.textContent = 'Sélectionner cet avatar';
+        selectBtn.onclick = selectCurrentAvatar;
+        avatarsGrid.appendChild(selectBtn);
+        
+        // Afficher la popup
+        popup.classList.add('active');
+    });
+}
+
+function createAvatarOption(avatar, isUnlocked, currentLevel) {
+    const option = document.createElement('div');
+    option.className = `avatar-option ${isUnlocked ? '' : 'locked'}`;
+    option.dataset.avatarId = avatar.id;
+    
+    if (isUnlocked) {
+        option.onclick = () => selectAvatarOption(avatar.id);
+    }
+    
+    let content = '';
+    
+    if (avatar.type === 'emoji') {
+        content = `
+            <div style="font-size: 3rem; margin-bottom: 10px;">${avatar.image}</div>
+            <div class="avatar-name">${avatar.name}</div>
+        `;
+    } else {
+        content = `
+            <img src="${avatar.image}" alt="${avatar.name}" loading="lazy">
+            <div class="avatar-name">${avatar.name}</div>
+        `;
+    }
+    
+    if (!isUnlocked) {
+        content += `
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+                <div style="text-align: center; color: white;">
+                    <div style="font-size: 1.5rem; margin-bottom: 5px;">🔒</div>
+                    <div style="font-size: 0.7rem;">Niveau ${avatar.unlockLevel}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    option.innerHTML = content;
+    return option;
+}
+
+function selectAvatarOption(avatarId) {
+    // Retirer la sélection précédente
+    document.querySelectorAll('.avatar-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Sélectionner la nouvelle option
+    const selectedOption = document.querySelector(`[data-avatar-id="${avatarId}"]`);
+    if (selectedOption) {
+        selectedOption.classList.add('selected');
+    }
+    
+    // Mettre à jour le bouton de sélection
+    const selectBtn = document.querySelector('.avatar-select-btn');
+    if (selectBtn) {
+        selectBtn.disabled = false;
+    }
+}
+
+async function selectCurrentAvatar() {
+    const selectedOption = document.querySelector('.avatar-option.selected');
+    if (!selectedOption) {
+        alert('Veuillez sélectionner un avatar');
+        return;
+    }
+    
+    const avatarId = selectedOption.dataset.avatarId;
+    
+    try {
+        // Sauvegarder la sélection
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            await window.authService.saveData('selectedAvatar', avatarId);
+        } else {
+            localStorage.setItem('selectedAvatar_local', avatarId);
+        }
+        
+        // Appliquer l'avatar
+        applyAvatar(avatarId);
+        
+        // Fermer la popup
+        closeAvatarPopup();
+        
+        // Créer une explosion de confettis pour célébrer
+        createConfettiExplosion();
+        
+        console.log(`🎭 Avatar sélectionné et sauvegardé: ${avatarId}`);
+        
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de l\'avatar:', error);
+        alert('Erreur lors de la sauvegarde de l\'avatar');
+    }
+}
+
+function closeAvatarPopup() {
+    const popup = document.getElementById('avatar-popup');
+    if (popup) {
+        popup.classList.remove('active');
+    }
+}
+
 // Export des fonctions pour utilisation dans d'autres fichiers
 window.RPGhetto = {
     addBadge,
@@ -1860,7 +2138,10 @@ window.RPGhetto = {
     loadMonthlyChallenges,
     refreshBadges,
     openAllBadgesPopup,
-    closeAllBadgesPopup
+    closeAllBadgesPopup,
+    initializeAvatarSystem,
+    loadCurrentAvatar,
+    applyAvatar
 };
 
 // Exporter les fonctions du carrousel

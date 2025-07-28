@@ -32,13 +32,16 @@
         <section id="user-profile-section">
             <div class="user-profile-card">
                 <div class="user-info">
-                    <div class="profile-user-avatar">👤</div>
+                    <div class="profile-user-avatar" id="user-avatar">👤</div>
                     <div class="user-details">
                         <h2 id="user-name">Chargement...</h2>
                         <div class="user-level-info">
                             <span class="level-badge" id="user-level">Niveau 1</span>
                             <span class="level-title" id="level-title">Débutant</span>
                         </div>
+                        <button id="change-avatar-btn" class="change-avatar-btn" style="display: none;">
+                            🎭 Changer d'avatar
+                        </button>
                     </div>
                 </div>
                 <div class="level-progress">
@@ -150,6 +153,22 @@
             <div class="all-badges-container">
                 <div class="all-badges-grid" id="all-badges-grid">
                     <!-- Tous les badges seront affichés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP CHANGEMENT D'AVATAR -->
+    <div class="popup-overlay" id="avatar-popup">
+        <div class="popup-content avatar-popup">
+            <div class="popup-header">
+                <h2>🎭 Choisir ton Avatar</h2>
+                <button class="popup-close-btn" id="close-avatar-popup">×</button>
+            </div>
+            <div class="avatar-selection-container">
+                <p class="avatar-description">Félicitations ! Tu as débloqué la possibilité de personnaliser ton avatar !</p>
+                <div class="avatars-grid" id="avatars-grid">
+                    <!-- Les avatars seront ajoutés ici dynamiquement -->
                 </div>
             </div>
         </div>
