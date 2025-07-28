@@ -1901,12 +1901,6 @@ async function initializeAvatarSystem() {
     // Charger l'avatar actuel
     await loadCurrentAvatar();
     
-    // Ajouter l'événement au bouton de changement d'avatar
-    const changeAvatarBtn = document.getElementById('change-avatar-btn');
-    if (changeAvatarBtn) {
-        changeAvatarBtn.addEventListener('click', openAvatarPopup);
-    }
-    
     // Ajouter l'événement pour fermer la popup
     const closeAvatarBtn = document.getElementById('close-avatar-popup');
     if (closeAvatarBtn) {
@@ -1967,16 +1961,55 @@ async function checkAvatarUnlockStatus() {
         // Vérifier si l'utilisateur a le niveau requis (niveau 3)
         if (currentLevel >= 3) {
             changeAvatarBtn.style.display = 'block';
+            changeAvatarBtn.classList.remove('locked');
+            changeAvatarBtn.onclick = openAvatarPopup;
             console.log('🎭 Changement d\'avatar débloqué (niveau 3+)');
         } else {
-            changeAvatarBtn.style.display = 'none';
+            changeAvatarBtn.style.display = 'block';
+            changeAvatarBtn.classList.add('locked');
+            changeAvatarBtn.onclick = showAvatarLockedMessage;
             console.log('🔒 Changement d\'avatar verrouillé (niveau requis: 3)');
         }
         
     } catch (error) {
         console.error('Erreur lors de la vérification du statut d\'avatar:', error);
-        changeAvatarBtn.style.display = 'none';
+        changeAvatarBtn.style.display = 'block';
+        changeAvatarBtn.classList.add('locked');
+        changeAvatarBtn.onclick = showAvatarLockedMessage;
     }
+}
+
+function showAvatarLockedMessage() {
+    // Créer une notification temporaire
+    const notification = document.createElement('div');
+    notification.className = 'avatar-locked-notification';
+    notification.innerHTML = `
+        <div class="avatar-locked-content">
+            <div class="avatar-locked-icon">🔒</div>
+            <div class="avatar-locked-text">
+                <h3>Fonctionnalité verrouillée</h3>
+                <p>Disponible au niveau 3</p>
+            </div>
+        </div>
+    `;
+    
+    // Ajouter au body
+    document.body.appendChild(notification);
+    
+    // Animation d'entrée
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Supprimer après 3 secondes
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 3000);
 }
 
 function applyAvatar(avatarId) {

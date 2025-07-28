@@ -3305,6 +3305,7 @@ footer {
     transition: all 0.3s ease;
     margin-top: 8px;
     box-shadow: 0 2px 8px rgba(118, 185, 0, 0.3);
+    position: relative;
 }
 
 .change-avatar-btn:hover {
@@ -3315,6 +3316,82 @@ footer {
 
 .change-avatar-btn:active {
     transform: translateY(0);
+}
+
+/* Bouton verrouillé */
+.change-avatar-btn.locked {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #9ca3af;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+    opacity: 0.7;
+}
+
+.change-avatar-btn.locked:hover {
+    background: linear-gradient(135deg, #4b5563, #6b7280);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.4);
+}
+
+.change-avatar-btn.locked::after {
+    content: '🔒';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+    background: #374151;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Notification pour fonctionnalité verrouillée */
+.avatar-locked-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #374151, #1f2937);
+    border: 1px solid #4b5563;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    max-width: 300px;
+}
+
+.avatar-locked-notification.show {
+    transform: translateX(0);
+}
+
+.avatar-locked-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar-locked-icon {
+    font-size: 2rem;
+    color: #9ca3af;
+}
+
+.avatar-locked-text h3 {
+    color: #f9fafb;
+    font-family: var(--font-title);
+    font-size: 1rem;
+    margin: 0 0 0.3rem 0;
+}
+
+.avatar-locked-text p {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    margin: 0;
+    font-weight: 500;
 }
 
 /* Popup de sélection d'avatar */
@@ -3467,5 +3544,38 @@ footer {
     
     .avatar-name {
         font-size: 0.6rem;
+    }
+}
+
+/* Responsive pour la notification verrouillée */
+@media (max-width: 768px) {
+    .avatar-locked-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100px);
+    }
+    
+    .avatar-locked-notification.show {
+        transform: translateY(0);
+    }
+    
+    .avatar-locked-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .avatar-locked-icon {
+        font-size: 1.5rem;
+    }
+    
+    .avatar-locked-text h3 {
+        font-size: 0.9rem;
+    }
+    
+    .avatar-locked-text p {
+        font-size: 0.7rem;
     }
 }
