@@ -864,7 +864,7 @@ function moveCarousel(direction) {
     }
     
     // Calculer la translation
-    const translateX = -(currentCarouselIndex * badgesPerView * (280 + 32)); // 280px largeur badge + 32px gap
+    const translateX = -(currentCarouselIndex * badgesPerView * (300 + 32)); // 300px largeur badge + 32px gap
     
     // Appliquer la translation
     carousel.style.transform = `translateX(${translateX}px)`;
@@ -912,7 +912,7 @@ function goToCarouselPage(pageIndex) {
     currentCarouselIndex = pageIndex;
     
     // Calculer la translation
-    const translateX = -(currentCarouselIndex * badgesPerView * (280 + 32));
+    const translateX = -(currentCarouselIndex * badgesPerView * (300 + 32));
     
     // Appliquer la translation
     carousel.style.transform = `translateX(${translateX}px)`;

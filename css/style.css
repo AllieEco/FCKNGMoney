@@ -1226,38 +1226,36 @@ footer {
 }
 
 .badge-placeholder {
-    background-color: var(--card-bg);
-    border: 2px dashed var(--border-color);
-    border-radius: 12px;
-    padding: 2rem 1.5rem;
+    background: none;
+    border: none;
+    padding: 1.5rem 1rem;
     text-align: center;
     transition: all 0.3s ease;
     min-height: 300px;
-    min-width: 240px;
-    max-width: 280px;
+    min-width: 250px;
+    max-width: 300px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    border-radius: 16px;
 }
 
 .badge-placeholder:hover {
-    border-color: var(--accent-color);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px var(--shadow-color);
+    transform: translateY(-5px) scale(1.05);
+    filter: brightness(1.1);
 }
 
 .badge-placeholder.locked:hover {
-    opacity: 0.8;
-    filter: grayscale(80%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
+    filter: grayscale(70%);
+    transform: translateY(-3px) scale(1.02);
 }
 
 .badge-placeholder.locked:hover .badge-locked-overlay {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.2);
     transition: all 0.3s ease;
 }
 
@@ -1268,8 +1266,8 @@ footer {
 }
 
 .badge-icon img {
-    width: 90px !important;
-    height: 90px !important;
+    width: 100px !important;
+    height: 100px !important;
     object-fit: contain;
     margin: 0 auto;
     display: block;
@@ -1279,12 +1277,13 @@ footer {
     font-family: var(--font-title);
     font-size: 1.3rem;
     color: var(--secondary-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
 }
 
 .badge-placeholder p {
     color: #9ca3af;
     font-size: 0.9rem;
+    line-height: 1.3;
 }
 
 .badge-points {
@@ -1340,11 +1339,15 @@ footer {
 /* Overlay de verrouillage */
 .badge-locked-overlay {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    color: #6b7280;
     opacity: 0.7;
     pointer-events: none;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Animation de déblocage */
@@ -1436,7 +1439,7 @@ footer {
         min-width: 200px;
         max-width: 240px;
         min-height: 280px;
-        padding: 1.5rem 1rem;
+        padding: 1.2rem 0.8rem;
     }
     
     .badge-icon {
@@ -1444,8 +1447,8 @@ footer {
     }
     
     .badge-icon img {
-        width: 80px !important;
-        height: 80px !important;
+        width: 85px !important;
+        height: 85px !important;
     }
     
     .badge-placeholder h3 {
