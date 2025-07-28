@@ -356,7 +356,41 @@ async function loadAchievementsHistory() {
     try {
         const achievements = await window.authService.getData('achievements') || [];
         
-        if (achievements.length === 0) {
+        // Récupérer les défis actuels depuis l'API
+        let challengesData = {};
+        try {
+            const currentUser = window.authService.getCurrentUser();
+            const userEmail = currentUser.email;
+            const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(userEmail)}`);
+            const data = await response.json();
+            if (data.success && data.status) {
+                challengesData = data.status;
+            }
+        } catch (error) {
+            console.warn('Impossible de récupérer les défis pour le résumé:', error);
+        }
+        
+        // Compter les défis réussis et échoués depuis l'API
+        let challengesCompleted = 0;
+        let challengesFailed = 0;
+        
+        Object.values(challengesData).forEach(status => {
+            if (status === 'completed') {
+                challengesCompleted++;
+            } else if (status === 'failed') {
+                challengesFailed++;
+            }
+        });
+        
+        // Ajouter les défis historiques sauvegardés dans la BDD
+        const historicalCompleted = achievements.filter(a => a.type === 'challenge' && a.status === 'completed').length;
+        const historicalFailed = achievements.filter(a => a.type === 'challenge' && a.status === 'failed').length;
+        
+        // Total = défis actuels + défis historiques
+        const totalCompleted = challengesCompleted + historicalCompleted;
+        const totalFailed = challengesFailed + historicalFailed;
+        
+        if (achievements.length === 0 && challengesCompleted === 0 && challengesFailed === 0) {
             console.log('📅 Aucun accomplissement enregistré');
             return;
         }
@@ -365,14 +399,15 @@ async function loadAchievementsHistory() {
         achievements.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         console.log('📅 Historique des accomplissements:', achievements);
+        console.log('🎯 Défis actuels:', challengesData);
         
         // Créer un résumé des accomplissements
         const summary = {
             levels: achievements.filter(a => a.type === 'level').length,
             badges: achievements.filter(a => a.type === 'badge').length,
-            challengesCompleted: achievements.filter(a => a.type === 'challenge' && a.status === 'completed').length,
-            challengesFailed: achievements.filter(a => a.type === 'challenge' && a.status === 'failed').length,
-            total: achievements.length
+            challengesCompleted: totalCompleted,
+            challengesFailed: totalFailed,
+            total: achievements.length + totalCompleted + totalFailed
         };
         
         console.log('📊 Résumé des accomplissements:', summary);
@@ -1429,7 +1464,6 @@ async function detectAndAddMissingLevels(allAchievements, existingAchievements) 
 function displayAchievementsList(container, achievements) {
     if (achievements.length === 0) {
         container.innerHTML = `
-            <h2>📅 Historique des Accomplissements</h2>
             <p class="section-subtitle">Aucun accomplissement pour le moment</p>
             <div class="achievements-placeholder">
                 <p>🎯 Commencez à accomplir des exploits pour les voir ici !</p>
@@ -1465,7 +1499,6 @@ function displayAchievementsList(container, achievements) {
     }).join('');
     
     container.innerHTML = `
-        <h2>📅 Historique des Accomplissements</h2>
         <p class="section-subtitle">Tes exploits financiers dans le temps (${achievements.length} accomplissement${achievements.length > 1 ? 's' : ''})</p>
         <div class="achievements-list">
             ${achievementsHTML}
