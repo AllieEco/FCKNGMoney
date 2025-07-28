@@ -686,20 +686,20 @@ function updatePeriodCracks(cracksCount) {
     let lowThreshold, mediumThreshold, highThreshold;
     switch (selectedPeriod) {
         case 'week':
-            lowThreshold = 1;
+            lowThreshold = 2;
             mediumThreshold = 3;
-            highThreshold = 7;
+            highThreshold = 4; // Rouge à partir de 4 craquages par semaine
             break;
         case 'month':
-            lowThreshold = 3;
-            mediumThreshold = 7;
-            highThreshold = 15;
+            lowThreshold = 8;
+            mediumThreshold = 15;
+            highThreshold = 19; // Rouge à partir de 19 craquages par mois
             break;
         case 'year':
         default:
-            lowThreshold = 10;
-            mediumThreshold = 25;
-            highThreshold = 50;
+            lowThreshold = 40;
+            mediumThreshold = 70;
+            highThreshold = 100; // Rouge à partir de 100 craquages par an
             break;
     }
     
