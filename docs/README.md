@@ -45,11 +45,19 @@ FCKNGMoney est une application web qui te permet de :
 - **Étiqueter** : "Oui oui t'inquiète" ou "Pose pas de questions qui fâchent"
 - **Historique** : Ton casier judiciaire financier
 
+### 🏆 Système de Badges (RPGhetto)
+- **Badges de résistance** : 7, 14, 20 jours sans craquage
+- **Badges d'épargne** : 100€, 200€, 300€ d'épargne mensuelle
+- **Badges de solde positif** : 1, 2, 3 mois d'affilée
+- **Popup au format paysage** : Clique sur la card des badges pour voir tous les badges disponibles
+- **Affichage par 6 en ligne** : Grille responsive avec scroll vertical
+- **Statut visuel** : Badges débloqués en couleur, verrouillés en gris avec cadenas
+- **Points de score** : Chaque badge rapporte des points
+
 ### 🎮 Système de Défis (RPGhetto)
 - **Défis mensuels** : Challenges pour se motiver
 - **Validation interactive** : Popup avec chat mignon
 - **Explosion de confettis** : 🎉 Animation lors de la réussite
-- **Badges à venir** : Système de récompenses
 - **Statistiques des défis** : Compteur de défis réussis en temps réel
 
 ## 🚀 Déploiement en Ligne
@@ -132,12 +140,14 @@ node server.js
 - **Graphiques** : Évolution et répartition de tes dépenses
 - **Historique** : Liste complète de tes crimes financiers
 
-### 🎮 Défis Mensuels
+### 🏆 Badges et Défis
 1. Va dans l'onglet "RPGhetto"
-2. Choisis un défi à relever
-3. Valide ta réussite (explosion de confettis !)
-4. Suis tes progrès dans les statistiques
-5. Vérifie ton compteur de "Défis Relevés" en temps réel
+2. **Voir tous les badges** : Clique sur la card des badges (pas sur les flèches)
+3. **Popup au format paysage** : Tous les badges disponibles par 6 en ligne
+4. **Choisis un défi** à relever
+5. **Valide ta réussite** (explosion de confettis !)
+6. **Suis tes progrès** dans les statistiques
+7. **Vérifie ton compteur** de "Défis Relevés" en temps réel
 
 ## 🎭 Messages et Citations
 
@@ -217,6 +227,14 @@ Ce projet est sous licence MIT. Tu peux faire ce que tu veux avec, mais assume t
 - **Tous les criminels financiers** : Pour les données de test
 
 ## 🆕 Dernières Mises à Jour
+
+### ✅ Système de Badges Complet
+- **9 badges disponibles** : Résistance, épargne, solde positif
+- **Popup au format paysage** : Clique sur la card des badges pour voir tous les badges
+- **Affichage par 6 en ligne** : Grille responsive avec scroll vertical
+- **Statut visuel** : Badges débloqués vs verrouillés avec cadenas
+- **Points de score** : Chaque badge rapporte des points
+- **Interaction intelligente** : Distinction entre clic sur card vs boutons carrousel
 
 ### ✅ Seuils de Craquage Ajustés
 - **Seuils plus réalistes** : 4/semaine, 19/mois, 100/an avant le rouge
