@@ -54,11 +54,28 @@ FCKNGMoney est une application web qui te permet de :
 - **Statut visuel** : Badges débloqués en couleur, verrouillés en gris avec cadenas
 - **Points de score** : Chaque badge rapporte des points
 
+### 📅 Historique des Accomplissements
+- **Historique complet** : Tous tes badges, niveaux et défis réussis
+- **Chronologie** : Triés par date d'acquisition (plus récent en premier)
+- **Dates précises** : Quand tu as obtenu chaque accomplissement
+- **Dates inconnues** : Pour les exploits anciens avec humour 😴
+- **Synchronisation BDD** : Historique sauvegardé sur le serveur
+- **Multi-appareils** : Accès à ton historique depuis n'importe où
+
 ### 🎮 Système de Défis (RPGhetto)
 - **Défis mensuels** : Challenges pour se motiver
 - **Validation interactive** : Popup avec chat mignon
 - **Explosion de confettis** : 🎉 Animation lors de la réussite
 - **Statistiques des défis** : Compteur de défis réussis en temps réel
+- **Historique des réussites** : Seuls les défis réussis sont sauvegardés
+
+### ⭐ Système de Niveaux (RPGhetto)
+- **30 niveaux** : De "Débutant" à "Infini"
+- **Progression XP** : Basée sur tes badges et défis réussis
+- **Titres uniques** : Chaque niveau a son titre (Débutant, Apprenti, etc.)
+- **Montées de niveau** : Animation spéciale avec confettis
+- **Synchronisation** : Niveau sauvegardé sur le serveur
+- **Détection automatique** : Niveaux manquants ajoutés automatiquement
 
 ## 🚀 Déploiement en Ligne
 
@@ -140,7 +157,7 @@ node server.js
 - **Graphiques** : Évolution et répartition de tes dépenses
 - **Historique** : Liste complète de tes crimes financiers
 
-### 🏆 Badges et Défis
+### 🏆 Badges, Défis et Niveaux
 1. Va dans l'onglet "RPGhetto"
 2. **Voir tous les badges** : Clique sur la card des badges (pas sur les flèches)
 3. **Popup au format paysage** : Tous les badges disponibles par 6 en ligne
@@ -148,6 +165,8 @@ node server.js
 5. **Valide ta réussite** (explosion de confettis !)
 6. **Suis tes progrès** dans les statistiques
 7. **Vérifie ton compteur** de "Défis Relevés" en temps réel
+8. **Consulte ton historique** : Section "Historique des Accomplissements"
+9. **Monte en niveau** : Gagne des XP avec tes badges et défis
 
 ## 🎭 Messages et Citations
 
@@ -245,6 +264,22 @@ Ce projet est sous licence MIT. Tu peux faire ce que tu veux avec, mais assume t
 - **Nouvelle carte** : "Défis Relevés" dans RPGhetto
 - **Compteur en temps réel** : Mise à jour automatique
 - **Synchronisation serveur** : Données cohérentes partout
+
+### ✅ Historique des Accomplissements
+- **Section dédiée** : "Historique des Accomplissements" dans RPGhetto
+- **Chronologie complète** : Badges, niveaux et défis réussis
+- **Dates précises** : Quand tu as obtenu chaque accomplissement
+- **Dates inconnues** : Pour les exploits anciens avec humour 😴
+- **Synchronisation BDD** : Historique sauvegardé sur le serveur
+- **Multi-appareils** : Accès depuis n'importe où
+
+### ✅ Système de Niveaux Amélioré
+- **30 niveaux** : De "Débutant" à "Infini"
+- **Progression XP** : Basée sur badges et défis réussis
+- **Titres uniques** : Chaque niveau a son titre
+- **Montées de niveau** : Animation spéciale avec confettis
+- **Détection automatique** : Niveaux manquants ajoutés automatiquement
+- **Synchronisation serveur** : Niveau sauvegardé en BDD
 
 ## 🚨 Disclaimer
 
