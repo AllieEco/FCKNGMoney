@@ -423,7 +423,7 @@ async function loadAchievementsHistory() {
         console.log('📊 Résumé des accomplissements:', summary);
         
         // Optionnel : Afficher dans une section dédiée de la page
-        displayAchievementsSummary(summary);
+        // displayAchievementsSummary(summary); // Section retirée car pas nécessaire sur le tableau de bord et la page achat
         
     } catch (error) {
         console.error('Erreur lors du chargement de l\'historique des accomplissements:', error);
