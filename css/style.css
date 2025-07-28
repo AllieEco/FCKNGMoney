@@ -1175,6 +1175,19 @@ footer {
     box-shadow: 0 6px 15px var(--shadow-color);
 }
 
+.badge-placeholder.locked:hover {
+    opacity: 0.8;
+    filter: grayscale(80%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.badge-placeholder.locked:hover .badge-locked-overlay {
+    opacity: 1;
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
 .badge-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
@@ -1191,6 +1204,89 @@ footer {
 .badge-placeholder p {
     color: #9ca3af;
     font-size: 0.9rem;
+}
+
+.badge-points {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    display: inline-block;
+}
+
+/* Badges verrouillés */
+.badge-placeholder.locked {
+    opacity: 0.6;
+    filter: grayscale(100%);
+    position: relative;
+}
+
+.badge-placeholder.locked .badge-icon img {
+    filter: grayscale(100%);
+}
+
+.badge-placeholder.locked h3 {
+    color: #6b7280;
+}
+
+.badge-placeholder.locked p {
+    color: #9ca3af;
+}
+
+.badge-points.locked {
+    background: #6b7280;
+    color: #d1d5db;
+}
+
+/* Badges débloqués */
+.badge-placeholder.earned {
+    opacity: 1;
+    filter: none;
+}
+
+.badge-placeholder.earned .badge-icon img {
+    filter: none;
+}
+
+.badge-points.earned {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Overlay de verrouillage */
+.badge-locked-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Animation de déblocage */
+@keyframes badgeUnlock {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+        filter: grayscale(100%);
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+        filter: grayscale(0%);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: grayscale(0%);
+    }
+}
+
+.badge-placeholder.earned {
+    animation: badgeUnlock 0.5s ease-out;
 }
 
 /* Badge Stats Section */

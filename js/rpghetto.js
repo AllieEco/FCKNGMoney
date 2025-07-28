@@ -1,9 +1,191 @@
 // RPGhetto.js - Gestion des badges et défis mensuels
 
-// Configuration des badges (à étendre plus tard)
+// Configuration des badges basée sur les images disponibles
 const BADGES_CONFIG = {
-    bonus: [
-        // Badges bonus à venir
+    resistance: [
+        {
+            id: '7days_no_crack',
+            title: '7 Jours Sans Craquage',
+            description: 'Tu as tenu 7 jours sans dépense inutile !',
+            icon: 'assets/images/7-jours-sans-craquages.png',
+            points: 25,
+            condition: (expenses) => {
+                const today = new Date();
+                const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const recentExpenses = expenses.filter(exp => 
+                    exp.type === 'expense' && 
+                    exp.necessity === 'Pose pas de questions qui fâchent' &&
+                    new Date(exp.date) >= sevenDaysAgo
+                );
+                return recentExpenses.length === 0;
+            }
+        },
+        {
+            id: '14days_no_crack',
+            title: '14 Jours Sans Craquage',
+            description: 'Deux semaines de discipline !',
+            icon: 'assets/images/14_jours_sans_craquages.png',
+            points: 50,
+            condition: (expenses) => {
+                const today = new Date();
+                const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+                const recentExpenses = expenses.filter(exp => 
+                    exp.type === 'expense' && 
+                    exp.necessity === 'Pose pas de questions qui fâchent' &&
+                    new Date(exp.date) >= fourteenDaysAgo
+                );
+                return recentExpenses.length === 0;
+            }
+        },
+        {
+            id: '20days_no_crack',
+            title: '20 Jours Sans Craquage',
+            description: 'Près de 3 semaines de maîtrise !',
+            icon: 'assets/images/20-jours-sans-craquages.png',
+            points: 75,
+            condition: (expenses) => {
+                const today = new Date();
+                const twentyDaysAgo = new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000);
+                const recentExpenses = expenses.filter(exp => 
+                    exp.type === 'expense' && 
+                    exp.necessity === 'Pose pas de questions qui fâchent' &&
+                    new Date(exp.date) >= twentyDaysAgo
+                );
+                return recentExpenses.length === 0;
+            }
+        }
+    ],
+    savings: [
+        {
+            id: '100_economies_mois',
+            title: '100€ d\'Économies',
+            description: 'Tu as économisé 100€ ce mois-ci !',
+            icon: 'assets/images/100-economies-mois.png',
+            points: 30,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const monthlyExpenses = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === currentMonth && 
+                           expDate.getFullYear() === currentYear &&
+                           exp.type === 'expense';
+                });
+                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                // Comparer avec le mois précédent ou un seuil fixe
+                return totalSpent < 500; // Exemple de condition
+            }
+        },
+        {
+            id: '200_economies_mois',
+            title: '200€ d\'Économies',
+            description: '200€ économisés ce mois-ci !',
+            icon: 'assets/images/200-economies-mois.png',
+            points: 60,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const monthlyExpenses = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === currentMonth && 
+                           expDate.getFullYear() === currentYear &&
+                           exp.type === 'expense';
+                });
+                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                return totalSpent < 400; // Condition plus stricte
+            }
+        },
+        {
+            id: '300_economies_mois',
+            title: '300€ d\'Économies',
+            description: '300€ économisés ce mois-ci !',
+            icon: 'assets/images/300-economie-mois.png',
+            points: 100,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const monthlyExpenses = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === currentMonth && 
+                           expDate.getFullYear() === currentYear &&
+                           exp.type === 'expense';
+                });
+                const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + Math.abs(exp.amount), 0);
+                return totalSpent < 300; // Condition très stricte
+            }
+        }
+    ],
+    positive_balance: [
+        {
+            id: 'solde_positif_mois1',
+            title: 'Solde Positif - 1 Mois',
+            description: 'Un mois complet avec un solde positif !',
+            icon: 'assets/images/solde-positif-mois1.png',
+            points: 40,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const monthlyBalance = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === currentMonth && 
+                           expDate.getFullYear() === currentYear;
+                }).reduce((balance, exp) => balance + exp.amount, 0);
+                return monthlyBalance > 0;
+            }
+        },
+        {
+            id: 'solde_positif_mois2',
+            title: 'Solde Positif - 2 Mois',
+            description: 'Deux mois d\'affilée avec un solde positif !',
+            icon: 'assets/images/solde-positif-mois2.png',
+            points: 80,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                
+                const currentMonthBalance = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === currentMonth && 
+                           expDate.getFullYear() === currentYear;
+                }).reduce((balance, exp) => balance + exp.amount, 0);
+                
+                const previousMonthBalance = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === previousMonth && 
+                           expDate.getFullYear() === previousYear;
+                }).reduce((balance, exp) => balance + exp.amount, 0);
+                
+                return currentMonthBalance > 0 && previousMonthBalance > 0;
+            }
+        },
+        {
+            id: 'solde_positif_mois3',
+            title: 'Solde Positif - 3 Mois',
+            description: 'Trois mois d\'affilée avec un solde positif !',
+            icon: 'assets/images/solde-positif-mois3.png',
+            points: 150,
+            condition: (expenses) => {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                
+                // Vérifier les 3 derniers mois
+                for (let i = 0; i < 3; i++) {
+                    const month = (currentMonth - i + 12) % 12;
+                    const year = currentMonth - i < 0 ? currentYear - 1 : currentYear;
+                    
+                    const monthBalance = expenses.filter(exp => {
+                        const expDate = new Date(exp.date);
+                        return expDate.getMonth() === month && 
+                               expDate.getFullYear() === year;
+                    }).reduce((balance, exp) => balance + exp.amount, 0);
+                    
+                    if (monthBalance <= 0) return false;
+                }
+                return true;
+            }
+        }
     ]
 };
 
@@ -25,13 +207,61 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // Fonction pour charger les badges
-function loadBadges() {
+async function loadBadges() {
     const bonusGrid = document.getElementById('bonus-badges-grid');
     
-    // Pour l'instant, on garde les placeholders
-    // Plus tard, on pourra ajouter des badges réels ici
+    if (!bonusGrid) return;
     
-    console.log('📛 Badges loaded (placeholders for now)');
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        bonusGrid.innerHTML = `
+            <div class="badge-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <h3>🔐 Connexion requise</h3>
+                <p>Connectez-vous pour voir vos badges</p>
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        // Récupérer les dépenses de l'utilisateur
+        const storageKey = getExpensesStorageKey();
+        const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        // Vider la grille
+        bonusGrid.innerHTML = '';
+        
+        // Vérifier tous les badges
+        const allBadges = [
+            ...BADGES_CONFIG.resistance,
+            ...BADGES_CONFIG.savings,
+            ...BADGES_CONFIG.positive_balance
+        ];
+        
+        let earnedBadges = 0;
+        
+        // Afficher tous les badges (débloqués et non débloqués)
+        allBadges.forEach(badge => {
+            const isEarned = badge.condition(expenses);
+            const badgeElement = createBadgeElement(badge, isEarned);
+            bonusGrid.appendChild(badgeElement);
+            
+            if (isEarned) {
+                earnedBadges++;
+            }
+        });
+        
+        console.log(`📛 ${earnedBadges} badges loaded`);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des badges:', error);
+        bonusGrid.innerHTML = `
+            <div class="badge-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <h3>❌ Erreur</h3>
+                <p>Impossible de charger les badges: ${error.message}</p>
+            </div>
+        `;
+    }
 }
 
 // Fonction pour charger les défis mensuels
@@ -387,10 +617,35 @@ async function updateBadgeStats() {
         completedChallengesCount.textContent = '0';
     }
     
-    // Pour l'instant, on met des valeurs par défaut pour les badges
-    // Plus tard, on calculera ces valeurs basées sur les badges obtenus
-    bonusCount.textContent = '0';
-    totalScore.textContent = '0';
+    // Calculer les badges obtenus et le score total
+    try {
+        const storageKey = getExpensesStorageKey();
+        const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        const allBadges = [
+            ...BADGES_CONFIG.resistance,
+            ...BADGES_CONFIG.savings,
+            ...BADGES_CONFIG.positive_balance
+        ];
+        
+        let earnedBadges = 0;
+        let totalPoints = 0;
+        
+        allBadges.forEach(badge => {
+            if (badge.condition(expenses)) {
+                earnedBadges++;
+                totalPoints += badge.points;
+            }
+        });
+        
+        bonusCount.textContent = earnedBadges;
+        totalScore.textContent = totalPoints;
+        
+    } catch (error) {
+        console.error('Erreur lors du calcul des badges:', error);
+        bonusCount.textContent = '0';
+        totalScore.textContent = '0';
+    }
     
     console.log('📊 Badge stats updated');
 }
@@ -411,13 +666,20 @@ function addBadge(badgeData) {
 }
 
 // Fonction pour créer un élément de badge
-function createBadgeElement(badgeData) {
+function createBadgeElement(badgeData, isEarned = false) {
     const badgeDiv = document.createElement('div');
-    badgeDiv.className = 'badge-placeholder';
+    badgeDiv.className = `badge-placeholder ${isEarned ? 'earned' : 'locked'}`;
+    badgeDiv.dataset.badgeId = badgeData.id;
+    badgeDiv.dataset.earned = isEarned;
+    
     badgeDiv.innerHTML = `
-        <div class="badge-icon">${badgeData.icon}</div>
+        <div class="badge-icon">
+            <img src="${badgeData.icon}" alt="${badgeData.title}" style="width: 80px; height: 80px; object-fit: contain;">
+        </div>
         <h3>${badgeData.title}</h3>
         <p>${badgeData.description}</p>
+        <div class="badge-points ${isEarned ? 'earned' : 'locked'}">+${badgeData.points} points</div>
+        ${!isEarned ? '<div class="badge-locked-overlay">🔒</div>' : ''}
     `;
     
     return badgeDiv;
@@ -434,10 +696,48 @@ function calculateTotalScore() {
 
 
 
+// Fonction pour rafraîchir les badges (appelée quand les données changent)
+async function refreshBadges() {
+    const bonusGrid = document.getElementById('bonus-badges-grid');
+    if (!bonusGrid) return;
+    
+    // Sauvegarder l'état actuel des badges
+    const currentBadges = {};
+    bonusGrid.querySelectorAll('.badge-placeholder').forEach(badge => {
+        const badgeId = badge.dataset.badgeId;
+        const isEarned = badge.dataset.earned === 'true';
+        currentBadges[badgeId] = isEarned;
+    });
+    
+    // Recharger les badges
+    await loadBadges();
+    await updateBadgeStats();
+    
+    // Vérifier les nouveaux badges débloqués
+    bonusGrid.querySelectorAll('.badge-placeholder').forEach(badge => {
+        const badgeId = badge.dataset.badgeId;
+        const isEarned = badge.dataset.earned === 'true';
+        
+        // Si le badge était verrouillé et est maintenant débloqué
+        if (!currentBadges[badgeId] && isEarned) {
+            // Animation spéciale pour le nouveau badge
+            badge.style.animation = 'badgeUnlock 0.8s ease-out';
+            
+            // Ajouter un effet de particules ou de confettis
+            setTimeout(() => {
+                createConfettiExplosion();
+            }, 400);
+            
+            console.log(`🎉 Nouveau badge débloqué: ${badgeId}`);
+        }
+    });
+}
+
 // Export des fonctions pour utilisation dans d'autres fichiers
 window.RPGhetto = {
     addBadge,
     updateBadgeStats,
     calculateTotalScore,
-    loadMonthlyChallenges
+    loadMonthlyChallenges,
+    refreshBadges
 }; 
