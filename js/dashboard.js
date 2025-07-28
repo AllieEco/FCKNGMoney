@@ -703,20 +703,42 @@ function updatePeriodCracks(cracksCount) {
             break;
     }
     
+    // Messages variés selon le niveau de craquage
+    const lowMessages = [
+        "😌 Pas mal, tu te tiens encore !",
+        "💪 Tu résistes bien à la tentation !",
+        "🏆 Continue comme ça, champion !",
+        "🧘 Tu maîtrises tes pulsions !"
+    ];
+    
+    const mediumMessages = [
+        "😅 Bon, ça commence à faire beaucoup là...",
+        "🤔 Tu te lâches un peu trop non ?",
+        "⚠️ Attention, ça part en couille !",
+        "😬 Tu devrais peut-être te calmer..."
+    ];
+    
+    const highMessages = [
+        "😱 Tu as un problème avec l'argent ou quoi ?",
+        "🤯 Tu es complètement dingue ou quoi ?!",
+        "🏚️ Tu veux vraiment finir à la rue ?",
+        "🏦 Ton banquier va te remercier..."
+    ];
+    
     if (cracksCount === 0) {
         message = `Bravo ! Tu as tenu bon ${getPeriodText()} !`;
         statusClass = 'low';
     } else if (cracksCount <= lowThreshold) {
-        message = "Pas mal, tu te tiens encore !";
+        message = lowMessages[Math.floor(Math.random() * lowMessages.length)];
         statusClass = 'low';
     } else if (cracksCount <= mediumThreshold) {
-        message = "Bon, ça commence à faire beaucoup là...";
+        message = mediumMessages[Math.floor(Math.random() * mediumMessages.length)];
         statusClass = 'medium';
     } else if (cracksCount <= highThreshold) {
-        message = "Tu as un problème avec l'argent ou quoi ?";
+        message = highMessages[Math.floor(Math.random() * highMessages.length)];
         statusClass = 'high';
     } else {
-        message = "Tu es complètement dingue ou quoi ?!";
+        message = highMessages[Math.floor(Math.random() * highMessages.length)];
         statusClass = 'high';
     }
     
