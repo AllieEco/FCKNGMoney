@@ -167,8 +167,51 @@ async function updateUserProfile() {
 // Variable pour stocker le niveau précédent
 let previousLevel = 1;
 
+// Fonction pour charger le niveau précédent depuis le serveur ou localStorage
+async function loadPreviousLevel() {
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        try {
+            // Essayer de récupérer depuis le serveur
+            const serverLevel = await window.authService.getData('previousLevel');
+            if (serverLevel !== null) {
+                return parseInt(serverLevel);
+            }
+        } catch (error) {
+            console.warn('Impossible de récupérer le niveau depuis le serveur, utilisation du localStorage:', error);
+        }
+        
+        // Fallback vers localStorage
+        const user = window.authService.getCurrentUser();
+        const storedLevel = localStorage.getItem(`previousLevel_${user.email}`);
+        return storedLevel ? parseInt(storedLevel) : 1;
+    }
+    return parseInt(localStorage.getItem('previousLevel_local')) || 1;
+}
+
+// Fonction pour sauvegarder le niveau précédent dans le serveur et localStorage
+async function savePreviousLevel(level) {
+    if (window.authService && window.authService.isUserAuthenticated()) {
+        try {
+            // Sauvegarder sur le serveur
+            await window.authService.saveData('previousLevel', level);
+            console.log('✅ Niveau précédent synchronisé avec le serveur');
+        } catch (error) {
+            console.error('Erreur lors de la synchronisation du niveau avec le serveur:', error);
+        }
+        
+        // Sauvegarder aussi en local comme backup
+        const user = window.authService.getCurrentUser();
+        localStorage.setItem(`previousLevel_${user.email}`, level.toString());
+    } else {
+        localStorage.setItem('previousLevel_local', level.toString());
+    }
+}
+
 // Fonction pour détecter et célébrer les montées de niveau
-function checkLevelUp(currentLevel) {
+async function checkLevelUp(currentLevel) {
+    // Charger le niveau précédent depuis le serveur/localStorage
+    previousLevel = await loadPreviousLevel();
+    
     if (currentLevel > previousLevel) {
         const levelTitle = getLevelTitle(currentLevel);
         
@@ -180,8 +223,9 @@ function checkLevelUp(currentLevel) {
         
         console.log(`🎉 Niveau ${currentLevel} atteint ! Titre: ${levelTitle}`);
         
-        // Mettre à jour le niveau précédent
+        // Mettre à jour le niveau précédent et le sauvegarder
         previousLevel = currentLevel;
+        await savePreviousLevel(currentLevel);
     }
 }
 
@@ -459,6 +503,9 @@ const BADGES_CONFIG = {
 // Initialisation de la page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎮 RPGhetto page loaded');
+    
+    // Initialiser le niveau précédent depuis le serveur/localStorage
+    previousLevel = await loadPreviousLevel();
     
     // Initialiser le profil utilisateur
     await updateUserProfile();
