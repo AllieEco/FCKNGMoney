@@ -1156,6 +1156,30 @@ footer {
     margin-bottom: 3rem;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.badges-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+    border-color: var(--accent-color);
+}
+
+.badges-container::before {
+    content: "👆 Cliquez pour voir tous les badges";
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    opacity: 0.7;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.badges-container:hover::before {
+    opacity: 1;
 }
 
 .badges-carousel {
@@ -1994,6 +2018,7 @@ footer {
         font-size: 0.8rem;
         color: #9ca3af;
     }
+}
 
 .popup-btn-success {
     background-color: #10b981;
@@ -2572,5 +2597,179 @@ footer {
         width: 100%;
         padding: 0.8rem 1rem;
         font-size: 0.9rem;
+    }
+} 
+
+/* Popup Tous les Badges */
+.all-badges-popup {
+    width: 90vw;
+    max-width: 1200px;
+    height: 80vh;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px var(--shadow-color);
+    overflow: hidden;
+}
+
+.all-badges-popup .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    color: white;
+}
+
+.all-badges-popup .popup-header h2 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 1.8rem;
+    color: white;
+}
+
+.all-badges-popup .popup-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.all-badges-popup .popup-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.all-badges-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.all-badges-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem;
+    max-width: 100%;
+}
+
+.all-badges-grid .badge-placeholder {
+    min-height: 200px;
+    min-width: 150px;
+    max-width: 180px;
+    padding: 1rem;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.all-badges-grid .badge-icon img {
+    width: 60px !important;
+    height: 60px !important;
+}
+
+.all-badges-grid .badge-placeholder h3 {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.all-badges-grid .badge-placeholder p {
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+.all-badges-grid .badge-points {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    margin-top: 0.3rem;
+}
+
+/* Responsive pour la popup des badges */
+@media (max-width: 1200px) {
+    .all-badges-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .all-badges-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .all-badges-popup {
+        width: 95vw;
+        height: 85vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .all-badges-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .all-badges-container {
+        padding: 1rem;
+    }
+    
+    .all-badges-popup .popup-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .all-badges-popup .popup-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .all-badges-grid .badge-placeholder {
+        min-height: 180px;
+        min-width: 120px;
+        padding: 0.8rem;
+    }
+    
+    .all-badges-grid .badge-icon img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .all-badges-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .all-badges-popup {
+        width: 98vw;
+        height: 90vh;
+    }
+    
+    .all-badges-grid .badge-placeholder {
+        min-height: 160px;
+        min-width: 100px;
+        padding: 0.6rem;
+    }
+    
+    .all-badges-grid .badge-icon img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .all-badges-grid .badge-placeholder h3 {
+        font-size: 0.9rem;
+    }
+    
+    .all-badges-grid .badge-placeholder p {
+        font-size: 0.7rem;
     }
 } 

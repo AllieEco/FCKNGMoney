@@ -204,6 +204,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Charger les défis mensuels
     loadMonthlyChallenges();
+
+    // Initialiser la popup des badges
+    initializeBadgesPopup();
 });
 
 // Fonction pour charger les badges
@@ -941,13 +944,110 @@ function initializeCarousel() {
     }
 }
 
+// Fonctions pour la popup des badges
+function openAllBadgesPopup() {
+    const popup = document.getElementById('all-badges-popup');
+    if (popup) {
+        popup.classList.add('active');
+        loadAllBadgesInPopup();
+    }
+}
+
+function closeAllBadgesPopup() {
+    const popup = document.getElementById('all-badges-popup');
+    if (popup) {
+        popup.classList.remove('active');
+    }
+}
+
+function loadAllBadgesInPopup() {
+    const allBadgesGrid = document.getElementById('all-badges-grid');
+    if (!allBadgesGrid) return;
+
+    // Vider la grille
+    allBadgesGrid.innerHTML = '';
+
+    // Récupérer toutes les dépenses pour vérifier les badges
+    const storageKey = getExpensesStorageKey();
+    const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    // Récupérer tous les badges de la configuration
+    const allBadges = [
+        ...BADGES_CONFIG.resistance,
+        ...BADGES_CONFIG.savings,
+        ...BADGES_CONFIG.positive_balance
+    ];
+
+    // Créer les éléments pour chaque badge
+    allBadges.forEach(badge => {
+        const isEarned = badge.condition(expenses);
+        const badgeElement = createBadgeElementForPopup(badge, isEarned);
+        allBadgesGrid.appendChild(badgeElement);
+    });
+}
+
+function createBadgeElementForPopup(badgeData, isEarned = false) {
+    const badgeDiv = document.createElement('div');
+    badgeDiv.className = `badge-placeholder ${isEarned ? 'earned' : 'locked'}`;
+    badgeDiv.setAttribute('data-badge-id', badgeData.id);
+
+    const statusClass = isEarned ? 'earned' : 'locked';
+    const statusText = isEarned ? 'Débloqué' : 'Verrouillé';
+
+    badgeDiv.innerHTML = `
+        <div class="badge-icon">
+            <img src="${badgeData.icon}" alt="${badgeData.title}" loading="lazy">
+        </div>
+        <h3>${badgeData.title}</h3>
+        <p>${badgeData.description}</p>
+        <span class="badge-points ${statusClass}">${badgeData.points} pts</span>
+        ${!isEarned ? '<div class="badge-locked-overlay">🔒</div>' : ''}
+    `;
+
+    return badgeDiv;
+}
+
+// Initialisation des événements pour la popup des badges
+function initializeBadgesPopup() {
+    // Ajouter un événement de clic sur le conteneur des badges (mais pas sur les boutons du carrousel)
+    const badgesContainer = document.querySelector('.badges-container');
+    if (badgesContainer) {
+        badgesContainer.addEventListener('click', (e) => {
+            // Vérifier que le clic n'est pas sur les boutons du carrousel
+            if (!e.target.closest('.carousel-controls') && 
+                !e.target.closest('.carousel-indicators') &&
+                !e.target.closest('.carousel-btn')) {
+                openAllBadgesPopup();
+            }
+        });
+    }
+
+    // Événement pour fermer la popup
+    const closeBtn = document.getElementById('close-all-badges-popup');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeAllBadgesPopup);
+    }
+
+    // Fermer en cliquant à l'extérieur
+    const popup = document.getElementById('all-badges-popup');
+    if (popup) {
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                closeAllBadgesPopup();
+            }
+        });
+    }
+}
+
 // Export des fonctions pour utilisation dans d'autres fichiers
 window.RPGhetto = {
     addBadge,
     updateBadgeStats,
     calculateTotalScore,
     loadMonthlyChallenges,
-    refreshBadges
+    refreshBadges,
+    openAllBadgesPopup,
+    closeAllBadgesPopup
 };
 
 // Exporter les fonctions du carrousel
