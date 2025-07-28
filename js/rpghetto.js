@@ -304,16 +304,22 @@ async function detectAndSaveNewBadges(currentEarnedBadges) {
     }
 }
 
-// Fonction pour sauvegarder la date de complétion/échec d'un défi
+// Fonction pour sauvegarder la date de complétion d'un défi (seulement les réussites)
 async function saveChallengeAchievement(challengeId, status) {
     if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    // Ne sauvegarder que les défis réussis dans l'historique des accomplissements
+    if (status !== 'completed') {
+        console.log(`📝 Défi ${challengeId} échoué - pas sauvegardé dans l'historique`);
         return;
     }
     
     try {
         const achievementData = {
             challengeId: challengeId,
-            status: status, // 'completed' ou 'failed'
+            status: status,
             date: new Date().toISOString(),
             type: 'challenge'
         };
@@ -321,17 +327,17 @@ async function saveChallengeAchievement(challengeId, status) {
         // Récupérer les accomplissements existants
         const existingAchievements = await window.authService.getData('achievements') || [];
         
-        // Vérifier si ce défi n'a pas déjà été enregistré pour ce statut
+        // Vérifier si ce défi n'a pas déjà été enregistré
         const challengeExists = existingAchievements.some(achievement => 
             achievement.type === 'challenge' && 
             achievement.challengeId === challengeId && 
-            achievement.status === status
+            achievement.status === 'completed'
         );
         
         if (!challengeExists) {
             existingAchievements.push(achievementData);
             await window.authService.saveData('achievements', existingAchievements);
-            console.log(`📅 Date de ${status} du défi ${challengeId} sauvegardée`);
+            console.log(`📅 Date de réussite du défi ${challengeId} sauvegardée`);
         }
     } catch (error) {
         console.error('Erreur lors de la sauvegarde de la date de défi:', error);
@@ -1129,74 +1135,280 @@ function updateChallengeDisplay(challengeId, status) {
 
 // Fonction pour mettre à jour les statistiques des badges
 async function updateBadgeStats() {
-    const bonusCount = document.getElementById('bonus-badges-count');
-    const totalScore = document.getElementById('total-badge-score');
-    const completedChallengesCount = document.getElementById('completed-challenges-count');
+    // Remplacer par l'affichage de l'historique des accomplissements
+    await displayAchievementsHistory();
+}
+
+// Fonction pour afficher l'historique complet des accomplissements
+async function displayAchievementsHistory() {
+    const badgeStatsSection = document.getElementById('badge-stats-section');
+    
+    if (!badgeStatsSection) {
+        console.warn('Section badge-stats-section non trouvée');
+        return;
+    }
     
     // Vérifier si l'utilisateur est connecté
     if (!window.authService || !window.authService.isUserAuthenticated()) {
-        bonusCount.textContent = '0';
-        totalScore.textContent = '0';
-        completedChallengesCount.textContent = '0';
+        badgeStatsSection.innerHTML = `
+            <h2>📅 Historique des Accomplissements</h2>
+            <p class="section-subtitle">Connectez-vous pour voir votre historique complet</p>
+            <div class="achievements-placeholder">
+                <p>🔐 Connexion requise pour voir vos exploits</p>
+            </div>
+        `;
         return;
     }
     
     try {
-        // Récupérer l'email de l'utilisateur connecté
-        const currentUser = window.authService.getCurrentUser();
-        if (!currentUser || !currentUser.email) {
-            throw new Error('Email utilisateur non trouvé');
-        }
-        const userEmail = currentUser.email;
+        // Récupérer tous les accomplissements depuis la BDD
+        const achievements = await window.authService.getData('achievements') || [];
         
-        // Appeler l'API pour récupérer les défis et leur statut
-        const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(userEmail)}`);
-        const data = await response.json();
-        
-        if (data.success && data.status) {
-            // Compter les défis réussis
-            const completedCount = Object.values(data.status).filter(status => status === 'completed').length;
-            completedChallengesCount.textContent = completedCount;
-        } else {
-            completedChallengesCount.textContent = '0';
-        }
-        
-    } catch (error) {
-        console.error('Erreur lors du calcul des défis réussis:', error);
-        completedChallengesCount.textContent = '0';
-    }
-    
-    // Calculer les badges obtenus et le score total
-    try {
+        // Récupérer les dépenses pour calculer les badges actuels
         const storageKey = getExpensesStorageKey();
         const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
         
-        const allBadges = [
-            ...BADGES_CONFIG.resistance,
-            ...BADGES_CONFIG.savings,
-            ...BADGES_CONFIG.positive_balance
-        ];
+        // Récupérer les défis depuis l'API
+        const currentUser = window.authService.getCurrentUser();
+        const userEmail = currentUser.email;
         
-        let earnedBadges = 0;
-        let totalPoints = 0;
-        
-        allBadges.forEach(badge => {
-            if (badge.condition(expenses)) {
-                earnedBadges++;
-                totalPoints += badge.points;
+        let challengesData = {};
+        try {
+            const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(userEmail)}`);
+            const data = await response.json();
+            if (data.success && data.status) {
+                challengesData = data.status;
             }
+        } catch (error) {
+            console.warn('Impossible de récupérer les défis:', error);
+        }
+        
+        // Créer la liste complète des accomplissements
+        const allAchievements = await buildCompleteAchievementsList(achievements, expenses, challengesData);
+        
+        // Détecter et ajouter les niveaux manquants
+        await detectAndAddMissingLevels(allAchievements, achievements);
+        
+        // Trier par date (plus récent en premier)
+        allAchievements.sort((a, b) => {
+            if (a.date === 'Date inconnue' && b.date === 'Date inconnue') return 0;
+            if (a.date === 'Date inconnue') return 1;
+            if (b.date === 'Date inconnue') return -1;
+            return new Date(b.date) - new Date(a.date);
         });
         
-        bonusCount.textContent = earnedBadges;
-        totalScore.textContent = totalPoints;
+        // Afficher l'historique
+        displayAchievementsList(badgeStatsSection, allAchievements);
         
     } catch (error) {
-        console.error('Erreur lors du calcul des badges:', error);
-        bonusCount.textContent = '0';
-        totalScore.textContent = '0';
+        console.error('Erreur lors de l\'affichage de l\'historique:', error);
+        badgeStatsSection.innerHTML = `
+            <h2>📅 Historique des Accomplissements</h2>
+            <p class="section-subtitle">Erreur lors du chargement de l'historique</p>
+            <div class="achievements-placeholder">
+                <p>❌ Impossible de charger l'historique: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Fonction pour construire la liste complète des accomplissements
+async function buildCompleteAchievementsList(achievements, expenses, challengesData) {
+    const allAchievements = [];
+    
+    // 1. Ajouter les accomplissements avec dates (depuis la BDD)
+    achievements.forEach(achievement => {
+        if (achievement.type === 'level') {
+            allAchievements.push({
+                type: 'level',
+                title: `Niveau ${achievement.level} - ${achievement.title}`,
+                description: `Tu as atteint le niveau ${achievement.level} !`,
+                date: achievement.date,
+                icon: '⭐',
+                points: achievement.level * 50
+            });
+        } else if (achievement.type === 'badge') {
+            allAchievements.push({
+                type: 'badge',
+                title: achievement.title,
+                description: achievement.description,
+                date: achievement.date,
+                icon: '🏆',
+                points: achievement.points
+            });
+        } else if (achievement.type === 'challenge' && achievement.status === 'completed') {
+            allAchievements.push({
+                type: 'challenge',
+                title: `Défi ${achievement.challengeId} réussi`,
+                description: `Tu as réussi ce défi !`,
+                date: achievement.date,
+                icon: '✅',
+                points: 50
+            });
+        }
+    });
+    
+    // 2. Ajouter les badges actuels sans dates (pour les exploits anciens)
+    const allBadges = [
+        ...BADGES_CONFIG.resistance,
+        ...BADGES_CONFIG.savings,
+        ...BADGES_CONFIG.positive_balance
+    ];
+    
+    allBadges.forEach(badge => {
+        if (badge.condition(expenses)) {
+            // Vérifier si ce badge n'est pas déjà dans les accomplissements
+            const alreadyExists = allAchievements.some(achievement => 
+                achievement.type === 'badge' && achievement.title === badge.title
+            );
+            
+            if (!alreadyExists) {
+                allAchievements.push({
+                    type: 'badge',
+                    title: badge.title,
+                    description: badge.description,
+                    date: 'Date inconnue',
+                    icon: '🏆',
+                    points: badge.points,
+                    unknownDate: true
+                });
+            }
+        }
+    });
+    
+    // 3. Ajouter les défis réussis sans dates
+    if (challengesData) {
+        Object.entries(challengesData).forEach(([challengeId, status]) => {
+            if (status === 'completed') {
+                // Vérifier si ce défi n'est pas déjà dans les accomplissements
+                const alreadyExists = allAchievements.some(achievement => 
+                    achievement.type === 'challenge' && 
+                    achievement.title.includes(challengeId) &&
+                    achievement.title.includes('réussi')
+                );
+                
+                if (!alreadyExists) {
+                    allAchievements.push({
+                        type: 'challenge',
+                        title: `Défi ${challengeId} réussi`,
+                        description: `Tu as réussi ce défi !`,
+                        date: 'Date inconnue',
+                        icon: '✅',
+                        points: 50,
+                        unknownDate: true
+                    });
+                }
+            }
+        });
     }
     
-    console.log('📊 Badge stats updated');
+    return allAchievements;
+}
+
+// Fonction pour détecter et ajouter les niveaux manquants
+async function detectAndAddMissingLevels(allAchievements, existingAchievements) {
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        // Calculer le niveau actuel basé sur le score total
+        const currentLevel = calculateLevel(calculateTotalScore());
+        
+        // Récupérer les niveaux déjà enregistrés
+        const recordedLevels = existingAchievements
+            .filter(achievement => achievement.type === 'level')
+            .map(achievement => achievement.level);
+        
+        // Identifier les niveaux manquants
+        const missingLevels = [];
+        for (let level = 1; level <= currentLevel; level++) {
+            if (!recordedLevels.includes(level)) {
+                missingLevels.push(level);
+            }
+        }
+        
+        // Ajouter les niveaux manquants à l'affichage
+        missingLevels.forEach(level => {
+            const levelTitle = getLevelTitle(level);
+            allAchievements.push({
+                type: 'level',
+                title: `Niveau ${level} - ${levelTitle}`,
+                description: `Tu as atteint le niveau ${level} !`,
+                date: 'Date inconnue',
+                icon: '⭐',
+                points: level * 50,
+                unknownDate: true
+            });
+        });
+        
+        // Sauvegarder les niveaux manquants dans la BDD
+        if (missingLevels.length > 0) {
+            const newLevelAchievements = missingLevels.map(level => ({
+                level: level,
+                title: getLevelTitle(level),
+                date: new Date().toISOString(), // Date de découverte
+                type: 'level'
+            }));
+            
+            existingAchievements.push(...newLevelAchievements);
+            await window.authService.saveData('achievements', existingAchievements);
+            
+            console.log(`📅 ${missingLevels.length} niveau(x) manquant(s) ajouté(s):`, 
+                missingLevels.map(l => `Niveau ${l}`).join(', '));
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors de la détection des niveaux manquants:', error);
+    }
+}
+
+// Fonction pour afficher la liste des accomplissements
+function displayAchievementsList(container, achievements) {
+    if (achievements.length === 0) {
+        container.innerHTML = `
+            <h2>📅 Historique des Accomplissements</h2>
+            <p class="section-subtitle">Aucun accomplissement pour le moment</p>
+            <div class="achievements-placeholder">
+                <p>🎯 Commencez à accomplir des exploits pour les voir ici !</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const achievementsHTML = achievements.map(achievement => {
+        const dateDisplay = achievement.unknownDate 
+            ? `<span class="unknown-date">Date inconnue (probablement pendant que tu dormais 😴)</span>`
+            : `<span class="achievement-date">${new Date(achievement.date).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}</span>`;
+        
+        return `
+            <div class="achievement-item ${achievement.type}">
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-content">
+                    <h3 class="achievement-title">${achievement.title}</h3>
+                    <p class="achievement-description">${achievement.description}</p>
+                    <div class="achievement-meta">
+                        ${dateDisplay}
+                        <span class="achievement-points">+${achievement.points} points</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <h2>📅 Historique des Accomplissements</h2>
+        <p class="section-subtitle">Tes exploits financiers dans le temps (${achievements.length} accomplissement${achievements.length > 1 ? 's' : ''})</p>
+        <div class="achievements-list">
+            ${achievementsHTML}
+        </div>
+    `;
 }
 
 // Fonction pour ajouter un badge (à utiliser plus tard)

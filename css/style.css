@@ -955,6 +955,96 @@ footer {
     text-align: center;
 }
 
+/* Historique des accomplissements */
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.achievement-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-color);
+}
+
+.achievement-item.level {
+    border-left: 4px solid #FFD700;
+}
+
+.achievement-item.badge {
+    border-left: 4px solid #FF6B6B;
+}
+
+.achievement-item.challenge {
+    border-left: 4px solid #4ECDC4;
+}
+
+.achievement-item .achievement-icon {
+    font-size: 2rem;
+    min-width: 2rem;
+    text-align: center;
+}
+
+.achievement-content {
+    flex: 1;
+}
+
+.achievement-title {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    margin: 0 0 0.5rem 0;
+}
+
+.achievement-description {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+}
+
+.achievement-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.achievement-date {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.unknown-date {
+    color: #f59e0b;
+    font-style: italic;
+}
+
+.achievement-points {
+    color: var(--accent-color);
+    font-weight: bold;
+    font-family: var(--font-title);
+}
+
+.achievements-placeholder {
+    text-align: center;
+    padding: 3rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     main {
@@ -1046,6 +1136,32 @@ footer {
     
     .achievement-label {
         font-size: 0.8rem;
+    }
+    
+    /* Responsive pour l'historique des accomplissements */
+    .achievement-item {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+    
+    .achievement-item .achievement-icon {
+        font-size: 1.5rem;
+        min-width: auto;
+    }
+    
+    .achievement-title {
+        font-size: 1rem;
+    }
+    
+    .achievement-description {
+        font-size: 0.8rem;
+    }
+    
+    .achievement-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
     }
 }
     
