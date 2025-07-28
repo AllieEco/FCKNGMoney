@@ -4,6 +4,270 @@
 let currentCarouselIndex = 0;
 let badgesPerView = 3; // Nombre de badges visibles à la fois
 
+// Configuration du système de niveau
+const LEVEL_CONFIG = {
+    // XP requis pour chaque niveau (niveau 1 = 0 XP, niveau 2 = 100 XP, etc.)
+    xpRequirements: [
+        0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, // Niveaux 1-10
+        3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450, // Niveaux 11-20
+        11500, 12600, 13800, 15100, 16500, 18000, 19600, 21300, 23100, 25000 // Niveaux 21-30
+    ],
+    
+    // Titres des niveaux
+    levelTitles: [
+        'Débutant', 'Apprenti', 'Initié', 'Adepte', 'Expert',
+        'Maître', 'Grand Maître', 'Légende', 'Mythique', 'Divin',
+        'Sage', 'Oracle', 'Prophète', 'Visionnaire', 'Illuminé',
+        'Transcendant', 'Éternel', 'Immortel', 'Cosmique', 'Universel',
+        'Omnipotent', 'Omniscient', 'Omniprésent', 'Créateur', 'Destructeur',
+        'Équilibré', 'Harmonieux', 'Parfait', 'Absolu', 'Infini'
+    ]
+};
+
+// Fonction pour calculer le niveau à partir des points XP
+function calculateLevel(totalXP) {
+    for (let i = LEVEL_CONFIG.xpRequirements.length - 1; i >= 0; i--) {
+        if (totalXP >= LEVEL_CONFIG.xpRequirements[i]) {
+            return i + 1;
+        }
+    }
+    return 1;
+}
+
+// Fonction pour obtenir le titre du niveau
+function getLevelTitle(level) {
+    return LEVEL_CONFIG.levelTitles[level - 1] || 'Inconnu';
+}
+
+// Fonction pour calculer la progression dans le niveau actuel
+function calculateLevelProgress(totalXP) {
+    const currentLevel = calculateLevel(totalXP);
+    const currentLevelXP = LEVEL_CONFIG.xpRequirements[currentLevel - 1];
+    const nextLevelXP = LEVEL_CONFIG.xpRequirements[currentLevel] || currentLevelXP + 1000;
+    
+    const xpInCurrentLevel = totalXP - currentLevelXP;
+    const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
+    
+    return {
+        currentLevel,
+        currentXP: totalXP,
+        xpInCurrentLevel,
+        xpNeededForNextLevel,
+        nextLevelXP,
+        progressPercentage: Math.min(100, (xpInCurrentLevel / xpNeededForNextLevel) * 100)
+    };
+}
+
+// Fonction pour mettre à jour l'affichage du profil utilisateur
+async function updateUserProfile() {
+    const userNameElement = document.getElementById('user-name');
+    const userLevelElement = document.getElementById('user-level');
+    const levelTitleElement = document.getElementById('level-title');
+    const currentXPElement = document.getElementById('current-xp');
+    const nextLevelXPElement = document.getElementById('next-level-xp');
+    const progressFillElement = document.getElementById('progress-fill');
+    const progressPercentageElement = document.getElementById('progress-percentage');
+    const totalScoreElement = document.getElementById('total-score');
+    const totalBadgesElement = document.getElementById('total-badges');
+    const completedChallengesElement = document.getElementById('completed-challenges');
+    
+    // Vérifier si l'utilisateur est connecté
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        if (userNameElement) userNameElement.textContent = 'Non connecté';
+        if (userLevelElement) userLevelElement.textContent = 'Niveau 1';
+        if (levelTitleElement) levelTitleElement.textContent = 'Débutant';
+        if (currentXPElement) currentXPElement.textContent = '0';
+        if (nextLevelXPElement) nextLevelXPElement.textContent = '100';
+        if (progressFillElement) progressFillElement.style.width = '0%';
+        if (progressPercentageElement) progressPercentageElement.textContent = '0%';
+        if (totalScoreElement) totalScoreElement.textContent = '0';
+        if (totalBadgesElement) totalBadgesElement.textContent = '0';
+        if (completedChallengesElement) completedChallengesElement.textContent = '0';
+        return;
+    }
+    
+    try {
+        const user = window.authService.getCurrentUser();
+        if (!user) return;
+        
+        // Afficher le nom de l'utilisateur
+        if (userNameElement) {
+            const displayName = user.displayName || user.email.split('@')[0];
+            userNameElement.textContent = displayName;
+        }
+        
+        // Calculer le score total (badges + défis)
+        const storageKey = getExpensesStorageKey();
+        const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        // Calculer les points des badges
+        const allBadges = [
+            ...BADGES_CONFIG.resistance,
+            ...BADGES_CONFIG.savings,
+            ...BADGES_CONFIG.positive_balance
+        ];
+        
+        let badgePoints = 0;
+        let earnedBadges = 0;
+        
+        allBadges.forEach(badge => {
+            if (badge.condition(expenses)) {
+                badgePoints += badge.points;
+                earnedBadges++;
+            }
+        });
+        
+        // Calculer les points des défis
+        let challengePoints = 0;
+        let completedChallenges = 0;
+        
+        try {
+            const response = await fetch(`/api/monthly-challenges/${encodeURIComponent(user.email)}`);
+            const data = await response.json();
+            
+            if (data.success && data.status) {
+                Object.values(data.status).forEach(status => {
+                    if (status === 'completed') {
+                        challengePoints += 50; // 50 points par défi réussi
+                        completedChallenges++;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors du calcul des points des défis:', error);
+        }
+        
+        // Score total
+        const totalScore = badgePoints + challengePoints;
+        
+        // Calculer le niveau et la progression
+        const levelInfo = calculateLevelProgress(totalScore);
+        
+        // Mettre à jour l'affichage
+        if (userLevelElement) userLevelElement.textContent = `Niveau ${levelInfo.currentLevel}`;
+        if (levelTitleElement) levelTitleElement.textContent = getLevelTitle(levelInfo.currentLevel);
+        if (currentXPElement) currentXPElement.textContent = levelInfo.xpInCurrentLevel;
+        if (nextLevelXPElement) nextLevelXPElement.textContent = levelInfo.xpNeededForNextLevel;
+        if (progressFillElement) progressFillElement.style.width = `${levelInfo.progressPercentage}%`;
+        if (progressPercentageElement) progressPercentageElement.textContent = `${Math.round(levelInfo.progressPercentage)}%`;
+        if (totalScoreElement) totalScoreElement.textContent = totalScore;
+        if (totalBadgesElement) totalBadgesElement.textContent = earnedBadges;
+        if (completedChallengesElement) completedChallengesElement.textContent = completedChallenges;
+        
+        console.log(`👤 Profil utilisateur mis à jour: Niveau ${levelInfo.currentLevel} (${levelInfo.progressPercentage.toFixed(1)}%)`);
+        
+        // Détecter et célébrer les montées de niveau
+        checkLevelUp(levelInfo.currentLevel);
+        
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+    }
+}
+
+// Variable pour stocker le niveau précédent
+let previousLevel = 1;
+
+// Fonction pour détecter et célébrer les montées de niveau
+function checkLevelUp(currentLevel) {
+    if (currentLevel > previousLevel) {
+        const levelTitle = getLevelTitle(currentLevel);
+        
+        // Créer une notification de montée de niveau
+        showLevelUpNotification(currentLevel, levelTitle);
+        
+        // Créer une explosion de confettis spéciale
+        createLevelUpConfetti();
+        
+        console.log(`🎉 Niveau ${currentLevel} atteint ! Titre: ${levelTitle}`);
+        
+        // Mettre à jour le niveau précédent
+        previousLevel = currentLevel;
+    }
+}
+
+// Fonction pour afficher une notification de montée de niveau
+function showLevelUpNotification(level, title) {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = 'level-up-notification';
+    notification.innerHTML = `
+        <div class="level-up-content">
+            <div class="level-up-icon">⭐</div>
+            <div class="level-up-text">
+                <h3>Niveau ${level} atteint !</h3>
+                <p>Tu es maintenant ${title} !</p>
+            </div>
+        </div>
+    `;
+    
+    // Ajouter au body
+    document.body.appendChild(notification);
+    
+    // Animation d'entrée
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Supprimer après 5 secondes
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 5000);
+}
+
+// Fonction pour créer une explosion de confettis spéciale pour les montées de niveau
+function createLevelUpConfetti() {
+    // Trouver le centre de l'écran
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    // Créer le conteneur de confettis
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti-container level-up-confetti';
+    document.body.appendChild(confettiContainer);
+    
+    // Créer plus de confettis pour une célébration plus importante
+    const confettiCount = 100;
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti level-up-confetti-piece';
+        
+        // Couleurs spéciales pour les montées de niveau (doré, argenté, etc.)
+        const colors = ['#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3'];
+        confetti.style.background = colors[i % colors.length];
+        
+        // Calculer une direction aléatoire
+        const angle = (Math.PI * 2 * i) / confettiCount + (Math.random() - 0.5) * 0.5;
+        const distance = 150 + Math.random() * 200;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance - 100;
+        
+        // Positionner le confetti
+        confetti.style.left = centerX + 'px';
+        confetti.style.top = centerY + 'px';
+        
+        // Définir les variables CSS pour l'animation
+        confetti.style.setProperty('--explosion-x', x + 'px');
+        confetti.style.setProperty('--explosion-y', y + 'px');
+        
+        // Délai aléatoire
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        
+        confettiContainer.appendChild(confetti);
+    }
+    
+    // Supprimer le conteneur après l'animation
+    setTimeout(() => {
+        if (confettiContainer.parentNode) {
+            confettiContainer.parentNode.removeChild(confettiContainer);
+        }
+    }, 4000);
+}
+
 // Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
 function getExpensesStorageKey() {
     if (window.authService && window.authService.isUserAuthenticated()) {
@@ -195,6 +459,9 @@ const BADGES_CONFIG = {
 // Initialisation de la page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎮 RPGhetto page loaded');
+    
+    // Initialiser le profil utilisateur
+    await updateUserProfile();
     
     // Initialiser les statistiques
     await updateBadgeStats();
@@ -517,6 +784,9 @@ async function completeChallenge(challengeId) {
         // Mettre à jour les statistiques des badges
         await updateBadgeStats();
         
+        // Mettre à jour le profil utilisateur
+        await updateUserProfile();
+        
         // Créer l'explosion de confettis ! 🎉
         createConfettiExplosion();
         
@@ -566,6 +836,9 @@ async function failChallenge(challengeId) {
         
         // Mettre à jour les statistiques des badges
         await updateBadgeStats();
+        
+        // Mettre à jour le profil utilisateur
+        await updateUserProfile();
         
         console.log(`😔 Challenge ${challengeId} failed!`);
         
