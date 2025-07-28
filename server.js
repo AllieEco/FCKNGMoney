@@ -212,6 +212,12 @@ app.post('/api/save-data', async (req, res) => {
             case 'config':
                 updateData.config = data;
                 break;
+            case 'selectedAvatar':
+                updateData.selectedAvatar = data;
+                break;
+            case 'achievements':
+                updateData.achievements = data;
+                break;
             default:
                 return res.status(400).json({ 
                     success: false, 
@@ -263,6 +269,12 @@ app.get('/api/get-data/:email/:dataType', async (req, res) => {
                 break;
             case 'config':
                 data = user.config || {};
+                break;
+            case 'selectedAvatar':
+                data = user.selectedAvatar || 'default';
+                break;
+            case 'achievements':
+                data = user.achievements || [];
                 break;
             default:
                 return res.status(400).json({ 

@@ -200,6 +200,33 @@ function initAuth() {
     // Mettre à jour l'état du bouton selon la connexion
     updateAuthButton();
     
+    // Charger l'avatar après l'initialisation de l'authentification
+    setTimeout(async () => {
+        if (window.applyGlobalAvatar && window.AVATARS_CONFIG) {
+            const authBtn = document.getElementById('auth-btn');
+            const avatarElement = authBtn.querySelector('.user-avatar');
+            if (avatarElement) {
+                try {
+                    let currentAvatarId = 'default';
+                    
+                    if (window.authService && window.authService.isUserAuthenticated()) {
+                        const savedAvatar = await window.authService.getData('selectedAvatar');
+                        if (savedAvatar) {
+                            currentAvatarId = savedAvatar;
+                        }
+                    } else {
+                        currentAvatarId = localStorage.getItem('selectedAvatar_local') || 'default';
+                    }
+                    
+                    window.applyGlobalAvatar(avatarElement, currentAvatarId);
+                    console.log('🎭 Avatar initialisé sur dashboard:', currentAvatarId);
+                } catch (error) {
+                    console.error('Erreur lors de l\'initialisation de l\'avatar:', error);
+                }
+            }
+        }
+    }, 500);
+    
     // Configurer la validation du mot de passe
     setupPasswordValidation();
     
@@ -379,6 +406,37 @@ function updateAuthButton() {
                 </div>
             </div>
         `;
+        
+        // Charger l'avatar personnalisé après la création du menu
+        setTimeout(async () => {
+            if (window.applyGlobalAvatar && window.AVATARS_CONFIG) {
+                const avatarElement = authBtn.querySelector('.user-avatar');
+                if (avatarElement) {
+                    try {
+                        // Récupérer l'avatar sauvegardé
+                        let currentAvatarId = 'default';
+                        
+                        if (window.authService && window.authService.isUserAuthenticated()) {
+                            const savedAvatar = await window.authService.getData('selectedAvatar');
+                            if (savedAvatar) {
+                                currentAvatarId = savedAvatar;
+                                console.log(`🎭 Avatar dashboard récupéré de la base de données: ${currentAvatarId}`);
+                            } else {
+                                console.log(`🎭 Aucun avatar dashboard sauvegardé, utilisation par défaut`);
+                            }
+                        } else {
+                            console.log(`🎭 Utilisateur non connecté, avatar dashboard par défaut`);
+                        }
+                        
+                        // Appliquer l'avatar
+                        window.applyGlobalAvatar(avatarElement, currentAvatarId);
+                        console.log('🎭 Avatar initialisé sur dashboard:', currentAvatarId);
+                    } catch (error) {
+                        console.error('Erreur lors de l\'initialisation de l\'avatar:', error);
+                    }
+                }
+            }
+        }, 100);
         authBtn.className = 'auth-btn connected';
         
         // Ajouter les événements pour le menu

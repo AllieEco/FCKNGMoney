@@ -463,10 +463,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const registerForm = document.getElementById('register-form');
         
             // Mettre à jour l'état du bouton selon la connexion
-    updateAuthButton();
-    
-    // Configurer la validation du mot de passe
-    setupPasswordValidation();
+        updateAuthButton();
+        
+        // Configurer la validation du mot de passe
+        setupPasswordValidation();
+        
+        // Charger l'avatar après l'initialisation de l'authentification
+        setTimeout(async () => {
+            if (window.applyGlobalAvatar && window.AVATARS_CONFIG) {
+                const avatarElement = authBtn.querySelector('.user-avatar');
+                if (avatarElement) {
+                    try {
+                        let currentAvatarId = 'default';
+                        
+                        if (window.authService && window.authService.isUserAuthenticated()) {
+                            const savedAvatar = await window.authService.getData('selectedAvatar');
+                            if (savedAvatar) {
+                                currentAvatarId = savedAvatar;
+                            }
+                        } else {
+                            currentAvatarId = localStorage.getItem('selectedAvatar_local') || 'default';
+                        }
+                        
+                        window.applyGlobalAvatar(avatarElement, currentAvatarId);
+                        console.log('🎭 Avatar initialisé sur script:', currentAvatarId);
+                    } catch (error) {
+                        console.error('Erreur lors de l\'initialisation de l\'avatar:', error);
+                    }
+                }
+            }
+        }, 500);
         
         // Ouvrir la popup d'authentification
         authBtn.addEventListener('click', () => {
@@ -649,6 +675,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
+            
+            // Charger l'avatar personnalisé après la création du menu
+            setTimeout(async () => {
+                if (window.applyGlobalAvatar && window.AVATARS_CONFIG) {
+                    const avatarElement = authBtn.querySelector('.user-avatar');
+                    if (avatarElement) {
+                        try {
+                            // Récupérer l'avatar sauvegardé
+                            let currentAvatarId = 'default';
+                            
+                            if (window.authService && window.authService.isUserAuthenticated()) {
+                                const savedAvatar = await window.authService.getData('selectedAvatar');
+                                if (savedAvatar) {
+                                    currentAvatarId = savedAvatar;
+                                    console.log(`🎭 Avatar script récupéré de la base de données: ${currentAvatarId}`);
+                                } else {
+                                    console.log(`🎭 Aucun avatar script sauvegardé, utilisation par défaut`);
+                                }
+                            } else {
+                                console.log(`🎭 Utilisateur non connecté, avatar script par défaut`);
+                            }
+                            
+                            // Appliquer l'avatar
+                            window.applyGlobalAvatar(avatarElement, currentAvatarId);
+                            console.log('🎭 Avatar appliqué sur script:', currentAvatarId);
+                        } catch (error) {
+                            console.error('Erreur lors du chargement de l\'avatar:', error);
+                        }
+                    }
+                }
+            }, 100);
             authBtn.className = 'auth-btn connected';
             
             // Ajouter les événements pour le menu

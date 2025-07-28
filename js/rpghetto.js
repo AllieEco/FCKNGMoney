@@ -748,6 +748,13 @@ const AVATARS_CONFIG = [
         image: 'assets/images/ptdrtki.gif',
         type: 'gif',
         unlockLevel: 5
+    },
+    {
+        id: 'friday-happy',
+        name: 'Friday Happy',
+        image: 'assets/images/friday-happy.gif',
+        type: 'gif',
+        unlockLevel: 5
     }
 ];
 
@@ -1918,6 +1925,61 @@ async function initializeAvatarSystem() {
     }
 }
 
+// Fonction globale pour charger l'avatar sur toutes les pages
+async function loadGlobalAvatar() {
+    const avatarElement = document.querySelector('.user-avatar');
+    if (!avatarElement) return;
+    
+    try {
+        // Récupérer l'avatar depuis la base de données
+        let currentAvatarId = 'default';
+        
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            const savedAvatar = await window.authService.getData('selectedAvatar');
+            if (savedAvatar) {
+                currentAvatarId = savedAvatar;
+                console.log(`🎭 Avatar global récupéré de la base de données: ${currentAvatarId}`);
+            } else {
+                console.log(`🎭 Aucun avatar global sauvegardé, utilisation par défaut`);
+            }
+        } else {
+            console.log(`🎭 Utilisateur non connecté, avatar global par défaut`);
+        }
+        
+        // Appliquer l'avatar global
+        applyGlobalAvatar(avatarElement, currentAvatarId);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement de l\'avatar global:', error);
+        applyGlobalAvatar(avatarElement, 'default');
+    }
+}
+
+// Fonction pour appliquer l'avatar global
+function applyGlobalAvatar(avatarElement, avatarId) {
+    if (!avatarElement) return;
+    
+    const avatar = AVATARS_CONFIG.find(a => a.id === avatarId) || AVATARS_CONFIG[0];
+    
+    if (avatar.type === 'emoji') {
+        avatarElement.textContent = avatar.image;
+        avatarElement.style.backgroundImage = 'none';
+        avatarElement.style.fontSize = '1.5rem';
+        avatarElement.style.display = 'flex';
+        avatarElement.style.alignItems = 'center';
+        avatarElement.style.justifyContent = 'center';
+    } else {
+        avatarElement.textContent = '';
+        avatarElement.style.backgroundImage = `url(${avatar.image})`;
+        avatarElement.style.backgroundSize = 'cover';
+        avatarElement.style.backgroundPosition = 'center';
+        avatarElement.style.fontSize = '0';
+        avatarElement.style.display = 'block';
+    }
+    
+    console.log(`🎭 Avatar global appliqué: ${avatar.name}`);
+}
+
 async function loadCurrentAvatar() {
     const avatarElement = document.getElementById('user-avatar');
     const changeAvatarBtn = document.getElementById('change-avatar-btn');
@@ -1925,16 +1987,19 @@ async function loadCurrentAvatar() {
     if (!avatarElement) return;
     
     try {
-        // Récupérer l'avatar sauvegardé
+        // Récupérer l'avatar depuis la base de données
         let currentAvatarId = 'default';
         
         if (window.authService && window.authService.isUserAuthenticated()) {
             const savedAvatar = await window.authService.getData('selectedAvatar');
             if (savedAvatar) {
                 currentAvatarId = savedAvatar;
+                console.log(`🎭 Avatar récupéré de la base de données: ${currentAvatarId}`);
+            } else {
+                console.log(`🎭 Aucun avatar sauvegardé, utilisation par défaut`);
             }
         } else {
-            currentAvatarId = localStorage.getItem('selectedAvatar_local') || 'default';
+            console.log(`🎭 Utilisateur non connecté, avatar par défaut`);
         }
         
         // Appliquer l'avatar
@@ -2132,11 +2197,16 @@ async function selectCurrentAvatar() {
     const avatarId = selectedOption.dataset.avatarId;
     
     try {
-        // Sauvegarder la sélection
+        // Sauvegarder la sélection dans la base de données
         if (window.authService && window.authService.isUserAuthenticated()) {
-            await window.authService.saveData('selectedAvatar', avatarId);
+            const success = await window.authService.saveData('selectedAvatar', avatarId);
+            if (success) {
+                console.log(`🎭 Avatar sauvegardé dans la base de données: ${avatarId}`);
+            } else {
+                throw new Error('Échec de la sauvegarde dans la base de données');
+            }
         } else {
-            localStorage.setItem('selectedAvatar_local', avatarId);
+            throw new Error('Utilisateur non connecté');
         }
         
         // Appliquer l'avatar
@@ -2152,7 +2222,7 @@ async function selectCurrentAvatar() {
         
     } catch (error) {
         console.error('Erreur lors de la sauvegarde de l\'avatar:', error);
-        alert('Erreur lors de la sauvegarde de l\'avatar');
+        alert('Erreur lors de la sauvegarde de l\'avatar. Veuillez réessayer.');
     }
 }
 
@@ -2176,6 +2246,11 @@ window.RPGhetto = {
     loadCurrentAvatar,
     applyAvatar
 };
+
+// Exporter les fonctions d'avatar global pour toutes les pages
+window.loadGlobalAvatar = loadGlobalAvatar;
+window.applyGlobalAvatar = applyGlobalAvatar;
+window.AVATARS_CONFIG = AVATARS_CONFIG;
 
 // Exporter les fonctions du carrousel
 window.moveCarousel = moveCarousel;
