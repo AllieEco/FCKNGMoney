@@ -4267,3 +4267,87 @@ footer {
         font-size: 1rem;
     }
 }
+
+/* Styles pour l'état verrouillé du coffre quotidien */
+.chest-icon.locked {
+    filter: grayscale(100%);
+    opacity: 0.6;
+    cursor: not-allowed;
+    animation: none !important;
+}
+
+.chest-icon.locked:hover {
+    transform: none;
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.chest-locked-info {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.chest-locked-info h3 {
+    color: #9ca3af;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.countdown-timer {
+    background: linear-gradient(135deg, #374151, #4b5563);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 2px solid #6b7280;
+}
+
+.time-remaining {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    display: block;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.locked-message {
+    color: #9ca3af;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+/* Responsive pour l'état verrouillé */
+@media (max-width: 768px) {
+    .chest-locked-info h3 {
+        font-size: 1.3rem;
+    }
+    
+    .countdown-timer {
+        padding: 1rem;
+    }
+    
+    .time-remaining {
+        font-size: 2rem;
+    }
+    
+    .locked-message {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .chest-locked-info h3 {
+        font-size: 1.2rem;
+    }
+    
+    .time-remaining {
+        font-size: 1.8rem;
+    }
+    
+    .locked-message {
+        font-size: 0.9rem;
+    }
+}

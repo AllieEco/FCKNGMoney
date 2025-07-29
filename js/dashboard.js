@@ -515,15 +515,28 @@ async function openDailyChest() {
         chestPopup = document.createElement('div');
         chestPopup.id = 'daily-chest-popup';
         chestPopup.className = 'popup-overlay';
+        // Déterminer le contenu en fonction du statut du coffre
+        const isLocked = !chestStatus.canOpen;
+        const timeRemaining = formatTimeRemaining(chestStatus.timeRemaining);
+        
         chestPopup.innerHTML = `
             <div class="popup-content daily-chest-popup">
                 <div class="popup-header">
-                    <h2>📦 Ouvre vite ton coffre quotidien !</h2>
+                    <h2>📦 ${isLocked ? 'Coffre quotidien verrouillé' : 'Ouvre vite ton coffre quotidien !'}</h2>
                     <button class="popup-close-btn" id="close-daily-chest-popup">×</button>
                 </div>
                 <div class="chest-content">
-                                            <div class="chest-icon" id="clickable-chest">📦</div>
-                                            <div class="chest-rewards">
+                    <div class="chest-icon ${isLocked ? 'locked' : ''}" id="clickable-chest">📦</div>
+                    ${isLocked ? `
+                        <div class="chest-locked-info">
+                            <h3>⏰ Coffre temporairement indisponible</h3>
+                            <div class="countdown-timer" id="countdown-timer">
+                                <span class="time-remaining">${timeRemaining}</span>
+                            </div>
+                            <p class="locked-message">Tu pourras ouvrir un nouveau coffre dans :</p>
+                        </div>
+                    ` : `
+                        <div class="chest-rewards">
                             <h3>🎁 Gains possibles :</h3>
                             <div class="rewards-list">
                                 <div class="reward-item">
@@ -546,6 +559,7 @@ async function openDailyChest() {
                                 </div>
                             </div>
                         </div>
+                    `}
                 </div>
             </div>
         `;
@@ -566,11 +580,18 @@ async function openDailyChest() {
             }
         });
         
-        // Gérer le clic sur le coffre
-        const clickableChest = chestPopup.querySelector('#clickable-chest');
-        clickableChest.addEventListener('click', () => {
-            openChest(chestPopup);
-        });
+                    // Gérer le clic sur le coffre
+            const clickableChest = chestPopup.querySelector('#clickable-chest');
+            if (!isLocked) {
+                clickableChest.addEventListener('click', () => {
+                    openChest(chestPopup);
+                });
+            }
+            
+            // Démarrer le compteur si le coffre est verrouillé
+            if (isLocked) {
+                startCountdownTimer(chestPopup, chestStatus.timeRemaining);
+            }
     }
     
     // Afficher la popup
@@ -1631,6 +1652,56 @@ function showDeleteAccountConfirmation() {
         } else {
             return `${timeRemaining.minutes}m`;
         }
+    }
+    
+    // Fonction pour démarrer le compteur en temps réel
+    function startCountdownTimer(chestPopup, timeRemaining) {
+        if (!timeRemaining) return;
+        
+        const countdownElement = chestPopup.querySelector('#countdown-timer .time-remaining');
+        if (!countdownElement) return;
+        
+        // Calculer le temps total en millisecondes
+        const totalMinutes = timeRemaining.hours * 60 + timeRemaining.minutes;
+        let remainingMs = totalMinutes * 60 * 1000;
+        
+        const updateTimer = () => {
+            if (remainingMs <= 0) {
+                countdownElement.textContent = 'Prêt !';
+                // Recharger la popup pour permettre l'ouverture
+                setTimeout(() => {
+                    chestPopup.classList.remove('active');
+                    setTimeout(() => openDailyChest(), 500);
+                }, 1000);
+                return;
+            }
+            
+            const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (hours > 0) {
+                countdownElement.textContent = `${hours}h ${minutes}m`;
+            } else {
+                countdownElement.textContent = `${minutes}m`;
+            }
+            
+            remainingMs -= 1000; // Décrémenter d'une seconde
+        };
+        
+        // Mettre à jour immédiatement puis toutes les secondes
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        
+        // Nettoyer l'intervalle quand la popup est fermée
+        const closeBtn = chestPopup.querySelector('#close-daily-chest-popup');
+        const cleanup = () => {
+            clearInterval(interval);
+            chestPopup.removeEventListener('click', cleanup);
+            if (closeBtn) closeBtn.removeEventListener('click', cleanup);
+        };
+        
+        chestPopup.addEventListener('click', cleanup);
+        if (closeBtn) closeBtn.addEventListener('click', cleanup);
     }
 
     // Exposer les fonctions globalement
