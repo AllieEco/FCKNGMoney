@@ -368,9 +368,19 @@ function handleLogout() {
     // Déconnecter l'utilisateur
     window.authService.logout();
     
-    // Recharger les données de la page
-    if (typeof reloadPageData === 'function') {
-        reloadPageData();
+    // Rediriger vers le tableau de bord et réinitialiser l'interface
+    if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
+        // Si on n'est pas déjà sur le tableau de bord, y rediriger
+        window.location.href = 'index.html';
+    } else {
+        // Si on est déjà sur le tableau de bord, recharger les données
+        if (typeof reloadPageData === 'function') {
+            reloadPageData();
+        }
+        // Réinitialiser l'interface pour afficher un tableau de bord vierge
+        if (typeof loadDashboardData === 'function') {
+            loadDashboardData();
+        }
     }
     
     // Mettre à jour l'interface

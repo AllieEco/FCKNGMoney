@@ -4351,3 +4351,97 @@ footer {
         font-size: 0.9rem;
     }
 }
+
+/* Message de connexion pour tableau de bord vierge */
+.connect-message {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    margin: 2rem 0;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.connect-message:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+    border-color: var(--accent-color);
+}
+
+.connect-message-content h3 {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-title);
+}
+
+.connect-message-content p {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.connect-btn {
+    background: linear-gradient(135deg, var(--accent-color), var(--submit-btn-bg));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.connect-btn:hover {
+    background: linear-gradient(135deg, var(--submit-btn-hover), var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+.connect-btn:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .connect-message {
+        padding: 2rem 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .connect-message-content h3 {
+        font-size: 1.3rem;
+    }
+    
+    .connect-message-content p {
+        font-size: 1rem;
+    }
+    
+    .connect-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .connect-message {
+        padding: 1.5rem 1rem;
+        margin: 1rem 0;
+    }
+    
+    .connect-message-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .connect-message-content p {
+        font-size: 0.9rem;
+    }
+    
+    .connect-btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}

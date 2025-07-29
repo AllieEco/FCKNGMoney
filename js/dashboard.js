@@ -177,14 +177,38 @@ async function loadDashboardData() {
     
     // Calculer et afficher les stats de criminels financiers seulement si connecté
     if (isAuthenticated) {
+        // Supprimer le message de connexion s'il existe
+        const existingMessage = document.querySelector('.connect-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
         updateCriminalStats(expenses);
         // Créer les graphiques seulement si connecté
         await createCharts(expenses);
     } else {
-        // Réinitialiser les stats si non connecté
+        // Réinitialiser les stats si non connecté et afficher un message
         updateCriminalStats([]);
         // Masquer ou réinitialiser les graphiques
         await createCharts([]);
+        
+        // Afficher un message pour inviter à se connecter
+        const dashboardSection = document.getElementById('dashboard-section');
+        if (dashboardSection) {
+            const existingMessage = dashboardSection.querySelector('.connect-message');
+            if (!existingMessage) {
+                const connectMessage = document.createElement('div');
+                connectMessage.className = 'connect-message';
+                connectMessage.innerHTML = `
+                    <div class="connect-message-content">
+                        <h3>🔐 Connecte-toi pour voir tes données</h3>
+                        <p>Pour accéder à ton tableau de bord personnalisé et voir tes statistiques financières, connecte-toi à ton compte.</p>
+                        <button class="connect-btn" onclick="document.getElementById('auth-btn').click()">Se Connecter</button>
+                    </div>
+                `;
+                dashboardSection.appendChild(connectMessage);
+            }
+        }
     }
 }
 
