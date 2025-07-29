@@ -853,6 +853,22 @@ function setupPasswordValidation() {
             // Sauvegarder les points dans la base de données
             await saveChestPoints(points);
             
+            // Recharger le score si on est sur la page RPGhetto
+            if (window.RPGhetto && window.RPGhetto.calculateTotalScore) {
+                try {
+                    await window.RPGhetto.calculateTotalScore();
+                    console.log('📊 Score rechargé après gain du coffre');
+                    
+                    // Mettre à jour l'affichage du profil utilisateur
+                    if (window.updateUserProfile) {
+                        await window.updateUserProfile();
+                        console.log('👤 Profil utilisateur mis à jour');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors du rechargement du score:', error);
+                }
+            }
+            
             // Réactiver le clic après un délai
             setTimeout(() => {
                 clickableChest.style.pointerEvents = 'auto';
@@ -951,7 +967,7 @@ function setupPasswordValidation() {
                 const currentPoints = await window.authService.getData('chest_points') || 0;
                 const newTotal = currentPoints + points;
                 
-                await window.authService.setData('chest_points', newTotal);
+                await window.authService.saveData('chest_points', newTotal);
                 console.log(`📦 Points du coffre sauvegardés: ${currentPoints} + ${points} = ${newTotal}`);
             }
         } catch (error) {

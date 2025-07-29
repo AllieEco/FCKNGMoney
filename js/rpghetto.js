@@ -96,29 +96,28 @@ async function updateUserProfile() {
             userNameElement.textContent = displayName;
         }
         
-        // Calculer le score total (badges + défis)
+        // Utiliser la fonction calculateTotalScore qui inclut les points du coffre
+        const totalScore = await calculateTotalScore();
+        
+        // Calculer les points des badges pour l'affichage
         const storageKey = getExpensesStorageKey();
         const expenses = JSON.parse(localStorage.getItem(storageKey)) || [];
         
-        // Calculer les points des badges
         const allBadges = [
             ...BADGES_CONFIG.resistance,
             ...BADGES_CONFIG.savings,
             ...BADGES_CONFIG.positive_balance
         ];
         
-        let badgePoints = 0;
         let earnedBadges = 0;
         
         allBadges.forEach(badge => {
             if (badge.condition(expenses)) {
-                badgePoints += badge.points;
                 earnedBadges++;
             }
         });
         
-        // Calculer les points des défis
-        let challengePoints = 0;
+        // Calculer les défis complétés pour l'affichage
         let completedChallenges = 0;
         
         try {
@@ -128,7 +127,6 @@ async function updateUserProfile() {
             if (data.success && data.status) {
                 Object.values(data.status).forEach(status => {
                     if (status === 'completed') {
-                        challengePoints += 50; // 50 points par défi réussi
                         completedChallenges++;
                     }
                 });
@@ -136,9 +134,6 @@ async function updateUserProfile() {
         } catch (error) {
             console.error('Erreur lors du calcul des points des défis:', error);
         }
-        
-        // Score total
-        const totalScore = badgePoints + challengePoints;
         
         // Calculer le niveau et la progression
         const levelInfo = calculateLevelProgress(totalScore);
@@ -2320,6 +2315,9 @@ window.RPGhetto = {
     loadCurrentAvatar,
     applyAvatar
 };
+
+// Exposer updateUserProfile globalement
+window.updateUserProfile = updateUserProfile;
 
 // Exporter les fonctions d'avatar global pour toutes les pages
 window.loadGlobalAvatar = loadGlobalAvatar;

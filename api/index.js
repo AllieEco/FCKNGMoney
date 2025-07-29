@@ -272,6 +272,12 @@ app.post('/api/save-data', async (req, res) => {
             case 'achievements':
                 updateData.achievements = data;
                 break;
+            case 'chest_points':
+                updateData.chest_points = data;
+                break;
+            case 'previousLevel':
+                updateData.previousLevel = data;
+                break;
             default:
                 return res.status(400).json({ 
                     success: false, 
@@ -331,6 +337,12 @@ app.get('/api/get-data/:email/:dataType', async (req, res) => {
                 break;
             case 'achievements':
                 data = user.achievements || [];
+                break;
+            case 'chest_points':
+                data = user.chest_points || 0;
+                break;
+            case 'previousLevel':
+                data = user.previousLevel || 1;
                 break;
             default:
                 return res.status(400).json({ 
