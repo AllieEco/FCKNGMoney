@@ -1051,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="popup-close-btn" id="close-daily-chest-popup">×</button>
                     </div>
                     <div class="chest-content">
-                        <div class="chest-icon">📦</div>
+                        <div class="chest-icon" id="clickable-chest">📦</div>
                         <div class="chest-rewards">
                             <h3>🎁 Gains possibles :</h3>
                             <div class="rewards-list">
@@ -1094,11 +1094,148 @@ document.addEventListener('DOMContentLoaded', () => {
                     chestPopup.classList.remove('active');
                 }
             });
+            
+            // Gérer le clic sur le coffre
+            const clickableChest = chestPopup.querySelector('#clickable-chest');
+            clickableChest.addEventListener('click', () => {
+                openChest(chestPopup);
+            });
         }
         
         // Afficher la popup
         console.log('📦 Affichage de la popup du coffre');
         chestPopup.classList.add('active');
+    }
+
+    // Fonction pour ouvrir le coffre et obtenir des points
+    async function openChest(chestPopup) {
+        console.log('🎲 Ouverture du coffre quotidien...');
+        
+        // Désactiver le clic pendant l'animation
+        const clickableChest = chestPopup.querySelector('#clickable-chest');
+        clickableChest.style.pointerEvents = 'none';
+        
+        // Animation d'ouverture du coffre
+        clickableChest.style.animation = 'chestOpen 0.5s ease-in-out';
+        
+        // Tirage au sort des points
+        const points = getRandomPoints();
+        
+        // Attendre la fin de l'animation
+        setTimeout(async () => {
+            // Créer les confettis
+            createChestConfetti(chestPopup);
+            
+            // Afficher le résultat
+            showChestResult(chestPopup, points);
+            
+            // Sauvegarder les points dans la base de données
+            await saveChestPoints(points);
+            
+            // Réactiver le clic après un délai
+            setTimeout(() => {
+                clickableChest.style.pointerEvents = 'auto';
+                clickableChest.style.animation = 'chestMove 2s ease-in-out infinite';
+            }, 3000);
+        }, 500);
+    }
+    
+    // Fonction pour obtenir des points aléatoires
+    function getRandomPoints() {
+        const random = Math.random();
+        
+        if (random < 0.6) {
+            return 5; // 60% de chance
+        } else if (random < 0.85) {
+            return 10; // 25% de chance
+        } else {
+            return 15; // 15% de chance
+        }
+    }
+    
+    // Fonction pour créer les confettis
+    function createChestConfetti(chestPopup) {
+        const confettiContainer = document.createElement('div');
+        confettiContainer.className = 'chest-confetti-container';
+        confettiContainer.style.position = 'absolute';
+        confettiContainer.style.top = '0';
+        confettiContainer.style.left = '0';
+        confettiContainer.style.width = '100%';
+        confettiContainer.style.height = '100%';
+        confettiContainer.style.pointerEvents = 'none';
+        confettiContainer.style.zIndex = '1000';
+        confettiContainer.style.overflow = 'hidden';
+        
+        // Créer 30 confettis colorés
+        for (let i = 0; i < 30; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'chest-confetti';
+            confetti.style.position = 'absolute';
+            confetti.style.top = '50%';
+            confetti.style.left = '50%';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.background = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'][Math.floor(Math.random() * 7)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.transform = 'translate(-50%, -50%)';
+            confetti.style.animation = `chestConfettiExplosion ${Math.random() * 1 + 1}s ease-out forwards`;
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            confettiContainer.appendChild(confetti);
+        }
+        
+        chestPopup.appendChild(confettiContainer);
+        
+        // Supprimer les confettis après l'animation
+        setTimeout(() => {
+            if (confettiContainer.parentNode) {
+                confettiContainer.parentNode.removeChild(confettiContainer);
+            }
+        }, 3000);
+    }
+    
+    // Fonction pour afficher le résultat
+    function showChestResult(chestPopup, points) {
+        const chestContent = chestPopup.querySelector('.chest-content');
+        const originalContent = chestContent.innerHTML;
+        
+        // Remplacer le contenu par le résultat
+        chestContent.innerHTML = `
+            <div class="chest-result">
+                <div class="chest-result-icon">🎉</div>
+                <h3 class="chest-result-title">Félicitations !</h3>
+                <div class="chest-result-points">+${points} points</div>
+                <p class="chest-result-message">Tes points ont été ajoutés à ton score !</p>
+            </div>
+        `;
+        
+        // Restaurer le contenu original après 3 secondes
+        setTimeout(() => {
+            chestContent.innerHTML = originalContent;
+            
+            // Réattacher l'événement de clic
+            const clickableChest = chestPopup.querySelector('#clickable-chest');
+            if (clickableChest) {
+                clickableChest.addEventListener('click', () => {
+                    openChest(chestPopup);
+                });
+            }
+        }, 3000);
+    }
+    
+    // Fonction pour sauvegarder les points dans la base de données
+    async function saveChestPoints(points) {
+        try {
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                const user = window.authService.getCurrentUser();
+                const currentPoints = await window.authService.getData('chest_points') || 0;
+                const newTotal = currentPoints + points;
+                
+                await window.authService.setData('chest_points', newTotal);
+                console.log(`📦 Points du coffre sauvegardés: ${currentPoints} + ${points} = ${newTotal}`);
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de la sauvegarde des points du coffre:', error);
+        }
     }
 
     // Exposer les fonctions globalement

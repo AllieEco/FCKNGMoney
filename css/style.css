@@ -3987,6 +3987,29 @@ footer {
     }
 }
 
+@keyframes chestOpen {
+    0% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+    25% {
+        transform: scale(1.2) rotate(5deg);
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+    }
+    50% {
+        transform: scale(1.3) rotate(-3deg);
+        filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+    }
+    75% {
+        transform: scale(1.1) rotate(2deg);
+        filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.7));
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+}
+
 /* Styles pour les gains du coffre */
 .chest-rewards {
     margin-top: 2rem;
@@ -4048,6 +4071,75 @@ footer {
     font-size: 0.9rem;
     color: var(--secondary-color);
     font-style: italic;
+}
+
+
+/* Animation pour les confettis du coffre */
+@keyframes chestConfettiExplosion {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(360deg) translateY(-150px);
+        opacity: 0;
+    }
+}
+
+/* Styles pour le résultat du coffre */
+.chest-result {
+    text-align: center;
+    padding: 2rem;
+}
+
+.chest-result-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: chestResultPulse 1s ease-in-out infinite;
+}
+
+@keyframes chestResultPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.chest-result-title {
+    font-family: var(--font-title);
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.chest-result-points {
+    font-family: var(--font-title);
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    animation: chestPointsGlow 2s ease-in-out infinite;
+}
+
+@keyframes chestPointsGlow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+    }
+}
+
+.chest-result-message {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    margin-top: 1rem;
 }
 
 /* Responsive pour la popup du coffre */
@@ -4157,5 +4249,21 @@ footer {
     
     .reward-chance {
         font-size: 0.7rem;
+    }
+    
+    .chest-result-icon {
+        font-size: 3rem;
+    }
+    
+    .chest-result-title {
+        font-size: 1.5rem;
+    }
+    
+    .chest-result-points {
+        font-size: 2.5rem;
+    }
+    
+    .chest-result-message {
+        font-size: 1rem;
     }
 }
