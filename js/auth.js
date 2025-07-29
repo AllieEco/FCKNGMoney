@@ -26,6 +26,9 @@ class AuthService {
         this.currentUser = user;
         this.isAuthenticated = true;
         localStorage.setItem('fckngmoney_user', JSON.stringify(user));
+        
+        // Déclencher un événement de connexion
+        window.dispatchEvent(new CustomEvent('userLogin'));
     }
 
     // Vérifier si un identifiant unique est disponible

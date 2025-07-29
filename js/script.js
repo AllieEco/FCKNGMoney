@@ -452,6 +452,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loadExpenses();
         render();
     });
+    
+    // Écouter les événements de connexion
+    window.addEventListener('userLogin', async () => {
+        // Recharger les données après connexion
+        loadExpenses();
+        render();
+    });
 
     // Fonction d'initialisation de l'authentification (copiée depuis rpghetto.js)
     function initAuth() {

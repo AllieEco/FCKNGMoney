@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Recharger les données pour l'utilisateur local
         loadDashboardData();
     });
+    
+    // Écouter les événements de connexion
+    window.addEventListener('userLogin', async () => {
+        // Recharger les données après connexion
+        await loadDashboardData();
+    });
 });
 
 // Citations politiques
@@ -164,6 +170,21 @@ function handleLogout() {
 async function loadDashboardData() {
     // Vérifier si l'utilisateur est connecté
     const isAuthenticated = window.authService && window.authService.isUserAuthenticated();
+    
+    // Si l'utilisateur est connecté, s'assurer que les données sont à jour
+    if (isAuthenticated) {
+        try {
+            // Charger les données depuis le serveur si nécessaire
+            const serverExpenses = await window.authService.getData('expenses');
+            if (serverExpenses && serverExpenses.length > 0) {
+                const storageKey = getExpensesStorageKey();
+                localStorage.setItem(storageKey, JSON.stringify(serverExpenses));
+                console.log('✅ Dépenses mises à jour depuis le serveur pour le dashboard');
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des données serveur:', error);
+        }
+    }
     
     // Récupérer les données depuis le bon stockage
     const storageKey = getExpensesStorageKey();
@@ -319,6 +340,9 @@ function initAuth() {
                 
                 // Charger les données depuis le serveur
                 await window.authService.loadServerData();
+                
+                // Synchroniser les données locales avec le serveur
+                await window.authService.syncLocalData();
                 
                 // Recharger le dashboard avec les données synchronisées
                 await loadDashboardData();
