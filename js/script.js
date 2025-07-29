@@ -1034,8 +1034,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fonction pour ouvrir le coffre quotidien
-    function openDailyChest() {
+    async function openDailyChest() {
         console.log('📦 Fonction coffre quotidien appelée');
+        
+        // Vérifier si le coffre peut être ouvert
+        const chestStatus = await canOpenChest();
+        console.log('📦 Statut du coffre:', chestStatus);
+        
+        if (!chestStatus.canOpen) {
+            // Afficher un message d'erreur avec le temps restant
+            const timeRemaining = formatTimeRemaining(chestStatus.timeRemaining);
+            alert(`⏰ Coffre quotidien non disponible !\n\nIl te reste ${timeRemaining} avant de pouvoir ouvrir un nouveau coffre.`);
+            return;
+        }
         
         // Créer la popup si elle n'existe pas
         let chestPopup = document.getElementById('daily-chest-popup');
@@ -1238,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
     
-    // Fonction pour sauvegarder les points dans la base de données
+    // Fonction pour sauvegarder les points et la date d'ouverture dans la base de données
     async function saveChestPoints(points) {
         try {
             if (window.authService && window.authService.isUserAuthenticated()) {
@@ -1246,11 +1257,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentPoints = await window.authService.getData('chest_points') || 0;
                 const newTotal = currentPoints + points;
                 
+                // Sauvegarder les points
                 await window.authService.saveData('chest_points', newTotal);
+                
+                // Sauvegarder la date d'ouverture (timestamp)
+                const openTime = new Date().toISOString();
+                await window.authService.saveData('last_chest_open', openTime);
+                
                 console.log(`📦 Points du coffre sauvegardés: ${currentPoints} + ${points} = ${newTotal}`);
+                console.log(`📅 Date d'ouverture sauvegardée: ${openTime}`);
             }
         } catch (error) {
             console.error('❌ Erreur lors de la sauvegarde des points du coffre:', error);
+        }
+    }
+    
+    // Fonction pour vérifier si le coffre peut être ouvert (délai de 24h)
+    async function canOpenChest() {
+        try {
+            if (!window.authService || !window.authService.isUserAuthenticated()) {
+                return { canOpen: false, timeRemaining: null, reason: 'Non connecté' };
+            }
+            
+            const lastOpenTime = await window.authService.getData('last_chest_open');
+            
+            if (!lastOpenTime) {
+                return { canOpen: true, timeRemaining: null, reason: 'Première ouverture' };
+            }
+            
+            const lastOpen = new Date(lastOpenTime);
+            const now = new Date();
+            const timeDiff = now - lastOpen;
+            const hoursDiff = timeDiff / (1000 * 60 * 60); // Différence en heures
+            
+            if (hoursDiff >= 24) {
+                return { canOpen: true, timeRemaining: null, reason: 'Délai écoulé' };
+            } else {
+                const remainingHours = 24 - hoursDiff;
+                const remainingMinutes = Math.ceil((remainingHours % 1) * 60);
+                const remainingHoursInt = Math.floor(remainingHours);
+                
+                return { 
+                    canOpen: false, 
+                    timeRemaining: { hours: remainingHoursInt, minutes: remainingMinutes },
+                    reason: 'Délai non écoulé'
+                };
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de la vérification du délai du coffre:', error);
+            return { canOpen: false, timeRemaining: null, reason: 'Erreur de vérification' };
+        }
+    }
+    
+    // Fonction pour formater le temps restant
+    function formatTimeRemaining(timeRemaining) {
+        if (!timeRemaining) return '';
+        
+        if (timeRemaining.hours > 0) {
+            return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
+        } else {
+            return `${timeRemaining.minutes}m`;
         }
     }
 

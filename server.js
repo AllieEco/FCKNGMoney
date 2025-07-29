@@ -221,6 +221,9 @@ app.post('/api/save-data', async (req, res) => {
             case 'chest_points':
                 updateData.chest_points = data;
                 break;
+            case 'last_chest_open':
+                updateData.last_chest_open = data;
+                break;
             case 'previousLevel':
                 updateData.previousLevel = data;
                 break;
@@ -284,6 +287,9 @@ app.get('/api/get-data/:email/:dataType', async (req, res) => {
                 break;
             case 'chest_points':
                 data = user.chest_points || 0;
+                break;
+            case 'last_chest_open':
+                data = user.last_chest_open || null;
                 break;
             case 'previousLevel':
                 data = user.previousLevel || 1;
