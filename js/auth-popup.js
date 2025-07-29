@@ -865,12 +865,12 @@ function setupPasswordValidation() {
     function getRandomPoints() {
         const random = Math.random();
         
-        if (random < 0.6) {
-            return 5; // 60% de chance
-        } else if (random < 0.85) {
-            return 10; // 25% de chance
+        if (random < 0.5) {
+            return 5; // 50% de chance
+        } else if (random < 0.8) {
+            return 10; // 30% de chance
         } else {
-            return 15; // 15% de chance
+            return 15; // 20% de chance
         }
     }
     
