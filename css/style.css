@@ -3889,3 +3889,273 @@ footer {
         font-size: 0.7rem;
     }
 }
+
+/* Styles pour la popup du coffre quotidien */
+.daily-chest-popup {
+    max-width: 500px;
+    text-align: center;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px var(--shadow-color);
+    overflow: hidden;
+}
+
+.daily-chest-popup .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    color: white;
+}
+
+.daily-chest-popup .popup-header h2 {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 1.8rem;
+    color: white;
+    flex: 1;
+    text-align: center;
+}
+
+.daily-chest-popup .popup-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-left: 1rem;
+}
+
+.daily-chest-popup .popup-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.chest-content {
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.chest-icon {
+    font-size: 10rem;
+    margin-bottom: 2rem;
+    animation: chestMove 2s ease-in-out infinite;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chest-icon:hover {
+    animation-play-state: paused;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes chestMove {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+    25% {
+        transform: translateY(-8px) rotate(3deg);
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
+    }
+    50% {
+        transform: translateY(-12px) rotate(-2deg);
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+    }
+    75% {
+        transform: translateY(-6px) rotate(2deg);
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
+    }
+    100% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+}
+
+/* Styles pour les gains du coffre */
+.chest-rewards {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.chest-rewards h3 {
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.rewards-list {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+.reward-item {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.reward-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.reward-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.reward-points {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.reward-chance {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    font-style: italic;
+}
+
+/* Responsive pour la popup du coffre */
+@media (max-width: 768px) {
+    .daily-chest-popup {
+        max-width: 90vw;
+        margin: 1rem;
+    }
+    
+    .daily-chest-popup .popup-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .chest-content {
+        padding: 2rem 1rem;
+        min-height: 250px;
+    }
+    
+    .chest-icon {
+        font-size: 6rem;
+        margin-bottom: 1.5rem;
+        animation: chestMove 3s ease-in-out infinite;
+    }
+    
+    .chest-icon:hover {
+        animation-play-state: paused;
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+    }
+    
+    .chest-rewards h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .rewards-list {
+        max-width: 500px;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .reward-item {
+        min-width: auto;
+    }
+    
+    .reward-item {
+        padding: 0.6rem 1rem;
+    }
+    
+    .reward-points {
+        font-size: 1rem;
+    }
+    
+    .reward-chance {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .daily-chest-popup .popup-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .daily-chest-popup .popup-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .chest-content {
+        padding: 1.5rem 1rem;
+        min-height: 200px;
+    }
+    
+    .chest-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        animation: chestMove 3s ease-in-out infinite;
+    }
+    
+    .chest-icon:hover {
+        animation-play-state: paused;
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+    }
+    
+    .chest-rewards h3 {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .rewards-list {
+        max-width: 300px;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    
+    .reward-item {
+        min-width: auto;
+    }
+    
+    .reward-item {
+        padding: 0.5rem 0.8rem;
+    }
+    
+    .reward-points {
+        font-size: 0.9rem;
+    }
+    
+    .reward-chance {
+        font-size: 0.7rem;
+    }
+}

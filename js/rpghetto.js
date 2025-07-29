@@ -1695,10 +1695,30 @@ async function calculateTotalScore() {
             }
         }
         
-        const totalScore = badgePoints + challengePoints;
+        // Récupérer les points du coffre quotidien depuis la base de données
+        let chestPoints = 0;
+        if (window.authService && window.authService.isUserAuthenticated()) {
+            try {
+                const user = window.authService.getCurrentUser();
+                const chestData = await window.authService.getData('chest_points');
+                if (chestData && typeof chestData === 'number') {
+                    chestPoints = chestData;
+                    console.log('📦 Points du coffre récupérés:', chestPoints);
+                } else {
+                    console.log('📦 Aucun point de coffre trouvé, initialisation à 0');
+                    chestPoints = 0;
+                }
+            } catch (error) {
+                console.warn('Impossible de récupérer les points du coffre:', error);
+                chestPoints = 0;
+            }
+        }
+        
+        const totalScore = badgePoints + challengePoints + chestPoints;
         console.log('📊 Calcul du score total:', {
             badgePoints: badgePoints,
             challengePoints: challengePoints,
+            chestPoints: chestPoints,
             totalScore: totalScore
         });
         
