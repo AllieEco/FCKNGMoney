@@ -525,13 +525,6 @@ async function openDailyChest() {
     const chestStatus = await canOpenChest();
     console.log('📦 Statut du coffre:', chestStatus);
     
-    if (!chestStatus.canOpen) {
-        // Afficher un message d'erreur avec le temps restant
-        const timeRemaining = formatTimeRemaining(chestStatus.timeRemaining);
-        alert(`⏰ Coffre quotidien non disponible !\n\nIl te reste ${timeRemaining} avant de pouvoir ouvrir un nouveau coffre.`);
-        return;
-    }
-    
     // Créer ou mettre à jour la popup
     let chestPopup = document.getElementById('daily-chest-popup');
     if (chestPopup) {
@@ -600,13 +593,13 @@ async function openDailyChest() {
     
     closeBtn.addEventListener('click', () => {
         console.log('📦 Fermeture de la popup du coffre');
-        chestPopup.classList.remove('active');
+        chestPopup.remove();
     });
     
     // Fermer en cliquant à l'extérieur
     chestPopup.addEventListener('click', (e) => {
         if (e.target === chestPopup) {
-            chestPopup.classList.remove('active');
+            chestPopup.remove();
         }
     });
     
@@ -616,10 +609,8 @@ async function openDailyChest() {
         clickableChest.addEventListener('click', () => {
             openChest(chestPopup);
         });
-    }
-    
-    // Démarrer le compteur si le coffre est verrouillé
-    if (isLocked) {
+    } else {
+        // Démarrer le compteur si le coffre est verrouillé
         startCountdownTimer(chestPopup, chestStatus.timeRemaining);
     }
     
@@ -1521,6 +1512,9 @@ function showDeleteAccountConfirmation() {
                     console.error('❌ Erreur lors du rechargement du score:', error);
                 }
             }
+            
+            // Actualisation complète de la page après 2 secondes
+            setTimeout(() => { location.reload(); }, 2000);
             
             // Réactiver le clic après un délai
             setTimeout(() => {

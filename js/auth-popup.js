@@ -899,6 +899,9 @@ function setupPasswordValidation() {
                         await window.updateUserProfile();
                         console.log('👤 Profil utilisateur mis à jour');
                     }
+                    
+                    // Actualisation complète de la page après 2 secondes
+                    setTimeout(() => { location.reload(); }, 2000);
                 } catch (error) {
                     console.error('❌ Erreur lors du rechargement du score:', error);
                 }
