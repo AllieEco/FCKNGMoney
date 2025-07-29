@@ -532,90 +532,95 @@ async function openDailyChest() {
         return;
     }
     
-    // Créer la popup si elle n'existe pas
+    // Créer ou mettre à jour la popup
     let chestPopup = document.getElementById('daily-chest-popup');
-    if (!chestPopup) {
-        console.log('📦 Création de la popup du coffre quotidien');
-        chestPopup = document.createElement('div');
-        chestPopup.id = 'daily-chest-popup';
-        chestPopup.className = 'popup-overlay';
-        // Déterminer le contenu en fonction du statut du coffre
-        const isLocked = !chestStatus.canOpen;
-        const timeRemaining = formatTimeRemaining(chestStatus.timeRemaining);
-        
-        chestPopup.innerHTML = `
-            <div class="popup-content daily-chest-popup">
-                <div class="popup-header">
-                    <h2>📦 ${isLocked ? 'Coffre quotidien verrouillé' : 'Ouvre vite ton coffre quotidien !'}</h2>
-                    <button class="popup-close-btn" id="close-daily-chest-popup">×</button>
-                </div>
-                <div class="chest-content">
-                    <div class="chest-icon ${isLocked ? 'locked' : ''}" id="clickable-chest">📦</div>
-                    ${isLocked ? `
-                        <div class="chest-locked-info">
-                            <h3>⏰ Coffre temporairement indisponible</h3>
-                            <div class="countdown-timer" id="countdown-timer">
-                                <span class="time-remaining">${timeRemaining}</span>
-                            </div>
-                            <p class="locked-message">Tu pourras ouvrir un nouveau coffre dans :</p>
-                        </div>
-                    ` : `
-                        <div class="chest-rewards">
-                            <h3>🎁 Gains possibles :</h3>
-                            <div class="rewards-list">
-                                <div class="reward-item">
-                                    <div class="reward-content">
-                                        <span class="reward-points">5 points</span>
-                                        <span class="reward-chance">Chance élevée</span>
-                                    </div>
-                                </div>
-                                <div class="reward-item">
-                                    <div class="reward-content">
-                                        <span class="reward-points">10 points</span>
-                                        <span class="reward-chance">Chance moyenne</span>
-                                    </div>
-                                </div>
-                                <div class="reward-item">
-                                    <div class="reward-content">
-                                        <span class="reward-points">15 points</span>
-                                        <span class="reward-chance">Chance rare</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `}
-                </div>
+    if (chestPopup) {
+        // Supprimer l'ancienne popup pour la recréer avec le bon statut
+        chestPopup.remove();
+    }
+    
+    console.log('📦 Création de la popup du coffre quotidien');
+    chestPopup = document.createElement('div');
+    chestPopup.id = 'daily-chest-popup';
+    chestPopup.className = 'popup-overlay';
+    
+    // Déterminer le contenu en fonction du statut du coffre
+    const isLocked = !chestStatus.canOpen;
+    const timeRemaining = formatTimeRemaining(chestStatus.timeRemaining);
+    
+    chestPopup.innerHTML = `
+        <div class="popup-content daily-chest-popup">
+            <div class="popup-header">
+                <h2>📦 ${isLocked ? 'Coffre quotidien verrouillé' : 'Ouvre vite ton coffre quotidien !'}</h2>
+                <button class="popup-close-btn" id="close-daily-chest-popup">×</button>
             </div>
-        `;
-        document.body.appendChild(chestPopup);
-        
-        // Ajouter les événements
-        const closeBtn = chestPopup.querySelector('#close-daily-chest-popup');
-        
-        closeBtn.addEventListener('click', () => {
-            console.log('📦 Fermeture de la popup du coffre');
+            <div class="chest-content">
+                <div class="chest-icon ${isLocked ? 'locked' : ''}" id="clickable-chest">📦</div>
+                ${isLocked ? `
+                    <div class="chest-locked-info">
+                        <h3>⏰ Coffre temporairement indisponible</h3>
+                        <div class="countdown-timer" id="countdown-timer">
+                            <span class="time-remaining">${timeRemaining}</span>
+                        </div>
+                        <p class="locked-message">Tu pourras ouvrir un nouveau coffre dans :</p>
+                    </div>
+                ` : `
+                    <div class="chest-rewards">
+                        <h3>🎁 Gains possibles :</h3>
+                        <div class="rewards-list">
+                            <div class="reward-item">
+                                <div class="reward-content">
+                                    <span class="reward-points">5 points</span>
+                                    <span class="reward-chance">Chance élevée</span>
+                                </div>
+                            </div>
+                            <div class="reward-item">
+                                <div class="reward-content">
+                                    <span class="reward-points">10 points</span>
+                                    <span class="reward-chance">Chance moyenne</span>
+                                </div>
+                            </div>
+                            <div class="reward-item">
+                                <div class="reward-content">
+                                    <span class="reward-points">15 points</span>
+                                    <span class="reward-chance">Chance rare</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(chestPopup);
+    
+    // Ajouter les événements
+    const closeBtn = chestPopup.querySelector('#close-daily-chest-popup');
+    
+    closeBtn.addEventListener('click', () => {
+        console.log('📦 Fermeture de la popup du coffre');
+        chestPopup.classList.remove('active');
+    });
+    
+    // Fermer en cliquant à l'extérieur
+    chestPopup.addEventListener('click', (e) => {
+        if (e.target === chestPopup) {
             chestPopup.classList.remove('active');
+        }
+    });
+    
+    // Gérer le clic sur le coffre
+    const clickableChest = chestPopup.querySelector('#clickable-chest');
+    if (!isLocked) {
+        clickableChest.addEventListener('click', () => {
+            openChest(chestPopup);
         });
-        
-        // Fermer en cliquant à l'extérieur
-        chestPopup.addEventListener('click', (e) => {
-            if (e.target === chestPopup) {
-                chestPopup.classList.remove('active');
-            }
-        });
-        
-                    // Gérer le clic sur le coffre
-            const clickableChest = chestPopup.querySelector('#clickable-chest');
-            if (!isLocked) {
-                clickableChest.addEventListener('click', () => {
-                    openChest(chestPopup);
-                });
-            }
-            
-            // Démarrer le compteur si le coffre est verrouillé
-            if (isLocked) {
-                startCountdownTimer(chestPopup, chestStatus.timeRemaining);
-            }
+    }
+    
+    // Démarrer le compteur si le coffre est verrouillé
+    if (isLocked) {
+        startCountdownTimer(chestPopup, chestStatus.timeRemaining);
     }
     
     // Afficher la popup
