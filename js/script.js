@@ -869,20 +869,31 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text(`Filtres appliqués : ${filterInfo}`, pageWidth / 2, 50, { align: 'center' });
         }
         
-        // RÉSUMÉ DES DÉPENSES PAR CATÉGORIE
+        // RÉSUMÉ DES DÉPENSES PAR CATÉGORIE EN DEUX COLONNES
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('Résumé des Dépenses par Catégorie', margin, 70);
+        doc.text('Résumé des Dépenses par Catégorie', pageWidth / 2, 70, { align: 'center' });
         
         // Calculer les totaux par catégorie
         const categoryTotals = calculateCategoryTotals(filteredExpenses);
         
-        // Afficher le résumé des catégories
+        // Configuration des colonnes (3 colonnes)
+        const columnWidth = (pageWidth - 4 * margin) / 3; // Largeur de chaque colonne
+        const leftColumnX = margin;
+        const middleColumnX = margin + columnWidth + margin;
+        const rightColumnX = margin + 2 * (columnWidth + margin);
+        const lineHeight = 6;
+        const maxLinesPerColumn = 6; // Nombre maximum de lignes par colonne
+        
+        // Afficher le résumé des catégories en trois colonnes
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
         let yPosition = 85;
-        categoryTotals.forEach(({ category, total }) => {
+        let currentColumn = 0; // 0 = gauche, 1 = milieu, 2 = droite
+        let lineCount = 0;
+        
+        categoryTotals.forEach(({ category, total }, index) => {
             const formattedAmount = total.toFixed(2);
             const amountText = total < 0 ? `${formattedAmount}€` : `+${formattedAmount}€`;
             
@@ -893,17 +904,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.setTextColor(0, 150, 0); // Vert pour les revenus
             }
             
-            doc.text(`${category} : ${amountText}`, margin, yPosition);
-            yPosition += 6;
+            // Déterminer la colonne et la position X
+            let xPosition;
+            if (currentColumn === 0) {
+                xPosition = leftColumnX;
+            } else if (currentColumn === 1) {
+                xPosition = middleColumnX;
+            } else {
+                xPosition = rightColumnX;
+            }
+            
+            // Tronquer le nom de catégorie si trop long pour la colonne
+            const maxCategoryLength = 20; // Réduit pour 3 colonnes
+            const displayCategory = category.length > maxCategoryLength 
+                ? category.substring(0, maxCategoryLength - 3) + '...' 
+                : category;
+            
+            doc.text(`${displayCategory} : ${amountText}`, xPosition, yPosition);
+            
+            lineCount++;
+            
+            // Passer à la colonne suivante si on a atteint la limite de lignes
+            if (lineCount >= maxLinesPerColumn && currentColumn < 2) {
+                currentColumn++;
+                yPosition = 85; // Remettre en haut pour la nouvelle colonne
+                lineCount = 0;
+            } else {
+                yPosition += lineHeight;
+            }
         });
         
         // Remettre la couleur par défaut
         doc.setTextColor(0, 0, 0);
         
         // Ligne de séparation
-        yPosition += 10;
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        const finalYPosition = Math.max(yPosition, 85 + (categoryTotals.length > maxLinesPerColumn * 3 ? maxLinesPerColumn : Math.ceil(categoryTotals.length / 3)) * lineHeight);
+        doc.line(margin, finalYPosition + 10, pageWidth - margin, finalYPosition + 10);
+        yPosition = finalYPosition + 25;
         
         // Statistiques des données filtrées
         doc.setFontSize(14);
