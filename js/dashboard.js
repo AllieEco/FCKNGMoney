@@ -1260,7 +1260,12 @@ function createExpensesPieChart(expenses) {
                     '#06b6d4', // Cyan
                     '#84cc16', // Lime
                     '#f97316', // Orange foncé
-                    '#6366f1'  // Indigo
+                    '#6366f1', // Indigo
+                    '#10b981', // Émeraude
+                    '#f59e0b', // Ambre
+                    '#8b5cf6', // Violet foncé
+                    '#ec4899', // Rose vif
+                    '#06b6d4'  // Cyan foncé
                 ],
                 borderWidth: 2,
                 borderColor: '#374151'
@@ -1391,10 +1396,10 @@ function prepareExpensesPieData(expenses) {
         categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(exp.amount);
     });
     
-    // Trier par montant décroissant et prendre les 8 plus importantes
+    // Trier par montant décroissant et prendre les 15 plus importantes
     const sortedCategories = Object.entries(categoryTotals)
         .sort(([,a], [,b]) => b - a)
-        .slice(0, 8);
+        .slice(0, 15);
     
     const labels = sortedCategories.map(([category]) => category);
     const values = sortedCategories.map(([, amount]) => amount);
