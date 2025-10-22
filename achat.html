@@ -124,6 +124,16 @@
                     <label for="description">La Preuve (Optionnel)</label>
                     <textarea id="description" placeholder="Une excuse? Une justification? On t'écoute..."></textarea>
                 </div>
+                
+                <!-- DÉPENSE RÉCURRENTE -->
+                <div class="form-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="is-recurring">
+                        <span class="checkmark"></span>
+                        💸 Dépense récurrente (se répète chaque mois)
+                    </label>
+                </div>
+                
                 <button type="submit">J'assume (c'est la faute à Macron)</button>
             </form>
         </section>
@@ -189,6 +199,16 @@
                         <!-- Les "crimes" seront listés ici -->
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- DÉPENSES RÉCURRENTES -->
+        <section id="recurring-section">
+            <h2>🔄 Dépenses Récurrentes</h2>
+            <p class="section-subtitle">Tes abonnements et charges fixes (qui se répètent chaque mois)</p>
+            
+            <div id="recurring-list">
+                <!-- Les dépenses récurrentes seront listées ici -->
             </div>
         </section>
 

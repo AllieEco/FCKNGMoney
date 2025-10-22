@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const necessityInput = document.getElementById('necessity');
     const amountInput = document.getElementById('amount');
     const descriptionInput = document.getElementById('description');
+    const isRecurringInput = document.getElementById('is-recurring');
 
     // Filter Elements
     const filterYearEl = document.getElementById('filter-year');
@@ -125,7 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
             necessity: necessityInput.value,
             amount: amount, // Signed amount
             description: descriptionInput.value,
-            type: transactionType
+            type: transactionType,
+            isRecurring: isRecurringInput.checked,
+            originalDate: isRecurringInput.checked ? crimeDateInput.value : null // Date originale pour les récurrentes
         };
         
         // Basic Validation
@@ -258,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const filteredExpenses = getFilteredExpenses();
         renderTable(filteredExpenses);
         calculateStats(filteredExpenses); // Use filtered expenses for stats too
+        renderRecurringExpenses(); // Afficher les dépenses récurrentes
     }
 
     function getFilteredExpenses() {
@@ -296,10 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const amountClass = expense.amount >= 0 ? 'amount-positive' : 'amount-negative';
             const formattedAmount = `${expense.amount.toFixed(2)}€`;
+            const recurringIndicator = expense.isRecurring ? ' 🔄' : '';
 
             row.innerHTML = `
                 <td>${new Date(expense.date).toLocaleDateString()}</td>
-                <td>${expense.culprit}</td>
+                <td>${expense.culprit}${recurringIndicator}</td>
                 <td>${expense.category}</td>
                 <td>${expense.necessity}</td>
                 <td><span class="${amountClass}">${formattedAmount}</span></td>
@@ -395,6 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             loadExpenses(); // Charger depuis le stockage local pour les utilisateurs non connectés
         }
+        
+        // Générer les dépenses récurrentes
+        generateRecurringExpenses();
         
         resetForm();
         populateFilterOptions();
@@ -832,6 +840,198 @@ document.addEventListener('DOMContentLoaded', () => {
         return Object.entries(categoryTotals)
             .map(([category, total]) => ({ category, total }))
             .sort((a, b) => a.total - b.total); // Tri croissant (les plus négatifs en premier)
+    }
+
+    // Fonction pour générer les dépenses récurrentes
+    function generateRecurringExpenses() {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        
+        // Récupérer toutes les dépenses récurrentes
+        const recurringExpenses = expenses.filter(exp => exp.isRecurring);
+        
+        recurringExpenses.forEach(expense => {
+            if (!expense.originalDate) return;
+            
+            const originalDate = new Date(expense.originalDate);
+            const originalDay = originalDate.getDate();
+            
+            // Vérifier si on doit créer une dépense pour ce mois
+            const shouldCreateThisMonth = shouldCreateRecurringExpense(expense, currentYear, currentMonth);
+            
+            if (shouldCreateThisMonth) {
+                // Créer la nouvelle date pour ce mois
+                const newDate = new Date(currentYear, currentMonth, originalDay);
+                const newDateString = newDate.toISOString().split('T')[0];
+                
+                // Vérifier si cette dépense n'existe pas déjà
+                const existingExpense = expenses.find(exp => 
+                    exp.culprit === expense.culprit &&
+                    exp.category === expense.category &&
+                    exp.amount === expense.amount &&
+                    exp.date === newDateString &&
+                    exp.isRecurring === true
+                );
+                
+                if (!existingExpense) {
+                    // Créer la nouvelle dépense récurrente
+                    const newRecurringExpense = {
+                        id: Date.now() + Math.random(), // ID unique
+                        culprit: expense.culprit,
+                        date: newDateString,
+                        category: expense.category,
+                        paymentMethod: expense.paymentMethod,
+                        necessity: expense.necessity,
+                        amount: expense.amount,
+                        description: expense.description + ' (Récurrente)',
+                        type: expense.type,
+                        isRecurring: true,
+                        originalDate: expense.originalDate
+                    };
+                    
+                    expenses.push(newRecurringExpense);
+                    console.log(`🔄 Dépense récurrente générée: ${expense.culprit} - ${expense.amount}€`);
+                }
+            }
+        });
+        
+        // Sauvegarder les nouvelles dépenses
+        if (expenses.length > 0) {
+            saveExpensesToStorage();
+        }
+    }
+    
+    // Fonction pour déterminer si une dépense récurrente doit être créée
+    function shouldCreateRecurringExpense(expense, year, month) {
+        if (!expense.originalDate) return false;
+        
+        const originalDate = new Date(expense.originalDate);
+        const originalYear = originalDate.getFullYear();
+        const originalMonth = originalDate.getMonth();
+        
+        // Ne pas créer si c'est le même mois que l'original
+        if (originalYear === year && originalMonth === month) {
+            return false;
+        }
+        
+        // Créer si c'est un mois ultérieur
+        return (year > originalYear) || (year === originalYear && month > originalMonth);
+    }
+
+    // Fonction pour afficher les dépenses récurrentes
+    function renderRecurringExpenses() {
+        const recurringList = document.getElementById('recurring-list');
+        if (!recurringList) return;
+        
+        // Récupérer les dépenses récurrentes uniques (une par type)
+        const uniqueRecurring = [];
+        const seen = new Set();
+        
+        expenses.forEach(expense => {
+            if (expense.isRecurring && expense.originalDate) {
+                const key = `${expense.culprit}-${expense.category}-${expense.amount}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueRecurring.push(expense);
+                }
+            }
+        });
+        
+        if (uniqueRecurring.length === 0) {
+            recurringList.innerHTML = `
+                <div class="no-recurring">
+                    <p>💡 Aucune dépense récurrente configurée</p>
+                    <p>Coche la case "Dépense récurrente" lors de l'ajout d'une dépense pour qu'elle se répète chaque mois.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        recurringList.innerHTML = uniqueRecurring.map(expense => {
+            const originalDate = new Date(expense.originalDate);
+            const dayOfMonth = originalDate.getDate();
+            const formattedAmount = `${Math.abs(expense.amount).toFixed(2)}€`;
+            
+            return `
+                <div class="recurring-item">
+                    <div class="recurring-info">
+                        <h4>${expense.culprit}</h4>
+                        <p class="recurring-category">${expense.category}</p>
+                        <p class="recurring-amount">${formattedAmount}</p>
+                    </div>
+                    <div class="recurring-details">
+                        <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois</p>
+                        <p class="recurring-description">${expense.description || 'Aucune description'}</p>
+                    </div>
+                    <div class="recurring-actions">
+                        <button class="edit-recurring-btn" data-id="${expense.id}" title="Modifier">✏️</button>
+                        <button class="delete-recurring-btn" data-id="${expense.id}" title="Supprimer">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Ajouter les événements pour les boutons
+        recurringList.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-recurring-btn');
+            const deleteBtn = e.target.closest('.delete-recurring-btn');
+            
+            if (editBtn) {
+                const id = parseInt(editBtn.dataset.id);
+                editRecurringExpense(id);
+            }
+            
+            if (deleteBtn) {
+                const id = parseInt(deleteBtn.dataset.id);
+                deleteRecurringExpense(id);
+            }
+        });
+    }
+    
+    // Fonction pour éditer une dépense récurrente
+    function editRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        // Remplir le formulaire avec les données de la dépense récurrente
+        expenseIdInput.value = expense.id;
+        culpritInput.value = expense.culprit;
+        crimeDateInput.value = expense.originalDate; // Utiliser la date originale
+        categoryInput.value = expense.category;
+        paymentMethodInput.value = expense.paymentMethod;
+        necessityInput.value = expense.necessity;
+        transactionTypeInput.value = expense.type;
+        amountInput.value = Math.abs(expense.amount);
+        descriptionInput.value = expense.description.replace(' (Récurrente)', '');
+        isRecurringInput.checked = true;
+        
+        submitBtn.textContent = 'Modifier cette Dépense Récurrente';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        culpritInput.focus();
+    }
+    
+    // Fonction pour supprimer une dépense récurrente
+    function deleteRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        if (confirm(`Sûr de vouloir supprimer cette dépense récurrente de ${Math.abs(expense.amount)}€ chez ${expense.culprit} ?`)) {
+            // Supprimer toutes les dépenses récurrentes de ce type
+            expenses = expenses.filter(exp => 
+                !(exp.isRecurring && 
+                  exp.culprit === expense.culprit && 
+                  exp.category === expense.category && 
+                  exp.amount === expense.amount)
+            );
+            
+            saveExpensesToStorage();
+            // Synchroniser avec le serveur si connecté
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                window.authService.saveData('expenses', expenses);
+            }
+            render();
+        }
     }
 
     // Fonction d'export PDF avec prise en compte des filtres

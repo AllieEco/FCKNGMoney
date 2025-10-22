@@ -4445,3 +4445,202 @@ footer {
         font-size: 0.9rem;
     }
 }
+
+/* Styles pour les dépenses récurrentes */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover .checkmark {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--glow-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Mode clair pour les checkboxes */
+[data-theme="light"] .checkmark {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+[data-theme="light"] .checkbox-label:hover .checkmark {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--glow-color);
+}
+
+/* Styles pour les dépenses récurrentes */
+#recurring-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+#recurring-section h2 {
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.section-subtitle {
+    color: var(--secondary-color);
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.recurring-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.recurring-item:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.recurring-info {
+    flex: 1;
+}
+
+.recurring-info h4 {
+    color: var(--secondary-color);
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.recurring-category {
+    color: var(--secondary-color);
+    opacity: 0.8;
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.recurring-amount {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.recurring-details {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.recurring-date {
+    color: var(--secondary-color);
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.recurring-description {
+    color: var(--secondary-color);
+    opacity: 0.7;
+    margin: 0;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.recurring-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.edit-recurring-btn,
+.delete-recurring-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-color);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.edit-recurring-btn:hover {
+    background: var(--edit-btn-color);
+    border-color: var(--edit-btn-color);
+    color: white;
+}
+
+.delete-recurring-btn:hover {
+    background: var(--delete-btn-color);
+    border-color: var(--delete-btn-color);
+    color: white;
+}
+
+.no-recurring {
+    text-align: center;
+    padding: 2rem;
+    color: var(--secondary-color);
+    opacity: 0.8;
+}
+
+.no-recurring p {
+    margin: 0.5rem 0;
+}
+
+/* Mode clair pour les dépenses récurrentes */
+[data-theme="light"] .recurring-item {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .recurring-item:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+[data-theme="light"] .no-recurring {
+    color: var(--secondary-color);
+    opacity: 0.8;
+}
