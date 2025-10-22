@@ -4644,3 +4644,62 @@ footer {
     color: var(--secondary-color);
     opacity: 0.8;
 }
+
+/* Styles pour les dépenses récurrentes arrêtées */
+.recurring-item.stopped {
+    opacity: 0.6;
+    background: var(--primary-color);
+    border-color: #6b7280; /* Gris */
+}
+
+.recurring-item.stopped:hover {
+    border-color: #6b7280;
+    box-shadow: none;
+}
+
+.recurring-item.stopped h4 {
+    color: #6b7280;
+    text-decoration: line-through;
+}
+
+.recurring-item.stopped .recurring-amount {
+    color: #6b7280;
+}
+
+.recurring-item.stopped .recurring-date {
+    color: #6b7280;
+}
+
+.recurring-item.stopped .recurring-description {
+    color: #6b7280;
+    opacity: 0.5;
+}
+
+.stop-recurring-btn {
+    background: none;
+    border: 1px solid #f59e0b; /* Orange */
+    color: #f59e0b;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.stop-recurring-btn:hover {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: white;
+}
+
+/* Mode clair pour les dépenses arrêtées */
+[data-theme="light"] .recurring-item.stopped {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+[data-theme="light"] .recurring-item.stopped h4,
+[data-theme="light"] .recurring-item.stopped .recurring-amount,
+[data-theme="light"] .recurring-item.stopped .recurring-date {
+    color: #64748b;
+}

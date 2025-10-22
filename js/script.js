@@ -128,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
             description: descriptionInput.value,
             type: transactionType,
             isRecurring: isRecurringInput.checked,
-            originalDate: isRecurringInput.checked ? crimeDateInput.value : null // Date originale pour les récurrentes
+            originalDate: isRecurringInput.checked ? crimeDateInput.value : null, // Date originale pour les récurrentes
+            recurringEndDate: null // Date de fin de récurrence (null = pas de fin)
         };
         
         // Basic Validation
@@ -854,6 +855,16 @@ document.addEventListener('DOMContentLoaded', () => {
         recurringExpenses.forEach(expense => {
             if (!expense.originalDate) return;
             
+            // Vérifier si la récurrence a une date de fin
+            if (expense.recurringEndDate) {
+                const endDate = new Date(expense.recurringEndDate);
+                const currentDate = new Date(currentYear, currentMonth, 1);
+                if (currentDate > endDate) {
+                    console.log(`⏹️ Récurrence arrêtée pour ${expense.culprit} (fin: ${expense.recurringEndDate})`);
+                    return; // Ne pas générer si la date de fin est dépassée
+                }
+            }
+            
             const originalDate = new Date(expense.originalDate);
             const originalDay = originalDate.getDate();
             
@@ -968,20 +979,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const originalDate = new Date(expense.originalDate);
             const dayOfMonth = originalDate.getDate();
             const formattedAmount = `${Math.abs(expense.amount).toFixed(2)}€`;
+            const isStopped = expense.recurringEndDate;
+            const stoppedClass = isStopped ? ' stopped' : '';
+            const endDateText = isStopped ? ` (Arrêtée le ${new Date(expense.recurringEndDate).toLocaleDateString()})` : '';
             
             return `
-                <div class="recurring-item">
+                <div class="recurring-item${stoppedClass}">
                     <div class="recurring-info">
-                        <h4>${expense.culprit}</h4>
+                        <h4>${expense.culprit}${isStopped ? ' ⏹️' : ''}</h4>
                         <p class="recurring-category">${expense.category}</p>
                         <p class="recurring-amount">${formattedAmount}</p>
                     </div>
                     <div class="recurring-details">
-                        <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois</p>
+                        <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
                         <p class="recurring-description">${expense.description || 'Aucune description'}</p>
                     </div>
                     <div class="recurring-actions">
                         <button class="edit-recurring-btn" data-id="${expense.id}" title="Modifier">✏️</button>
+                        ${!isStopped ? `<button class="stop-recurring-btn" data-id="${expense.id}" title="Arrêter la récurrence">⏹️</button>` : ''}
                         <button class="delete-recurring-btn" data-id="${expense.id}" title="Supprimer">🗑️</button>
                     </div>
                 </div>
@@ -991,11 +1006,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ajouter les événements pour les boutons
         recurringList.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-recurring-btn');
+            const stopBtn = e.target.closest('.stop-recurring-btn');
             const deleteBtn = e.target.closest('.delete-recurring-btn');
             
             if (editBtn) {
                 const id = parseInt(editBtn.dataset.id);
                 editRecurringExpense(id);
+            }
+            
+            if (stopBtn) {
+                const id = parseInt(stopBtn.dataset.id);
+                stopRecurringExpense(id);
             }
             
             if (deleteBtn) {
@@ -1025,6 +1046,36 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Modifier cette Dépense Récurrente';
         window.scrollTo({ top: 0, behavior: 'smooth' });
         culpritInput.focus();
+    }
+    
+    // Fonction pour arrêter une dépense récurrente
+    function stopRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        if (confirm(`Arrêter la récurrence pour ${expense.culprit} à partir de ce mois ? Les dépenses déjà créées resteront, mais aucune nouvelle ne sera générée.`)) {
+            // Marquer la fin de récurrence pour toutes les dépenses récurrentes de ce type
+            const today = new Date();
+            const endDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            
+            expenses.forEach(exp => {
+                if (exp.isRecurring && 
+                    exp.culprit === expense.culprit && 
+                    exp.category === expense.category && 
+                    exp.amount === expense.amount) {
+                    exp.recurringEndDate = endDate;
+                }
+            });
+            
+            saveExpensesToStorage();
+            // Synchroniser avec le serveur si connecté
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                window.authService.saveData('expenses', expenses);
+            }
+            render();
+            
+            console.log(`⏹️ Récurrence arrêtée pour ${expense.culprit} à partir du ${endDate}`);
+        }
     }
     
     // Fonction pour supprimer une dépense récurrente
