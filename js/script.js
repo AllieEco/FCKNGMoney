@@ -914,11 +914,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 xPosition = rightColumnX;
             }
             
-            // Tronquer le nom de catégorie si trop long pour la colonne
+            // Extraire seulement le premier mot (avant les parenthèses)
+            const firstWord = category.split(' (')[0]; // Prendre seulement la partie avant " ("
             const maxCategoryLength = 20; // Réduit pour 3 colonnes
-            const displayCategory = category.length > maxCategoryLength 
-                ? category.substring(0, maxCategoryLength - 3) + '...' 
-                : category;
+            const displayCategory = firstWord.length > maxCategoryLength 
+                ? firstWord.substring(0, maxCategoryLength - 3) + '...' 
+                : firstWord;
             
             doc.text(`${displayCategory} : ${amountText}`, xPosition, yPosition);
             
