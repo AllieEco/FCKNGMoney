@@ -200,6 +200,31 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- PAGINATION -->
+            <div id="pagination-container" class="pagination-container">
+                <div class="pagination-info">
+                    <span id="pagination-info">Affichage de 1 à 10 sur 0 dépenses</span>
+                </div>
+                <div class="pagination-controls">
+                    <button id="first-page-btn" class="pagination-btn" disabled>⏮️</button>
+                    <button id="prev-page-btn" class="pagination-btn" disabled>◀️</button>
+                    <div id="page-numbers" class="page-numbers">
+                        <!-- Les numéros de page seront générés ici -->
+                    </div>
+                    <button id="next-page-btn" class="pagination-btn" disabled>▶️</button>
+                    <button id="last-page-btn" class="pagination-btn" disabled>⏭️</button>
+                </div>
+                <div class="pagination-size">
+                    <label for="page-size-select">Dépenses par page :</label>
+                    <select id="page-size-select">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
         </section>
 
         <!-- DÉPENSES RÉCURRENTES -->

@@ -54,6 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterCulpritEl = document.getElementById('filter-culprit');
     const resetFiltersBtn = document.getElementById('reset-filters');
     const exportPdfBtn = document.getElementById('export-pdf-btn');
+    
+    // Pagination Elements
+    const paginationInfoEl = document.getElementById('pagination-info');
+    const firstPageBtn = document.getElementById('first-page-btn');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
+    const lastPageBtn = document.getElementById('last-page-btn');
+    const pageNumbersEl = document.getElementById('page-numbers');
+    const pageSizeSelect = document.getElementById('page-size-select');
 
     // Stats Elements
     const totalDamageEl = document.getElementById('total-damage');
@@ -64,6 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Data Store
     let expenses = [];
+    
+    // Pagination variables
+    let currentPage = 1;
+    let pageSize = 25;
+    let totalPages = 1;
 
     // Fonction pour obtenir la clé de stockage spécifique à l'utilisateur
     function getExpensesStorageKey() {
@@ -213,15 +227,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Filter Logic ---
     [filterYearEl, filterMonthEl, filterCategoryEl, filterCulpritEl].forEach(el => {
-        el.addEventListener('change', () => render());
+        el.addEventListener('change', () => {
+            resetPagination();
+            render();
+        });
     });
-    filterCulpritEl.addEventListener('keyup', () => render());
+    filterCulpritEl.addEventListener('keyup', () => {
+        resetPagination();
+        render();
+    });
 
     resetFiltersBtn.addEventListener('click', () => {
         filterYearEl.value = 'all';
         filterMonthEl.value = 'all';
         filterCategoryEl.value = 'all';
         filterCulpritEl.value = '';
+        resetPagination();
         render();
     });
 
@@ -229,6 +250,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportPdfBtn) {
         exportPdfBtn.addEventListener('click', () => exportExpensesToPDF());
     }
+    
+    // Pagination events
+    if (firstPageBtn) firstPageBtn.addEventListener('click', goToFirstPage);
+    if (prevPageBtn) prevPageBtn.addEventListener('click', goToPrevPage);
+    if (nextPageBtn) nextPageBtn.addEventListener('click', goToNextPage);
+    if (lastPageBtn) lastPageBtn.addEventListener('click', goToLastPage);
+    if (pageSizeSelect) pageSizeSelect.addEventListener('change', (e) => changePageSize(e.target.value));
 
     // --- Core Functions ---
     async function saveExpensesToLocalStorage() {
@@ -264,6 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateStats(filteredExpenses); // Use filtered expenses for stats too
         renderRecurringExpenses(); // Afficher les dépenses récurrentes
     }
+    
+    // Fonction pour réinitialiser la pagination
+    function resetPagination() {
+        currentPage = 1;
+    }
 
     function getFilteredExpenses() {
         const year = filterYearEl.value;
@@ -282,13 +315,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTable(expensesToRender) {
+        // Calculer la pagination
+        totalPages = Math.ceil(expensesToRender.length / pageSize);
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+        
+        // Calculer les indices de début et fin
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, expensesToRender.length);
+        const paginatedExpenses = expensesToRender.slice(startIndex, endIndex);
+        
         historyBody.innerHTML = '';
         if (expensesToRender.length === 0) {
             historyBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucun crime ne correspond à tes filtres. T'as de la chance.</td></tr>`;
+            updatePaginationControls(0);
             return;
         }
 
-        expensesToRender.forEach(expense => {
+        paginatedExpenses.forEach(expense => {
             const row = document.createElement('tr');
             row.dataset.id = expense.id;
 
@@ -317,6 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             historyBody.appendChild(row);
         });
+        
+        // Mettre à jour les contrôles de pagination
+        updatePaginationControls(expensesToRender.length);
     }
 
     function calculateStats(statsExpenses) {
@@ -944,6 +995,118 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         return shouldCreate;
+    }
+
+    // Fonction pour mettre à jour les contrôles de pagination
+    function updatePaginationControls(totalItems) {
+        if (!paginationInfoEl) return;
+        
+        const startIndex = (currentPage - 1) * pageSize + 1;
+        const endIndex = Math.min(currentPage * pageSize, totalItems);
+        
+        // Mettre à jour les informations de pagination
+        paginationInfoEl.textContent = `Affichage de ${startIndex} à ${endIndex} sur ${totalItems} dépenses`;
+        
+        // Mettre à jour les boutons
+        firstPageBtn.disabled = currentPage === 1;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        
+        // Générer les numéros de page
+        generatePageNumbers();
+    }
+    
+    // Fonction pour générer les numéros de page
+    function generatePageNumbers() {
+        if (!pageNumbersEl) return;
+        
+        pageNumbersEl.innerHTML = '';
+        
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Ajuster si on est près de la fin
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Bouton "..." au début si nécessaire
+        if (startPage > 1) {
+            const firstBtn = document.createElement('button');
+            firstBtn.textContent = '1';
+            firstBtn.className = 'page-number-btn';
+            firstBtn.addEventListener('click', () => goToPage(1));
+            pageNumbersEl.appendChild(firstBtn);
+            
+            if (startPage > 2) {
+                const dotsBtn = document.createElement('span');
+                dotsBtn.textContent = '...';
+                dotsBtn.className = 'page-dots';
+                pageNumbersEl.appendChild(dotsBtn);
+            }
+        }
+        
+        // Numéros de page
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = `page-number-btn ${i === currentPage ? 'active' : ''}`;
+            pageBtn.addEventListener('click', () => goToPage(i));
+            pageNumbersEl.appendChild(pageBtn);
+        }
+        
+        // Bouton "..." à la fin si nécessaire
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dotsBtn = document.createElement('span');
+                dotsBtn.textContent = '...';
+                dotsBtn.className = 'page-dots';
+                pageNumbersEl.appendChild(dotsBtn);
+            }
+            
+            const lastBtn = document.createElement('button');
+            lastBtn.textContent = totalPages;
+            lastBtn.className = 'page-number-btn';
+            lastBtn.addEventListener('click', () => goToPage(totalPages));
+            pageNumbersEl.appendChild(lastBtn);
+        }
+    }
+    
+    // Fonction pour aller à une page spécifique
+    function goToPage(page) {
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            render();
+        }
+    }
+    
+    // Fonction pour aller à la première page
+    function goToFirstPage() {
+        goToPage(1);
+    }
+    
+    // Fonction pour aller à la page précédente
+    function goToPrevPage() {
+        goToPage(currentPage - 1);
+    }
+    
+    // Fonction pour aller à la page suivante
+    function goToNextPage() {
+        goToPage(currentPage + 1);
+    }
+    
+    // Fonction pour aller à la dernière page
+    function goToLastPage() {
+        goToPage(totalPages);
+    }
+    
+    // Fonction pour changer la taille de page
+    function changePageSize(newSize) {
+        pageSize = parseInt(newSize);
+        currentPage = 1; // Retourner à la première page
+        render();
     }
 
     // Fonction pour afficher les dépenses récurrentes
