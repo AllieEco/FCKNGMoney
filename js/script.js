@@ -225,6 +225,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Event Delegation for Recurring Expenses ---
+    document.addEventListener('click', async (e) => {
+        const editRecurringBtn = e.target.closest('.edit-recurring-btn');
+        const stopRecurringBtn = e.target.closest('.stop-recurring-btn');
+        const deleteRecurringBtn = e.target.closest('.delete-recurring-btn');
+        
+        if (editRecurringBtn) {
+            const id = parseInt(editRecurringBtn.dataset.id);
+            editRecurringExpense(id);
+        }
+        
+        if (stopRecurringBtn) {
+            const id = parseInt(stopRecurringBtn.dataset.id);
+            stopRecurringExpense(id);
+        }
+        
+        if (deleteRecurringBtn) {
+            const id = parseInt(deleteRecurringBtn.dataset.id);
+            deleteRecurringExpense(id);
+        }
+    });
+
     // --- Filter Logic ---
     [filterYearEl, filterMonthEl, filterCategoryEl, filterCulpritEl].forEach(el => {
         el.addEventListener('change', () => {
@@ -1915,6 +1937,356 @@ document.addEventListener('DOMContentLoaded', () => {
         
         chestPopup.addEventListener('click', cleanup);
         if (closeBtn) closeBtn.addEventListener('click', cleanup);
+    }
+
+    // Fonction pour générer les dépenses récurrentes
+    function generateRecurringExpenses() {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        
+        // Récupérer toutes les dépenses récurrentes
+        const recurringExpenses = expenses.filter(exp => exp.isRecurring);
+        
+        recurringExpenses.forEach(expense => {
+            if (!expense.originalDate) return;
+            
+            // Vérifier si la récurrence a une date de fin
+            if (expense.recurringEndDate) {
+                const endDate = new Date(expense.recurringEndDate);
+                const currentDate = new Date(currentYear, currentMonth, 1);
+                if (currentDate > endDate) {
+                    console.log(`⏹️ Récurrence arrêtée pour ${expense.culprit} (fin: ${expense.recurringEndDate})`);
+                    return; // Ne pas générer si la date de fin est dépassée
+                }
+            }
+            
+            const originalDate = new Date(expense.originalDate);
+            const originalDay = originalDate.getDate();
+            
+            // Vérifier si on doit créer une dépense pour ce mois
+            const shouldCreateThisMonth = shouldCreateRecurringExpense(expense, currentYear, currentMonth);
+            
+            if (shouldCreateThisMonth) {
+                // Créer la nouvelle date pour ce mois en respectant exactement le jour original
+                const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                
+                // Utiliser le jour original ou le dernier jour du mois si le jour n'existe pas
+                const dayToUse = Math.min(originalDay, daysInCurrentMonth);
+                const newDate = new Date(currentYear, currentMonth, dayToUse);
+                
+                // Vérifier que la date créée correspond bien au mois voulu
+                if (newDate.getMonth() !== currentMonth) {
+                    console.warn(`⚠️ Problème de date pour ${expense.culprit}: jour ${originalDay} -> jour ${dayToUse}`);
+                }
+                
+                const newDateString = newDate.toISOString().split('T')[0];
+                
+                // Vérifier si cette dépense n'existe pas déjà
+                const existingExpense = expenses.find(exp => 
+                    exp.culprit === expense.culprit &&
+                    exp.category === expense.category &&
+                    exp.amount === expense.amount &&
+                    exp.date === newDateString &&
+                    exp.isRecurring === true
+                );
+                
+                if (!existingExpense) {
+                    // Créer la nouvelle dépense récurrente
+                    const newRecurringExpense = {
+                        id: Date.now() + Math.random(), // ID unique
+                        culprit: expense.culprit,
+                        date: newDateString,
+                        category: expense.category,
+                        paymentMethod: expense.paymentMethod,
+                        necessity: expense.necessity,
+                        amount: expense.amount,
+                        description: expense.description + ' (Récurrente)',
+                        type: expense.type,
+                        isRecurring: true,
+                        originalDate: expense.originalDate
+                    };
+                    
+                    expenses.push(newRecurringExpense);
+                    console.log(`🔄 Dépense récurrente générée: ${expense.culprit} - ${expense.amount}€ pour le ${newDateString} (jour original: ${originalDay})`);
+                }
+            }
+        });
+        
+        // Sauvegarder les nouvelles dépenses
+        if (expenses.length > 0) {
+            saveExpensesToStorage();
+        }
+    }
+    
+    // Fonction pour déterminer si une dépense récurrente doit être créée
+    function shouldCreateRecurringExpense(expense, year, month) {
+        if (!expense.originalDate) return false;
+        
+        const originalDate = new Date(expense.originalDate);
+        const originalYear = originalDate.getFullYear();
+        const originalMonth = originalDate.getMonth();
+        
+        // Ne pas créer si c'est le même mois que l'original
+        if (originalYear === year && originalMonth === month) {
+            return false;
+        }
+        
+        // Créer si c'est un mois ultérieur
+        const shouldCreate = (year > originalYear) || (year === originalYear && month > originalMonth);
+        
+        if (shouldCreate) {
+            console.log(`📅 Vérification récurrence pour ${expense.culprit}: original ${originalYear}-${originalMonth + 1}, courant ${year}-${month + 1}`);
+        }
+        
+        return shouldCreate;
+    }
+
+    // Fonction pour afficher les dépenses récurrentes
+    function renderRecurringExpenses() {
+        const recurringList = document.getElementById('recurring-list');
+        if (!recurringList) return;
+        
+        // Récupérer les dépenses récurrentes uniques (une par type)
+        const uniqueRecurring = [];
+        const seen = new Set();
+        
+        expenses.forEach(expense => {
+            if (expense.isRecurring && expense.originalDate) {
+                const key = `${expense.culprit}-${expense.category}-${expense.amount}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueRecurring.push(expense);
+                }
+            }
+        });
+        
+        if (uniqueRecurring.length === 0) {
+            recurringList.innerHTML = `
+                <div class="no-recurring">
+                    <p>💡 Aucune dépense récurrente configurée</p>
+                    <p>Coche la case "Dépense récurrente" lors de l'ajout d'une dépense pour qu'elle se répète chaque mois.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        recurringList.innerHTML = uniqueRecurring.map(expense => {
+            const originalDate = new Date(expense.originalDate);
+            const dayOfMonth = originalDate.getDate();
+            const formattedAmount = `${Math.abs(expense.amount).toFixed(2)}€`;
+            const isStopped = expense.recurringEndDate;
+            const stoppedClass = isStopped ? ' stopped' : '';
+            const endDateText = isStopped ? ` (Arrêtée le ${new Date(expense.recurringEndDate).toLocaleDateString()})` : '';
+            
+            return `
+                <div class="recurring-item${stoppedClass}">
+                    <div class="recurring-info">
+                        <h4>${expense.culprit}${isStopped ? ' ⏹️' : ''}</h4>
+                        <p class="recurring-category">${expense.category}</p>
+                        <p class="recurring-amount">${formattedAmount}</p>
+                    </div>
+                    <div class="recurring-details">
+                        <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
+                        <p class="recurring-description">${expense.description || 'Aucune description'}</p>
+                    </div>
+                    <div class="recurring-actions">
+                        <button class="edit-recurring-btn" data-id="${expense.id}" title="Modifier">✏️</button>
+                        ${!isStopped ? `<button class="stop-recurring-btn" data-id="${expense.id}" title="Arrêter la récurrence">⏹️</button>` : ''}
+                        <button class="delete-recurring-btn" data-id="${expense.id}" title="Supprimer">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Fonction pour éditer une dépense récurrente
+    function editRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        // Remplir le formulaire avec les données de la dépense récurrente
+        expenseIdInput.value = expense.id;
+        culpritInput.value = expense.culprit;
+        crimeDateInput.value = expense.originalDate; // Utiliser la date originale
+        categoryInput.value = expense.category;
+        paymentMethodInput.value = expense.paymentMethod;
+        necessityInput.value = expense.necessity;
+        transactionTypeInput.value = expense.type;
+        amountInput.value = Math.abs(expense.amount);
+        descriptionInput.value = expense.description.replace(' (Récurrente)', '');
+        isRecurringInput.checked = true;
+        
+        submitBtn.textContent = 'Modifier cette Dépense Récurrente';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        culpritInput.focus();
+        
+        console.log(`✏️ Modification de la dépense récurrente: ${expense.culprit} - ${expense.amount}€`);
+    }
+    
+    // Fonction pour arrêter une dépense récurrente
+    function stopRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        if (confirm(`Arrêter la récurrence pour ${expense.culprit} à partir de ce mois ? Les dépenses déjà créées resteront, mais aucune nouvelle ne sera générée.`)) {
+            // Marquer la fin de récurrence pour toutes les dépenses récurrentes de ce type
+            const today = new Date();
+            const endDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            
+            expenses.forEach(exp => {
+                if (exp.isRecurring && 
+                    exp.culprit === expense.culprit && 
+                    exp.category === expense.category && 
+                    exp.amount === expense.amount) {
+                    exp.recurringEndDate = endDate;
+                }
+            });
+            
+            saveExpensesToStorage();
+            // Synchroniser avec le serveur si connecté
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                window.authService.saveData('expenses', expenses);
+            }
+            render();
+            
+            console.log(`⏹️ Récurrence arrêtée pour ${expense.culprit} à partir du ${endDate}`);
+        }
+    }
+    
+    // Fonction pour supprimer une dépense récurrente
+    function deleteRecurringExpense(id) {
+        const expense = expenses.find(exp => exp.id === id);
+        if (!expense) return;
+        
+        if (confirm(`Sûr de vouloir supprimer cette dépense récurrente de ${Math.abs(expense.amount)}€ chez ${expense.culprit} ?`)) {
+            // Supprimer toutes les dépenses récurrentes de ce type
+            expenses = expenses.filter(exp => 
+                !(exp.isRecurring && 
+                  exp.culprit === expense.culprit && 
+                  exp.category === expense.category && 
+                  exp.amount === expense.amount)
+            );
+            
+            saveExpensesToStorage();
+            // Synchroniser avec le serveur si connecté
+            if (window.authService && window.authService.isUserAuthenticated()) {
+                window.authService.saveData('expenses', expenses);
+            }
+            render();
+        }
+    }
+
+    // Fonction pour mettre à jour les contrôles de pagination
+    function updatePaginationControls(totalItems) {
+        if (!paginationInfoEl) return;
+        
+        const startIndex = (currentPage - 1) * pageSize + 1;
+        const endIndex = Math.min(currentPage * pageSize, totalItems);
+        
+        // Mettre à jour les informations de pagination
+        paginationInfoEl.textContent = `Affichage de ${startIndex} à ${endIndex} sur ${totalItems} dépenses`;
+        
+        // Mettre à jour les boutons
+        firstPageBtn.disabled = currentPage === 1;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        
+        // Générer les numéros de page
+        generatePageNumbers();
+    }
+    
+    // Fonction pour générer les numéros de page
+    function generatePageNumbers() {
+        if (!pageNumbersEl) return;
+        
+        pageNumbersEl.innerHTML = '';
+        
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Ajuster si on est près de la fin
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Bouton "..." au début si nécessaire
+        if (startPage > 1) {
+            const firstBtn = document.createElement('button');
+            firstBtn.textContent = '1';
+            firstBtn.className = 'page-number-btn';
+            firstBtn.addEventListener('click', () => goToPage(1));
+            pageNumbersEl.appendChild(firstBtn);
+            
+            if (startPage > 2) {
+                const dotsBtn = document.createElement('span');
+                dotsBtn.textContent = '...';
+                dotsBtn.className = 'page-dots';
+                pageNumbersEl.appendChild(dotsBtn);
+            }
+        }
+        
+        // Numéros de page
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = `page-number-btn ${i === currentPage ? 'active' : ''}`;
+            pageBtn.addEventListener('click', () => goToPage(i));
+            pageNumbersEl.appendChild(pageBtn);
+        }
+        
+        // Bouton "..." à la fin si nécessaire
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const dotsBtn = document.createElement('span');
+                dotsBtn.textContent = '...';
+                dotsBtn.className = 'page-dots';
+                pageNumbersEl.appendChild(dotsBtn);
+            }
+            
+            const lastBtn = document.createElement('button');
+            lastBtn.textContent = totalPages;
+            lastBtn.className = 'page-number-btn';
+            lastBtn.addEventListener('click', () => goToPage(totalPages));
+            pageNumbersEl.appendChild(lastBtn);
+        }
+    }
+    
+    // Fonction pour aller à une page spécifique
+    function goToPage(page) {
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            render();
+        }
+    }
+    
+    // Fonction pour aller à la première page
+    function goToFirstPage() {
+        goToPage(1);
+    }
+    
+    // Fonction pour aller à la page précédente
+    function goToPrevPage() {
+        goToPage(currentPage - 1);
+    }
+    
+    // Fonction pour aller à la page suivante
+    function goToNextPage() {
+        goToPage(currentPage + 1);
+    }
+    
+    // Fonction pour aller à la dernière page
+    function goToLastPage() {
+        goToPage(totalPages);
+    }
+    
+    // Fonction pour changer la taille de page
+    function changePageSize(newSize) {
+        pageSize = parseInt(newSize);
+        currentPage = 1; // Retourner à la première page
+        render();
     }
 
     // Exposer les fonctions globalement
