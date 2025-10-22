@@ -861,8 +861,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const shouldCreateThisMonth = shouldCreateRecurringExpense(expense, currentYear, currentMonth);
             
             if (shouldCreateThisMonth) {
-                // Créer la nouvelle date pour ce mois
-                const newDate = new Date(currentYear, currentMonth, originalDay);
+                // Créer la nouvelle date pour ce mois en respectant exactement le jour original
+                const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                
+                // Utiliser le jour original ou le dernier jour du mois si le jour n'existe pas
+                const dayToUse = Math.min(originalDay, daysInCurrentMonth);
+                const newDate = new Date(currentYear, currentMonth, dayToUse);
+                
+                // Vérifier que la date créée correspond bien au mois voulu
+                if (newDate.getMonth() !== currentMonth) {
+                    console.warn(`⚠️ Problème de date pour ${expense.culprit}: jour ${originalDay} -> jour ${dayToUse}`);
+                }
+                
                 const newDateString = newDate.toISOString().split('T')[0];
                 
                 // Vérifier si cette dépense n'existe pas déjà
@@ -891,7 +901,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     
                     expenses.push(newRecurringExpense);
-                    console.log(`🔄 Dépense récurrente générée: ${expense.culprit} - ${expense.amount}€`);
+                    console.log(`🔄 Dépense récurrente générée: ${expense.culprit} - ${expense.amount}€ pour le ${newDateString} (jour original: ${originalDay})`);
                 }
             }
         });
@@ -916,7 +926,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Créer si c'est un mois ultérieur
-        return (year > originalYear) || (year === originalYear && month > originalMonth);
+        const shouldCreate = (year > originalYear) || (year === originalYear && month > originalMonth);
+        
+        if (shouldCreate) {
+            console.log(`📅 Vérification récurrence pour ${expense.culprit}: original ${originalYear}-${originalMonth + 1}, courant ${year}-${month + 1}`);
+        }
+        
+        return shouldCreate;
     }
 
     // Fonction pour afficher les dépenses récurrentes
