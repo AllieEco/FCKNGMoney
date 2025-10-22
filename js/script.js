@@ -816,6 +816,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Fonction pour calculer le total des dépenses par catégorie
+    function calculateCategoryTotals(expenses) {
+        const categoryTotals = {};
+        
+        expenses.forEach(expense => {
+            const category = expense.category || 'Non catégorisé';
+            if (!categoryTotals[category]) {
+                categoryTotals[category] = 0;
+            }
+            categoryTotals[category] += expense.amount;
+        });
+        
+        // Trier par montant décroissant
+        return Object.entries(categoryTotals)
+            .map(([category, total]) => ({ category, total }))
+            .sort((a, b) => a.total - b.total); // Tri croissant (les plus négatifs en premier)
+    }
+
     // Fonction d'export PDF avec prise en compte des filtres
     function exportExpensesToPDF() {
         // Récupérer les dépenses filtrées
@@ -851,10 +869,46 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text(`Filtres appliqués : ${filterInfo}`, pageWidth / 2, 50, { align: 'center' });
         }
         
+        // RÉSUMÉ DES DÉPENSES PAR CATÉGORIE
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Résumé des Dépenses par Catégorie', margin, 70);
+        
+        // Calculer les totaux par catégorie
+        const categoryTotals = calculateCategoryTotals(filteredExpenses);
+        
+        // Afficher le résumé des catégories
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        let yPosition = 85;
+        categoryTotals.forEach(({ category, total }) => {
+            const formattedAmount = total.toFixed(2);
+            const amountText = total < 0 ? `${formattedAmount}€` : `+${formattedAmount}€`;
+            
+            // Couleur du texte selon le montant
+            if (total < 0) {
+                doc.setTextColor(200, 0, 0); // Rouge pour les dépenses
+            } else {
+                doc.setTextColor(0, 150, 0); // Vert pour les revenus
+            }
+            
+            doc.text(`${category} : ${amountText}`, margin, yPosition);
+            yPosition += 6;
+        });
+        
+        // Remettre la couleur par défaut
+        doc.setTextColor(0, 0, 0);
+        
+        // Ligne de séparation
+        yPosition += 10;
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
+        
         // Statistiques des données filtrées
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('Statistiques des Données Filtrées', margin, 70);
+        doc.text('Statistiques des Données Filtrées', margin, yPosition);
         
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -863,14 +917,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalIncome = filteredExpenses.filter(exp => exp.type === 'income').length;
         const totalAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
         
-        doc.text(`Nombre de dépenses : ${totalExpenses}`, margin, 85);
-        doc.text(`Nombre de revenus : ${totalIncome}`, margin, 95);
-        doc.text(`Solde total : ${totalAmount.toFixed(2)}€`, margin, 105);
+        yPosition += 10;
+        doc.text(`Nombre de dépenses : ${totalExpenses}`, margin, yPosition);
+        yPosition += 10;
+        doc.text(`Nombre de revenus : ${totalIncome}`, margin, yPosition);
+        yPosition += 10;
+        doc.text(`Solde total : ${totalAmount.toFixed(2)}€`, margin, yPosition);
         
         // Tableau des dépenses
+        yPosition += 20;
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('Détail des Dépenses', margin, 130);
+        doc.text('Détail des Dépenses', margin, yPosition);
         
         // Préparer les données pour le tableau
         const tableData = filteredExpenses.map(exp => {
@@ -891,7 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.autoTable({
             head: [headers],
             body: tableData,
-            startY: 140,
+            startY: yPosition + 10,
             margin: { left: margin, right: margin },
             styles: {
                 fontSize: 8,
