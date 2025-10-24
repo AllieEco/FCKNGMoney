@@ -1168,6 +1168,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const stoppedClass = isStopped ? ' stopped' : '';
             const endDateText = isStopped ? ` (Arrêtée le ${new Date(expense.recurringEndDate).toLocaleDateString()})` : '';
             
+            // Calculer le montant total depuis le début
+            const startDate = new Date(expense.originalDate);
+            const endDate = isStopped ? new Date(expense.recurringEndDate) : new Date();
+            
+            // Calculer le nombre de mois écoulés
+            const monthsElapsed = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                                 (endDate.getMonth() - startDate.getMonth());
+            
+            // Ajouter 1 pour inclure le mois de début
+            const totalMonths = monthsElapsed + 1;
+            const totalAmount = totalMonths * Math.abs(expense.amount);
+            const formattedTotalAmount = `${totalAmount.toFixed(2)}€`;
+            
             return `
                 <div class="recurring-item${stoppedClass}">
                     <div class="recurring-info">
@@ -1178,6 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="recurring-details">
                         <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
                         <p class="recurring-start-date">🚀 Commencé le ${originalDate.toLocaleDateString('fr-FR')}</p>
+                        <p class="recurring-total-amount">💰 Total dépensé: ${formattedTotalAmount} (${totalMonths} mois)</p>
                         <p class="recurring-description">${expense.description || 'Aucune description'}</p>
                     </div>
                     <div class="recurring-actions">
@@ -2080,6 +2094,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const stoppedClass = isStopped ? ' stopped' : '';
             const endDateText = isStopped ? ` (Arrêtée le ${new Date(expense.recurringEndDate).toLocaleDateString()})` : '';
             
+            // Calculer le montant total depuis le début
+            const startDate = new Date(expense.originalDate);
+            const endDate = isStopped ? new Date(expense.recurringEndDate) : new Date();
+            
+            // Calculer le nombre de mois écoulés
+            const monthsElapsed = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                                 (endDate.getMonth() - startDate.getMonth());
+            
+            // Ajouter 1 pour inclure le mois de début
+            const totalMonths = monthsElapsed + 1;
+            const totalAmount = totalMonths * Math.abs(expense.amount);
+            const formattedTotalAmount = `${totalAmount.toFixed(2)}€`;
+            
             return `
                 <div class="recurring-item${stoppedClass}">
                     <div class="recurring-info">
@@ -2090,6 +2117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="recurring-details">
                         <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
                         <p class="recurring-start-date">🚀 Commencé le ${originalDate.toLocaleDateString('fr-FR')}</p>
+                        <p class="recurring-total-amount">💰 Total dépensé: ${formattedTotalAmount} (${totalMonths} mois)</p>
                         <p class="recurring-description">${expense.description || 'Aucune description'}</p>
                     </div>
                     <div class="recurring-actions">
