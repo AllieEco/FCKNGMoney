@@ -2128,6 +2128,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }).join('');
+        
+        // Ajouter le total des dépenses récurrentes mensuelles
+        const activeRecurringExpenses = uniqueRecurring.filter(expense => !expense.recurringEndDate);
+        const monthlyTotal = activeRecurringExpenses.reduce((sum, expense) => sum + Math.abs(expense.amount), 0);
+        
+        if (activeRecurringExpenses.length > 0) {
+            recurringList.innerHTML += `
+                <div class="recurring-monthly-total">
+                    <div class="total-info">
+                        <h3>💰 Total mensuel récurrent</h3>
+                        <p class="total-amount">${monthlyTotal.toFixed(2)}€ / mois</p>
+                        <p class="total-description">Part irréductible qui sort chaque mois</p>
+                    </div>
+                </div>
+            `;
+        }
     }
     
     // Fonction pour éditer une dépense récurrente

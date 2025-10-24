@@ -1448,7 +1448,8 @@ footer {
         align-items: flex-start;
     }
 }
-    
+
+@media (max-width: 768px) {
     #filter-section .form-control {
         width: 100%;
     }
@@ -2458,6 +2459,7 @@ footer {
         }
     }
 
+@media (max-width: 768px) {
     .user-info {
         display: flex;
         align-items: center;
@@ -4702,6 +4704,47 @@ footer {
 [data-theme="light"] .recurring-item.stopped .recurring-amount,
 [data-theme="light"] .recurring-item.stopped .recurring-date {
     color: #64748b;
+}
+
+/* Styles pour le total mensuel récurrent */
+.recurring-monthly-total {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--accent-color), #68a300);
+    border-radius: 12px;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 4px 12px var(--glow-color);
+}
+
+.total-info {
+    text-align: center;
+    color: white;
+}
+
+.total-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.total-amount {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.total-description {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Mode clair pour le total mensuel récurrent */
+[data-theme="light"] .recurring-monthly-total {
+    background: linear-gradient(135deg, var(--accent-color), #047857);
+    border-color: var(--accent-color);
 }
 
 /* Styles pour la pagination */
