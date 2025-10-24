@@ -1177,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="recurring-details">
                         <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
+                        <p class="recurring-start-date">🚀 Commencé le ${originalDate.toLocaleDateString('fr-FR')}</p>
                         <p class="recurring-description">${expense.description || 'Aucune description'}</p>
                     </div>
                     <div class="recurring-actions">
@@ -2088,6 +2089,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="recurring-details">
                         <p class="recurring-date">📅 Le ${dayOfMonth} de chaque mois${endDateText}</p>
+                        <p class="recurring-start-date">🚀 Commencé le ${originalDate.toLocaleDateString('fr-FR')}</p>
                         <p class="recurring-description">${expense.description || 'Aucune description'}</p>
                     </div>
                     <div class="recurring-actions">
